@@ -10,3 +10,9 @@ about = "this is cargo about"
 anyhow = "1.0.75"
 clap = { version = "4.4.2", features = ["derive"] }
 slugify = "0.1.0"
+thiserror = "1.0.48"
+walkdir = "2.4.0"
+
+[[bin]]
+name = "ripi"
+path = "src/main.rs"

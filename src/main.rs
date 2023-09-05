@@ -1,42 +1,33 @@
-use std::{fs::{File, create_dir_all}, io::{Read, BufReader}};
+pub mod args;
+pub mod issues;
+pub mod helpers;
 
-use anyhow::{Result, Context};
-use clap::{Parser, Subcommand};
-#[macro_use] extern  crate  slugify;
-use slugify::slugify;
+extern  crate  slugify;
 
-/// Manage your project and issues
-#[derive(Parser)]
-#[command(author, version, about, long_about = None)]
-struct Cli {
-    #[command(subcommand)]
-    command: Option<Commands>,
-}
+use crate::args::{
+    Cli,
+    EntityType::Issue,
+    IssueCommand,
+};
+use crate::issues::{
+    create_issue,
+    list_all_issues,
+};
 
-#[derive(Subcommand)]
-enum Commands {
-    /// Creates an issue
-    Create {
-        issue_name: Option<String>,
-    },
-}
-
-fn slug(s: &str) -> String {
-    slugify!(s, separator = "_")
-}
+use clap::Parser;
+use anyhow::{Context, Result};
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
 
-    match &cli.command {
-        Some(Commands::Create { issue_name }) => {
-            if let Some(n) = issue_name {
-                create_dir_all(format!("./backlog/{}", slug(n)))
-                    .with_context(|| "could not create dir")?;
-                println!("creating dir: _backlog/{:?}", slug(n));
-            }
+    match &cli.entity_type {
+        Issue(IssueCommand::Create(issue_cmd)) => {
+            create_issue(issue_cmd)?;
         },
-        None => {  }
+        Issue(IssueCommand::List(_)) => {
+            list_all_issues()?;
+        },
+        _ => {}
     }
 
     Ok(())
