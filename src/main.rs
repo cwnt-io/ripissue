@@ -2,7 +2,7 @@ pub mod args;
 pub mod issues;
 pub mod helpers;
 
-extern  crate  slugify;
+extern crate slugify;
 
 use crate::args::{
     Cli,
@@ -12,10 +12,11 @@ use crate::args::{
 use crate::issues::{
     create_issue,
     list_all_issues,
+    close_issue,
 };
 
 use clap::Parser;
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
@@ -26,6 +27,9 @@ fn main() -> Result<()> {
         },
         Issue(IssueCommand::List(_)) => {
             list_all_issues()?;
+        },
+        Issue(IssueCommand::Close(issue_cmd)) => {
+            close_issue(issue_cmd)?;
         },
         _ => {}
     }

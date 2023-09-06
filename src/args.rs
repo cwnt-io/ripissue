@@ -22,13 +22,15 @@ pub enum EntityType {
 
 #[derive(Debug, Subcommand)]
 pub enum IssueCommand {
-    /// Create a new issue
+    /// Creates a new issue
     Create(CreateIssue),
+    /// Lists all issues
+    List(ListIssues),
+
+    /// Closes an issue
+    Close(CloseIssue),
     // Edit(EditIssue),
     // Delete(DeleteIssue),
-    // Close(CloseIssue),
-    /// List all issues
-    List(ListIssues),
 }
 
 #[derive(Debug, Args)]
@@ -39,6 +41,13 @@ pub struct CreateIssue {
     /// Name of the issues
     #[arg(value_parser = is_not_empty)]
     pub name: String,
+}
+
+#[derive(Debug, Args)]
+pub struct CloseIssue {
+    /// Name of the issues
+    #[arg(value_parser = is_not_empty)]
+    pub path: String,
 }
 
 fn is_not_empty(arg: &str) -> Result<String, String> {

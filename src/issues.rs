@@ -1,153 +1,135 @@
 use std::collections::{HashSet, HashMap, BTreeMap};
-use std::fs::{create_dir_all, File, read_dir};
+use std::fs::{create_dir_all, create_dir, File, read_dir};
 use std::path::PathBuf;
 use std::str::FromStr;
 use std::io::{prelude::*, stdout, BufWriter, Write, BufReader};
 
-use anyhow::{Context, Result, bail};
+use anyhow::{Context, Result, bail, Ok};
 use walkdir::{WalkDir, DirEntry};
 
-use crate::args::CreateIssue;
+use crate::args::{CreateIssue, CloseIssue};
 use crate::helpers::slug;
 
 #[derive(Debug)]
-pub struct Issues {
-    dirs: Vec<String>,
-    issues: BTreeMap<u32, Issue>,
+pub struct KanbanDirs {
+    backlog: PathBuf,
+    todo: PathBuf,
+    doing: PathBuf,
+    staging: PathBuf,
+    closed: PathBuf,
 }
 
-impl Issues {
+impl KanbanDirs {
 
-    fn new() -> Self {
-        let dirs = vec![
-            "_0_backlog".to_string(),
-            "_1_todo".to_string(),
-            "_2_doing".to_string(),
-            "_3_staging".to_string(),
-            "_4_closed".to_string(),
-        ];
-        Issues {
-            dirs,
-            issues: BTreeMap::new()
+    pub fn new() -> Self {
+        KanbanDirs {
+            backlog: PathBuf::from_str("_0_backlog").unwrap(),
+            todo: PathBuf::from_str("_1_todo").unwrap(),
+            doing: PathBuf::from_str("_2_doing").unwrap(),
+            staging: PathBuf::from_str("_3_staging").unwrap(),
+            closed: PathBuf::from_str("_4_closed").unwrap(),
         }
     }
 
-    pub fn add(&mut self, mut issue: Issue) -> Result<()> {
-        if self.issues.contains_key(&issue.id) {
-            let last_id_opt = self.issues.last_key_value();
-            let next_id = if let Some((last_id,_)) = last_id_opt {
-                last_id + 1
-            } else {
-                1
-            };
-            let id_file_path = issue.path.path().clone().join("id");
-            let mut id_file = File::create(id_file_path)
-                .with_context(|| "could not create id")?;
-            id_file.write_all(format!("{}", next_id).as_bytes())
-                .with_context(|| "could not write id")?;
-            issue.id = get_id_from_file(&issue.path)?;
+    fn as_vec(&self) -> Vec<PathBuf> {
+        vec![
+            self.backlog.clone(),
+            self.todo.clone(),
+            self.doing.clone(),
+            self.staging.clone(),
+            self.closed.clone(),
+        ]
+    }
+
+    fn write(&self) -> Result<()> {
+        let dirs = self.as_vec();
+        for dir in dirs {
+            if !dir.is_dir() {
+                create_dir(&dir)
+                    .with_context(|| format!("could not create dir {}", dir.display()) )?;
+                let mut empty_file = dir;
+                empty_file.push(".kanban");
+                File::create(&empty_file)
+                    .with_context(|| "could not create empty file")?;
+            }
         }
-        self.issues.insert(issue.id, issue);
         Ok(())
     }
 
 }
 
-#[derive(Debug)]
-pub struct Issue {
-    id: u32,
-    name: String,
-    path: DirEntry,
-}
-
-fn get_id_from_file(issue_path: &DirEntry) -> Result<u32> {
-    let id_path = issue_path.path().join("id");
-    let mut id_str = String::new();
-    let f = File::open(id_path)
-        .with_context(|| format!("could not read file `{:?}`", issue_path))?;
-    let mut content = BufReader::new(f);
-    content.read_line(&mut id_str)?;
-    id_str.trim().to_string().parse::<u32>()
-        .with_context(|| format!("invalid id ({:?}) for issue {:?}", id_str, issue_path))
-}
-
-impl Issue {
-    pub fn new(path: &DirEntry) -> Result<Self> {
-        Ok(Issue {
-            id: get_id_from_file(path)?,
-            name: path.file_name().to_str().unwrap().to_owned(),
-            path: path.clone(),
-        })
-    }
-}
-
-fn get_all_issues() -> Result<Issues> {
-    let mut issues = Issues::new();
-    let dirs: Vec<String> = issues.dirs.clone();
-    for dir in dirs {
+fn get_all_issues() -> Result<HashMap<String, PathBuf>> {
+    let kanban_dirs = KanbanDirs::new();
+    let mut map = HashMap::new();
+    for dir in kanban_dirs.as_vec() {
         let issues_paths = WalkDir::new(dir).min_depth(1)
             .into_iter()
             .filter_map(|e| e.ok())
             .filter(|e| e.path().is_dir());
         for issue_path in issues_paths {
-            let issue = Issue::new(&issue_path)?;
-            println!("{:?}", issue);
-            issues.add(issue)?;
+            let issue_path_buf = issue_path.path().to_path_buf();
+            let name = get_file_name(&issue_path_buf);
+            if map.insert(name.clone(), issue_path_buf.clone()).is_some() {
+                bail!(format!("Issue {} ({}) already exists, rename it before continue", name, issue_path_buf.display()));
+            }
         }
     }
-    Ok(issues)
+    Ok(map)
+}
+
+fn get_file_name(path: &PathBuf) -> String {
+    path.file_name().unwrap().to_os_string().into_string().unwrap()
+}
+
+pub fn close_issue(issue_cmd: &CloseIssue) -> Result<()> {
+    let issues = get_all_issues()?;
+    let path = PathBuf::from_str(&issue_cmd.path)?;
+    let name = get_file_name(&path);
+    if issues.get(&name).is_none() {
+        bail!(format!("Issue {} doen't exists", name));
+    }
+    println!("{:?}", path.is_dir());
+    Ok(())
 }
 
 pub fn list_all_issues() -> Result<()> {
     let issues = get_all_issues()?;
     let stdout = stdout();
     let mut writer = BufWriter::new(stdout);
-    if issues.issues.is_empty() {
-        writeln!(writer,"No issues in this repo")?;
+    if issues.is_empty() {
+        writeln!(writer,"No issues at this repo")?;
         return Ok(());
     }
-    for (id, issue) in issues.issues.iter() {
-        writeln!(writer,"Issue #{}: {}", id, issue.name)?;
+    for (name, path) in issues.iter() {
+        writeln!(writer,"Issue: {} ({})", name, path.display())?;
     }
-    // println!("{:#?}", issues.issues);
     Ok(())
 }
 
-
 pub fn create_issue(issue_cmd: &CreateIssue) -> Result<()> {
-
     let issues = get_all_issues()?;
-
+    let kanban_dirs = KanbanDirs::new();
+    kanban_dirs.write()?;
     let name = slug(&issue_cmd.name);
-    let issues = Issues::new();
-    let base_dir = PathBuf::from_str(&issues.dirs[0]).unwrap();
-    create_dir_all(&base_dir)
-        .with_context(|| format!("could not create base_dir {}", base_dir.display()) )?;
-    let mut issue_dir = base_dir.clone();
-    issue_dir.push(name);
+    if issues.get(&name).is_some() {
+        bail!(format!("Issue with name {} already exists, rename it before continue", name));
+    };
+
+    let mut issue_dir = kanban_dirs.backlog;
+    issue_dir.push(&name);
     create_dir_all(&issue_dir)
         .with_context(|| format!("could not create issue_dir {}", issue_dir.display()) )?;
+
     let mut desc_file_path = issue_dir.clone();
     desc_file_path.push("description.md");
-    File::create(desc_file_path)
+    let mut desc_file = File::create(&desc_file_path)
         .with_context(|| "could not create issue description.md")?;
+    desc_file.write_all(format!("# {}", name).as_bytes())
+        .with_context(|| format!("could not write description title at file: {}", desc_file_path.display()))?;
 
-    // for dir_str in issues.dirs.iter() {
-    //     let base_dir = PathBuf::from_str(&dir_str).unwrap();
-    //     if !base_dir.is_dir() {
-    //         create_dir_all(&base_dir)
-    //             .with_context(|| format!("could not create base_dir {}", base_dir.display()) )?;
-    //     }
-    //     let issue_dir = base_dir.clone().push(&name);
-    // }
-    // if dir.is_dir() {
-    //     bail!(format!("issue create: {} already exists, nothing was done", dir.into_os_string().into_string().unwrap()));
-    // }
-    // let mut desc_file = dir.clone();
-    // desc_file.push("description.md");
-    // create_dir_all(dir)
-    //     .with_context(|| "could not create issue directory")?;
-    // File::create(desc_file)
-    //     .with_context(|| "could not create issue description.md")?;
+    let stdout = stdout();
+    let mut writer = BufWriter::new(stdout);
+    writeln!(writer,"Issue: {} ({}) created", name, issue_dir.display())?;
+
     Ok(())
 }
