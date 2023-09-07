@@ -1,6 +1,7 @@
-pub mod args;
-pub mod issues;
-pub mod helpers;
+mod args;
+mod issues;
+mod helpers;
+mod executors;
 
 extern crate slugify;
 
@@ -9,7 +10,7 @@ use crate::args::{
     EntityType::Issue,
     IssueCommand,
 };
-use crate::issues::{
+use crate::executors::{
     create_issue,
     list_all_issues,
     close_issue,
