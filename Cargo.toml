@@ -9,6 +9,7 @@ about = "this is cargo about"
 [dependencies]
 anyhow = "1.0.75"
 clap = { version = "4.4.2", features = ["derive"] }
+git2 = "0.18.0"
 slugify = "0.1.0"
 thiserror = "1.0.48"
 walkdir = "2.4.0"
