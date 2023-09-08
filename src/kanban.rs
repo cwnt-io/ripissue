@@ -6,7 +6,7 @@ use std::io::{stdout, BufWriter, Write};
 use anyhow::{Context, Result, bail};
 use enum_iterator::{all, Sequence};
 
-#[derive(Debug, Sequence)]
+#[derive(Debug, Sequence, Copy, Clone, PartialEq)]
 pub enum Kanban {
     Backlog,
     Todo,

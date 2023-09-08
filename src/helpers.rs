@@ -16,14 +16,15 @@ pub fn get_parent_dir(path: &PathBuf) -> String {
     path.parent().unwrap().to_str().unwrap().to_owned()
 }
 
-pub fn git_commit(files_to_add: Option<&[&str]>, msg: &str) -> Result<()> {
+pub fn git_commit(files_to_add: Option<&[String]>, msg: &str) -> Result<()> {
     let repo = Repository::open(".")
         .with_context(|| "failed to open repository")?;
     let signature = repo.signature()?;
     let mut index = repo.index()?;
     if let Some(files_to_add) = files_to_add {
-        index.add_all(files_to_add, IndexAddOption::DEFAULT, None)?;
+        index.add_all(files_to_add.iter(), IndexAddOption::DEFAULT, None)?;
     }
+    index.write()?;
     let oid = index.write_tree()?;
     let tree = repo.find_tree(oid)?;
     let head = repo.head()?;

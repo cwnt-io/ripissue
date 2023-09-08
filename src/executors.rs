@@ -1,6 +1,4 @@
 use std::io::{stdout, BufWriter, Write};
-use std::path::PathBuf;
-use std::str::FromStr;
 
 use crate::args::{CreateIssue, CloseIssue};
 use crate::issues::{Issue, Issues};
@@ -10,8 +8,22 @@ use crate::kanban::Kanban;
 use anyhow::{Result, Ok};
 
 pub fn close_issue(issues: &Issues, issue_cmd: &CloseIssue) -> Result<()> {
-    let issue = Issue::from_str(&issues, &issue_cmd.path)?;
-    let msg = "test commit";
+    let mut issues_to_add = vec![];
+    let stdout = stdout();
+    let mut writer = BufWriter::new(stdout);
+    let mut issue = Issue::from_str(&issues, &issue_cmd.path)?;
+    issues_to_add.push(issue.path.to_str().unwrap().to_owned());
+    if issue.kanban == Kanban::Closed {
+        writeln!(writer,
+                 "Issue: \"{}\" ({}) already closed.",
+                 &issue.name,
+                 issue.path.display())?;
+        return Ok(());
+    }
+    issue.move_to_kanban(Kanban::Closed)?;
+    issues_to_add.push(issue.path.to_str().unwrap().to_owned());
+    let msg = format!("Closes: \"{}\" issue.", &issue.name);
+    git_commit(Some(&issues_to_add), &msg)?;
     Ok(())
 }
 
@@ -23,7 +35,10 @@ pub fn list_all_issues(issues: &Issues) -> Result<()> {
         return Ok(());
     }
     for (name, issue) in issues.0.iter() {
-        writeln!(writer,"Issue: {} ({})", name, issue.path.display())?;
+        match issue.kanban {
+            Kanban::Closed => {},
+            _ => writeln!(writer,"Issue: {} ({})", name, issue.path.display())?,
+        }
     }
     Ok(())
 }
@@ -31,10 +46,9 @@ pub fn list_all_issues(issues: &Issues) -> Result<()> {
 pub fn create_issue(issues: &Issues, issue_cmd: &CreateIssue) -> Result<()> {
     Kanban::write_all()?;
     let name = slug(&issue_cmd.name);
-    let mut issue_dir = PathBuf::from_str(&Kanban::Backlog.as_str()).unwrap();
-    issue_dir.push(&name);
-    let issue = Issue::new(name, issue_dir);
-    issue.write(&issues)?;
+    let issue = Issue::new(name, Kanban::Backlog);
+    issues.already_exists(&issue)?;
+    issue.write()?;
     let stdout = stdout();
     let mut writer = BufWriter::new(stdout);
     writeln!(writer,"Issue: \"{}\" ({}) created.",
