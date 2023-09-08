@@ -2,6 +2,7 @@ mod args;
 mod issues;
 mod helpers;
 mod executors;
+mod kanban;
 
 extern crate slugify;
 

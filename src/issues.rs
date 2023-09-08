@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fs::{create_dir_all, create_dir, File};
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -7,7 +7,8 @@ use std::io::{prelude::*, stdout, BufWriter, Write};
 use anyhow::{Context, Result, bail, Ok};
 use walkdir::{WalkDir, DirEntry};
 
-use crate::helpers::{slug, get_file_name, get_parent_dir};
+use crate::helpers::{get_file_name, get_parent_dir};
+use crate::kanban::Kanban;
 
 #[derive(Debug, Clone)]
 pub struct Issue {
@@ -33,7 +34,7 @@ impl Issue {
         }
     }
 
-    pub fn get_from_str(s: &str) -> Result<Self> {
+    pub fn from_str(kanban: &Kanban, s: &str) -> Result<Self> {
         let issues = Issues::get_all()?;
         let path = PathBuf::from_str(&s).unwrap();
         if let Some(i) = issues.0.get(s) {
@@ -41,9 +42,8 @@ impl Issue {
             return Ok(i.clone());
         } else if let Some(i) = issues.0.get(&get_file_name(&path)) {
         // s: kanban/issue_name
-            let kanban_dirs = KanbanDirs::new();
-            kanban_dirs.is_kanban(&get_parent_dir(&path))?;
-            if path == i.path {
+            if kanban.0.contains_key(&get_parent_dir(&path)) &&
+                path == i.path {
                 return Ok(i.clone());
             }
         }
@@ -60,6 +60,12 @@ impl Issue {
             .with_context(|| "could not create issue description.md")?;
         desc_file.write_all(format!("# {}", self.name).as_bytes())
             .with_context(|| format!("could not write description title at file: {}", desc_file_path.display()))?;
+        Ok(())
+    }
+
+    pub fn move_to_kanban(&self, kanban: &Kanban, new_kanban: &str) -> Result<Self> {
+
+
         Ok(())
     }
 
@@ -110,62 +116,6 @@ impl Issues {
         }
 
         Ok(issues)
-    }
-
-}
-
-#[derive(Debug)]
-pub struct KanbanDirs {
-    pub backlog: PathBuf,
-    pub todo: PathBuf,
-    pub doing: PathBuf,
-    pub staging: PathBuf,
-    pub closed: PathBuf,
-}
-
-impl KanbanDirs {
-
-    pub fn new() -> Self {
-        KanbanDirs {
-            backlog: PathBuf::from_str("_0_backlog").unwrap(),
-            todo: PathBuf::from_str("_1_todo").unwrap(),
-            doing: PathBuf::from_str("_2_doing").unwrap(),
-            staging: PathBuf::from_str("_3_staging").unwrap(),
-            closed: PathBuf::from_str("_4_closed").unwrap(),
-        }
-    }
-
-    fn is_kanban(&self, path: &PathBuf) -> Result<()> {
-        let kanban_dirs = KanbanDirs::new();
-        if !kanban_dirs.as_vec().contains(path) {
-            bail!(format!("Issue \"{}\" isn't in a correct kanban dir", path.display()));
-        }
-        Ok(())
-    }
-
-    fn as_vec(&self) -> Vec<PathBuf> {
-        vec![
-            self.backlog.clone(),
-            self.todo.clone(),
-            self.doing.clone(),
-            self.staging.clone(),
-            self.closed.clone(),
-        ]
-    }
-
-    pub fn write(&self) -> Result<()> {
-        let dirs = self.as_vec();
-        for dir in dirs {
-            if !dir.is_dir() {
-                create_dir(&dir)
-                    .with_context(|| format!("could not create dir {}", dir.display()) )?;
-                let mut empty_file = dir;
-                empty_file.push(".kanban");
-                File::create(&empty_file)
-                    .with_context(|| "could not create empty file")?;
-            }
-        }
-        Ok(())
     }
 
 }

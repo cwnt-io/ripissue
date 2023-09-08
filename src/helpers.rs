@@ -12,8 +12,8 @@ pub fn get_file_name(path: &PathBuf) -> String {
     path.file_name().unwrap().to_os_string().into_string().unwrap()
 }
 
-pub fn get_parent_dir(path: &PathBuf) -> PathBuf {
-    path.parent().unwrap().to_path_buf()
+pub fn get_parent_dir(path: &PathBuf) -> String {
+    path.parent().unwrap().to_str().unwrap().to_owned()
 }
 
 pub fn git_commit(files_to_add: Option<&[&str]>, msg: &str) -> Result<()> {
