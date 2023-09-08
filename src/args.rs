@@ -1,5 +1,5 @@
 use clap::{Parser, Subcommand, Args};
-///
+
 /// Manage your project and issues
 #[derive(Debug, Parser)]
 #[command(author, version, about)]

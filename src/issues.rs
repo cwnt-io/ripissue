@@ -50,7 +50,8 @@ impl Issue {
         bail!(format!("Input \"{}\" doesn't match with any issue", s));
     }
 
-    pub fn write(&self) -> Result<()> {
+    pub fn write(&self, issues: &Issues) -> Result<()> {
+        issues.already_exists(&self)?;
         create_dir_all(&self.path)
             .with_context(|| format!("could not create issue_dir {}", &self.path.display()) )?;
 
@@ -101,9 +102,8 @@ impl Issues {
     pub fn get_all() -> Result<Issues> {
         let mut issues = Issues::new();
 
-        for kanban_type in all::<Kanban>() {
-            let kanban_str = kanban_type.as_str()?;
-            let issues_in_kanban_dir = WalkDir::new(kanban_str)
+        for kanban in all::<Kanban>() {
+            let issues_in_kanban_dir = WalkDir::new(kanban.as_str())
                 .min_depth(1)
                 .into_iter()
                 .filter_map(|e| e.ok())

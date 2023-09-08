@@ -20,7 +20,6 @@ git add _1_todo/new_issue_2/
 git add _0_backlog/new_issue_2
 TODO: kanbandirs to enum
 - print kanban.iter()
-    - review list
     - review create
     - implement renaming (moving) issue (see links at readme.md)
 issue.to_kanban(kanban_enum)
