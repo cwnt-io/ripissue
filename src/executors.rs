@@ -7,26 +7,13 @@ use crate::kanban::Kanban;
 
 use anyhow::{Result, Ok};
 
-pub fn close_issue(issue_cmd: &CloseIssue) -> Result<()> {
-    // let issue = Issue::from_str(&issue_cmd.path)?;
-
-    // git add _1_todo/new_issue_2/
-    // git add _0_backlog/new_issue_2
-    // TODO: kanbandirs to enum
-    //   - correct all erros in clippy
-    //   - print kanban.iter()
-    //   - refactor all kanban dependencies
-    //   - implement renaming (moving) issue (see links at readme.md)
-    // issue.to_kanban(kanban_enum)
-    //  - mv in fs and returns new issue
+pub fn close_issue(issues: &Issues, issue_cmd: &CloseIssue) -> Result<()> {
+    let issue = Issue::from_str(&issues, &issue_cmd.path)?;
     let msg = "test commit";
-    // println!("{:#?}", index);
-    // println!("{:#?}", repo.commit());
     Ok(())
 }
 
-pub fn list_all_issues() -> Result<()> {
-    let issues = Issues::get_all()?;
+pub fn list_all_issues(issues: &Issues) -> Result<()> {
     let stdout = stdout();
     let mut writer = BufWriter::new(stdout);
     if issues.0.is_empty() {
@@ -39,7 +26,7 @@ pub fn list_all_issues() -> Result<()> {
     Ok(())
 }
 
-pub fn create_issue(issue_cmd: &CreateIssue) -> Result<()> {
+pub fn create_issue(issues: &Issues, issue_cmd: &CreateIssue) -> Result<()> {
     // let issues = Issues::get_all()?;
     // let kanban_dirs = KanbanDirs::new();
     // kanban_dirs.write()?;

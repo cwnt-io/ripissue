@@ -6,6 +6,7 @@ use std::io::{prelude::*, stdout, BufWriter, Write};
 
 use anyhow::{Context, Result, bail, Ok};
 use walkdir::{WalkDir, DirEntry};
+use enum_iterator::all;
 
 use crate::helpers::{get_file_name, get_parent_dir};
 use crate::kanban::Kanban;
@@ -34,16 +35,15 @@ impl Issue {
         }
     }
 
-    pub fn from_str(kanban: &Kanban, s: &str) -> Result<Self> {
-        let issues = Issues::get_all()?;
+    pub fn from_str(issues: &Issues, s: &str) -> Result<Self> {
         let path = PathBuf::from_str(&s).unwrap();
         if let Some(i) = issues.0.get(s) {
         // s: issue_name
             return Ok(i.clone());
         } else if let Some(i) = issues.0.get(&get_file_name(&path)) {
         // s: kanban/issue_name
-            if kanban.0.contains_key(&get_parent_dir(&path)) &&
-                path == i.path {
+            Kanban::from(get_parent_dir(&path).as_str())?;
+            if path == i.path {
                 return Ok(i.clone());
             }
         }
@@ -63,11 +63,12 @@ impl Issue {
         Ok(())
     }
 
-    pub fn move_to_kanban(&self, kanban: &Kanban, new_kanban: &str) -> Result<Self> {
-
-
-        Ok(())
-    }
+    // TODO
+    // pub fn move_to_kanban(&self, kanban: &Kanban, new_kanban: &str) -> Result<Self> {
+    //
+    //
+    //     Ok(())
+    // }
 
 }
 
@@ -98,11 +99,11 @@ impl Issues {
     }
 
     pub fn get_all() -> Result<Issues> {
-        let kanban_dirs = KanbanDirs::new();
         let mut issues = Issues::new();
 
-        for kanban_dir in kanban_dirs.as_vec() {
-            let issues_in_kanban_dir = WalkDir::new(kanban_dir)
+        for kanban_type in all::<Kanban>() {
+            let kanban_str = kanban_type.as_str()?;
+            let issues_in_kanban_dir = WalkDir::new(kanban_str)
                 .min_depth(1)
                 .into_iter()
                 .filter_map(|e| e.ok())

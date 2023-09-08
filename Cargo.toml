@@ -7,12 +7,12 @@ about = "this is cargo about"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-anyhow = "1.0.75"
 clap = { version = "4.4.2", features = ["derive"] }
-git2 = "0.18.0"
+anyhow = "1.0.75"
 slugify = "0.1.0"
-thiserror = "1.0.48"
 walkdir = "2.4.0"
+git2 = "0.18.0"
+enum-iterator = "1.4.1"
 
 [[bin]]
 name = "ripi"

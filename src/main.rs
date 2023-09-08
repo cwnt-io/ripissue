@@ -19,21 +19,22 @@ use crate::executors::{
 
 use clap::Parser;
 use anyhow::Result;
+use issues::Issues;
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
+    let issues = Issues::get_all()?;
 
     match &cli.entity_type {
         Issue(IssueCommand::Create(issue_cmd)) => {
-            create_issue(issue_cmd)?;
+            create_issue(&issues, issue_cmd)?;
         },
         Issue(IssueCommand::List(_)) => {
-            list_all_issues()?;
+            list_all_issues(&issues)?;
         },
         Issue(IssueCommand::Close(issue_cmd)) => {
-            close_issue(issue_cmd)?;
+            close_issue(&issues, issue_cmd)?;
         },
-        _ => {}
     }
 
     Ok(())
