@@ -1,13 +1,34 @@
+use std::fs::remove_dir_all;
 use std::io::{stdout, BufWriter, Write};
 
-use crate::args::{CreateIssue, CloseIssue, UpIssue};
+use crate::args::{CreateIssue, CloseIssue, UpIssue, DeleteIssue};
 use crate::issues::{Issue, Issues};
 use crate::helpers::{slug, git_commit};
 use crate::kanban::Kanban;
 
 use anyhow::{Result, Ok};
 
-pub fn up_issue(issues: &Issues, issue_cmd: &UpIssue) -> Result<()> {
+pub fn delete_issue(issues: &Issues, issue_cmd: &DeleteIssue) -> Result<()> {
+    let issue = Issue::from_str(&issues, &issue_cmd.path)?;
+    remove_dir_all(&issue.path)?;
+    let stdout = stdout();
+    let mut writer = stdout.lock();
+    writeln!(writer,"issue #{} ({}) deleted.",
+             &issue.name,
+             &issue.path.display())?;
+    if issue_cmd.update {
+        let up = UpIssue {
+            path: issue.name.clone(),
+        };
+        let msg = format!("(deleted) issue #{} ({}).",
+                 &issue.name,
+                 &issue.path.display());
+        up_issue(&issues, &up, Some(&msg))?;
+    }
+    Ok(())
+}
+
+pub fn up_issue(issues: &Issues, issue_cmd: &UpIssue, commit_msg: Option<&str>) -> Result<()> {
     let issue = Issue::from_str(&issues, &issue_cmd.path)?;
     if issue.kanban == Kanban::Closed {
         let stdout = stdout();
@@ -18,7 +39,9 @@ pub fn up_issue(issues: &Issues, issue_cmd: &UpIssue) -> Result<()> {
                  issue.path.display())?;
         return Ok(());
     }
-    let msg = format!("(up) issue #{}.", &issue.name);
+
+    let default_msg = format!("(up) issue #{}.", &issue.name);
+    let msg = commit_msg.unwrap_or(default_msg.as_str());
     git_commit(Some(&[issue.path.to_str().unwrap().to_owned()]), &msg)?;
     let stdout = stdout();
     // let mut writer = BufWriter::new(stdout);
@@ -82,7 +105,10 @@ pub fn create_issue(issues: &mut Issues, issue_cmd: &CreateIssue) -> Result<()> 
         let up = UpIssue {
             path: name,
         };
-        up_issue(&issues, &up)?;
+        let msg = format!("(created) issue #{} ({}).",
+                 &issue.name,
+                 &issue.path.display());
+        up_issue(&issues, &up, Some(&msg))?;
     }
     Ok(())
 }

@@ -30,8 +30,8 @@ pub enum IssueCommand {
     Up(UpIssue),
     /// Closes, adds and commits an issue
     Close(CloseIssue),
-    // Edit(EditIssue),
-    // Delete(DeleteIssue),
+    /// Deletes an issue
+    Delete(DeleteIssue),
 }
 
 #[derive(Debug, Args)]
@@ -39,7 +39,7 @@ pub struct ListIssues {}
 
 #[derive(Debug, Args)]
 pub struct CreateIssue {
-    /// Name of the issues
+    /// Name of the issue
     #[arg(value_parser = is_not_empty)]
     pub name: String,
     ///
@@ -50,7 +50,7 @@ pub struct CreateIssue {
 
 #[derive(Debug, Args)]
 pub struct UpIssue {
-    /// Name of the issues
+    /// Name of the issue
     #[arg(value_parser = is_not_empty)]
     pub path: String,
 }
@@ -60,7 +60,17 @@ pub struct CloseIssue {
     /// Name of the issues
     #[arg(value_parser = is_not_empty)]
     pub path: String,
+}
 
+#[derive(Debug, Args)]
+pub struct DeleteIssue {
+    /// Name of the issue
+    #[arg(value_parser = is_not_empty)]
+    pub path: String,
+
+    /// If flag is set, the issue will be updated/registered to the repository (git add and commit)
+    #[arg(long, short)]
+    pub update: bool,
 }
 
 fn is_not_empty(arg: &str) -> Result<String, String> {
