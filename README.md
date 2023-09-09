@@ -15,8 +15,6 @@ Inspired by:
 
 # todo:
 
-- repo reorganization
-
 /repo1
     /_...(issues)
 /repo2
