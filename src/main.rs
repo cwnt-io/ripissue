@@ -1,17 +1,19 @@
 mod args;
-mod issues;
+mod elements;
 mod helpers;
 mod executors;
-mod kanban;
 
 extern crate slugify;
 
 use crate::args::{
     Cli,
-    EntityType::Issue,
-    IssueCommand,
+    EntityType::{Issue, Sprint},
 };
-use crate::executors::{
+
+use crate::args::issues::IssueCommand;
+use crate::args::sprints::SprintCommand;
+
+use crate::executors::issues::{
     create_issue,
     list_all_issues,
     close_issue,
@@ -21,7 +23,7 @@ use crate::executors::{
 
 use clap::Parser;
 use anyhow::Result;
-use issues::Issues;
+use elements::issues::Issues;
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
@@ -42,6 +44,9 @@ fn main() -> Result<()> {
         },
         Issue(IssueCommand::Delete(issue_cmd)) => {
             delete_issue(&issues, issue_cmd)?;
+        },
+        Sprint(SprintCommand::Create(sprint_cmd)) => {
+            println!("sprint command: {:?}", sprint_cmd);
         },
     }
 

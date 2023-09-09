@@ -9,7 +9,7 @@ use walkdir::WalkDir;
 use enum_iterator::all;
 
 use crate::helpers::{get_file_name, get_parent_dir};
-use crate::kanban::Kanban;
+use crate::elements::kanban::Kanban;
 
 #[derive(Debug, Clone)]
 pub struct Issue {

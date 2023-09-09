@@ -1,4 +1,10 @@
-use clap::{Parser, Subcommand, Args};
+pub mod issues;
+pub mod sprints;
+
+use crate::args::issues::IssueCommand;
+use crate::args::sprints::SprintCommand;
+
+use clap::{Parser, Subcommand};
 
 /// Manage your project and issues
 #[derive(Debug, Parser)]
@@ -10,9 +16,12 @@ pub struct Cli {
 
 #[derive(Debug, Subcommand)]
 pub enum EntityType {
-    /// Create, edit, list, delete, close issue
+    /// Create, list, update, close or delete issues.
     #[command(subcommand)]
     Issue(IssueCommand),
+    /// Create, list, update, close or delete issues.
+    #[command(subcommand)]
+    Sprint(SprintCommand),
 
     // /// Create, edit, list, delete, close epic
     // Epic(EpicCommand),
@@ -20,62 +29,3 @@ pub enum EntityType {
     // Initiative(InitiativeCommand),
 }
 
-#[derive(Debug, Subcommand)]
-pub enum IssueCommand {
-    /// Creates a new issue
-    Create(CreateIssue),
-    /// Lists all issues
-    List(ListIssues),
-    /// Update an issue to the repository (adds and commits with git)
-    Up(UpIssue),
-    /// Closes, adds and commits an issue
-    Close(CloseIssue),
-    /// Deletes an issue
-    Delete(DeleteIssue),
-}
-
-#[derive(Debug, Args)]
-pub struct ListIssues {}
-
-#[derive(Debug, Args)]
-pub struct CreateIssue {
-    /// Name of the issue
-    #[arg(value_parser = is_not_empty)]
-    pub name: String,
-    ///
-    /// If flag is set, the issue will be updated/registered to the repository (git add and commit)
-    #[arg(long, short)]
-    pub update: bool,
-}
-
-#[derive(Debug, Args)]
-pub struct UpIssue {
-    /// Name of the issue
-    #[arg(value_parser = is_not_empty)]
-    pub path: String,
-}
-
-#[derive(Debug, Args)]
-pub struct CloseIssue {
-    /// Name of the issues
-    #[arg(value_parser = is_not_empty)]
-    pub path: String,
-}
-
-#[derive(Debug, Args)]
-pub struct DeleteIssue {
-    /// Name of the issue
-    #[arg(value_parser = is_not_empty)]
-    pub path: String,
-
-    /// If flag is set, the issue will be updated/registered to the repository (git add and commit)
-    #[arg(long, short)]
-    pub update: bool,
-}
-
-fn is_not_empty(arg: &str) -> Result<String, String> {
-    if arg.is_empty() {
-        return Err("issue create: name cannot be empty".to_string());
-    }
-    Ok(arg.to_string())
-}

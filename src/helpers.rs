@@ -1,8 +1,15 @@
 use std::path::PathBuf;
 
 use slugify::slugify;
-use anyhow::{Context, Result, Ok};
+use anyhow::{Context, Result, bail};
 use git2::{Repository, IndexAddOption};
+
+pub fn is_not_empty(arg: &str) -> Result<String> {
+    if arg.is_empty() {
+        bail!("issue create: name cannot be empty");
+    }
+    Ok(arg.to_string())
+}
 
 pub fn slug(s: &str) -> String {
     slugify!(&s.to_lowercase(), separator = "_")
