@@ -1,8 +1,8 @@
 use std::collections::BTreeMap;
-use std::fs::{create_dir_all, create_dir, File, rename};
+use std::fs::{create_dir_all, File, rename};
 use std::path::PathBuf;
 use std::str::FromStr;
-use std::io::{prelude::*, stdout, BufWriter, Write};
+use std::io::Write;
 
 use anyhow::{Context, Result, bail, Ok};
 use walkdir::WalkDir;
