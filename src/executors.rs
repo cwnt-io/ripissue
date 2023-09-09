@@ -1,28 +1,44 @@
 use std::io::{stdout, BufWriter, Write};
 
-use crate::args::{CreateIssue, CloseIssue};
+use crate::args::{CreateIssue, CloseIssue, WipIssue};
 use crate::issues::{Issue, Issues};
 use crate::helpers::{slug, git_commit};
 use crate::kanban::Kanban;
 
 use anyhow::{Result, Ok};
 
-pub fn close_issue(issues: &Issues, issue_cmd: &CloseIssue) -> Result<()> {
-    let mut issues_to_add = vec![];
-    let stdout = stdout();
-    let mut writer = BufWriter::new(stdout);
-    let mut issue = Issue::from_str(&issues, &issue_cmd.path)?;
-    issues_to_add.push(issue.path.to_str().unwrap().to_owned());
+pub fn wip_issue(issues: &Issues, issue_cmd: &WipIssue) -> Result<()> {
+    let issue = Issue::from_str(&issues, &issue_cmd.path)?;
     if issue.kanban == Kanban::Closed {
+        let stdout = stdout();
+        let mut writer = BufWriter::new(stdout);
         writeln!(writer,
                  "Issue: \"{}\" ({}) already closed.",
                  &issue.name,
                  issue.path.display())?;
         return Ok(());
     }
+    let msg = format!("(wip) issue: \"{}\".", &issue.name);
+    git_commit(Some(&[issue.path.to_str().unwrap().to_owned()]), &msg)?;
+    Ok(())
+}
+
+pub fn close_issue(issues: &Issues, issue_cmd: &CloseIssue) -> Result<()> {
+    let mut issue = Issue::from_str(&issues, &issue_cmd.path)?;
+    if issue.kanban == Kanban::Closed {
+        let stdout = stdout();
+        let mut writer = BufWriter::new(stdout);
+        writeln!(writer,
+                 "Issue: \"{}\" ({}) already closed.",
+                 &issue.name,
+                 issue.path.display())?;
+        return Ok(());
+    }
+    let mut issues_to_add = vec![];
+    issues_to_add.push(issue.path.to_str().unwrap().to_owned());
     issue.move_to_kanban(Kanban::Closed)?;
     issues_to_add.push(issue.path.to_str().unwrap().to_owned());
-    let msg = format!("Closes: \"{}\" issue.", &issue.name);
+    let msg = format!("Closes issue: \"{}\".", &issue.name);
     git_commit(Some(&issues_to_add), &msg)?;
     Ok(())
 }

@@ -26,8 +26,9 @@ pub enum IssueCommand {
     Create(CreateIssue),
     /// Lists all issues
     List(ListIssues),
-
-    /// Closes an issue
+    /// Adds and commits an issue in progress (work in progress)
+    Wip(WipIssue),
+    /// Closes, adds and commits an issue
     Close(CloseIssue),
     // Edit(EditIssue),
     // Delete(DeleteIssue),
@@ -41,6 +42,13 @@ pub struct CreateIssue {
     /// Name of the issues
     #[arg(value_parser = is_not_empty)]
     pub name: String,
+}
+
+#[derive(Debug, Args)]
+pub struct WipIssue {
+    /// Name of the issues
+    #[arg(value_parser = is_not_empty)]
+    pub path: String,
 }
 
 #[derive(Debug, Args)]
