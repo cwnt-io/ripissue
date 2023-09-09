@@ -15,7 +15,7 @@ use crate::executors::{
     create_issue,
     list_all_issues,
     close_issue,
-    reg_issue,
+    up_issue,
 };
 
 use clap::Parser;
@@ -33,8 +33,8 @@ fn main() -> Result<()> {
         Issue(IssueCommand::List(_)) => {
             list_all_issues(&issues)?;
         },
-        Issue(IssueCommand::Reg(issue_cmd)) => {
-            reg_issue(&issues, issue_cmd)?;
+        Issue(IssueCommand::Up(issue_cmd)) => {
+            up_issue(&issues, issue_cmd)?;
         },
         Issue(IssueCommand::Close(issue_cmd)) => {
             close_issue(&issues, issue_cmd)?;

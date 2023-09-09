@@ -16,11 +16,9 @@ Inspired by:
 
 # todo:
 
-git add _1_todo/new_issue_2/
-git add _0_backlog/new_issue_2
-- implement renaming (moving) issue (see links at readme.md)
-issue.to_kanban(kanban_enum)
-- mv in fs and returns new issue
+- wip_issue ->
+    - add and commit that issue (msg will be the kanban status)
+- wip -> doing
 
 - publish on crates.io
     - https://doc.rust-lang.org/cargo/reference/publishing.html

@@ -1,29 +1,29 @@
 use std::io::{stdout, BufWriter, Write};
 
-use crate::args::{CreateIssue, CloseIssue, RegIssue};
+use crate::args::{CreateIssue, CloseIssue, UpIssue};
 use crate::issues::{Issue, Issues};
 use crate::helpers::{slug, git_commit};
 use crate::kanban::Kanban;
 
 use anyhow::{Result, Ok};
 
-pub fn reg_issue(issues: &Issues, issue_cmd: &RegIssue) -> Result<()> {
+pub fn up_issue(issues: &Issues, issue_cmd: &UpIssue) -> Result<()> {
     let issue = Issue::from_str(&issues, &issue_cmd.path)?;
     if issue.kanban == Kanban::Closed {
         let stdout = stdout();
         let mut writer = BufWriter::new(stdout);
         writeln!(writer,
-                 "issue #{} (\"{}\")  closed.",
+                 "issue #{} (\"{}\") is closed, nothing to do.",
                  &issue.name,
                  issue.path.display())?;
         return Ok(());
     }
-    let msg = format!("(registers) issue #{}.", &issue.name);
+    let msg = format!("(up) issue #{}.", &issue.name);
     git_commit(Some(&[issue.path.to_str().unwrap().to_owned()]), &msg)?;
     let stdout = stdout();
     // let mut writer = BufWriter::new(stdout);
     let mut writer = stdout.lock();
-    writeln!(writer,"Issue: #{} ({}) registered.",
+    writeln!(writer,"Issue: #{} ({}) updated.",
              &issue.name,
              &issue.path.display())?;
     Ok(())
@@ -78,11 +78,11 @@ pub fn create_issue(issues: &mut Issues, issue_cmd: &CreateIssue) -> Result<()> 
     writeln!(writer,"Issue: #{} ({}) created.",
              &issue.name,
              &issue.path.display())?;
-    if issue_cmd.register {
-        let reg = RegIssue {
+    if issue_cmd.update {
+        let up = UpIssue {
             path: name,
         };
-        reg_issue(&issues, &reg)?;
+        up_issue(&issues, &up)?;
     }
     Ok(())
 }

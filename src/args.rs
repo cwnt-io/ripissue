@@ -26,8 +26,8 @@ pub enum IssueCommand {
     Create(CreateIssue),
     /// Lists all issues
     List(ListIssues),
-    /// Register an issue to the repository (adds and commits with git)
-    Reg(RegIssue),
+    /// Update an issue to the repository (adds and commits with git)
+    Up(UpIssue),
     /// Closes, adds and commits an issue
     Close(CloseIssue),
     // Edit(EditIssue),
@@ -43,13 +43,13 @@ pub struct CreateIssue {
     #[arg(value_parser = is_not_empty)]
     pub name: String,
     ///
-    /// If flag is set, the issue will be registered to the repository (git add and commit)
+    /// If flag is set, the issue will be updated/registered to the repository (git add and commit)
     #[arg(long, short)]
-    pub register: bool,
+    pub update: bool,
 }
 
 #[derive(Debug, Args)]
-pub struct RegIssue {
+pub struct UpIssue {
     /// Name of the issues
     #[arg(value_parser = is_not_empty)]
     pub path: String,
