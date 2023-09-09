@@ -42,6 +42,10 @@ pub struct CreateIssue {
     /// Name of the issues
     #[arg(value_parser = is_not_empty)]
     pub name: String,
+    ///
+    /// If flag is set, the issue will be registered to the repository (git add and commit)
+    #[arg(long, short)]
+    pub register: bool,
 }
 
 #[derive(Debug, Args)]
@@ -56,6 +60,7 @@ pub struct CloseIssue {
     /// Name of the issues
     #[arg(value_parser = is_not_empty)]
     pub path: String,
+
 }
 
 fn is_not_empty(arg: &str) -> Result<String, String> {

@@ -1,11 +1,11 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::BTreeMap;
 use std::fs::{create_dir_all, create_dir, File, rename};
 use std::path::PathBuf;
 use std::str::FromStr;
 use std::io::{prelude::*, stdout, BufWriter, Write};
 
 use anyhow::{Context, Result, bail, Ok};
-use walkdir::{WalkDir, DirEntry};
+use walkdir::WalkDir;
 use enum_iterator::all;
 
 use crate::helpers::{get_file_name, get_parent_dir};
@@ -80,12 +80,12 @@ impl Issue {
 }
 
 #[derive(Debug)]
-pub struct Issues(pub HashMap<String,Issue>);
+pub struct Issues(pub BTreeMap<String,Issue>);
 
 impl Issues {
 
     pub fn new() -> Self {
-        Self(HashMap::new())
+        Self(BTreeMap::new())
     }
 
     pub fn already_exists(&self, issue: &Issue) -> Result<()> {

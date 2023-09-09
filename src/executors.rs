@@ -20,6 +20,12 @@ pub fn reg_issue(issues: &Issues, issue_cmd: &RegIssue) -> Result<()> {
     }
     let msg = format!("(registers) issue #{}.", &issue.name);
     git_commit(Some(&[issue.path.to_str().unwrap().to_owned()]), &msg)?;
+    let stdout = stdout();
+    // let mut writer = BufWriter::new(stdout);
+    let mut writer = stdout.lock();
+    writeln!(writer,"Issue: #{} ({}) registered.",
+             &issue.name,
+             &issue.path.display())?;
     Ok(())
 }
 
@@ -59,16 +65,24 @@ pub fn list_all_issues(issues: &Issues) -> Result<()> {
     Ok(())
 }
 
-pub fn create_issue(issues: &Issues, issue_cmd: &CreateIssue) -> Result<()> {
+pub fn create_issue(issues: &mut Issues, issue_cmd: &CreateIssue) -> Result<()> {
     Kanban::write_all()?;
     let name = slug(&issue_cmd.name);
-    let issue = Issue::new(name, Kanban::Backlog);
+    let issue = Issue::new(name.clone(), Kanban::Backlog);
     issues.already_exists(&issue)?;
     issue.write()?;
+    issues.add(issue.clone())?;
     let stdout = stdout();
-    let mut writer = BufWriter::new(stdout);
+    // let mut writer = BufWriter::new(stdout);
+    let mut writer = stdout.lock();
     writeln!(writer,"Issue: #{} ({}) created.",
              &issue.name,
              &issue.path.display())?;
+    if issue_cmd.register {
+        let reg = RegIssue {
+            path: name,
+        };
+        reg_issue(&issues, &reg)?;
+    }
     Ok(())
 }

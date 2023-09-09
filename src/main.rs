@@ -24,11 +24,11 @@ use issues::Issues;
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
-    let issues = Issues::get_all()?;
+    let mut issues = Issues::get_all()?;
 
     match &cli.entity_type {
         Issue(IssueCommand::Create(issue_cmd)) => {
-            create_issue(&issues, issue_cmd)?;
+            create_issue(&mut issues, issue_cmd)?;
         },
         Issue(IssueCommand::List(_)) => {
             list_all_issues(&issues)?;
