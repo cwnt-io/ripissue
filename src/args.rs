@@ -26,8 +26,8 @@ pub enum IssueCommand {
     Create(CreateIssue),
     /// Lists all issues
     List(ListIssues),
-    /// Adds and commits an issue in progress (work in progress)
-    Wip(WipIssue),
+    /// Register an issue to the repository (adds and commits with git)
+    Reg(RegIssue),
     /// Closes, adds and commits an issue
     Close(CloseIssue),
     // Edit(EditIssue),
@@ -45,7 +45,7 @@ pub struct CreateIssue {
 }
 
 #[derive(Debug, Args)]
-pub struct WipIssue {
+pub struct RegIssue {
     /// Name of the issues
     #[arg(value_parser = is_not_empty)]
     pub path: String,
