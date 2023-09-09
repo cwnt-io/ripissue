@@ -5,7 +5,7 @@ use anyhow::{Context, Result, Ok};
 use git2::{Repository, IndexAddOption};
 
 pub fn slug(s: &str) -> String {
-    slugify!(s, separator = "_")
+    slugify!(&s.to_lowercase(), separator = "_")
 }
 
 pub fn get_file_name(path: &PathBuf) -> String {

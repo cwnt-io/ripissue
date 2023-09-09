@@ -3,7 +3,6 @@
 <!-- toc GFM -->
 
 + [todo:](#todo)
-+ [draft](#draft)
 
 <!-- toc -->
 
@@ -16,22 +15,19 @@ Inspired by:
 
 # todo:
 
-- wip_issue ->
-    - add and commit that issue (msg will be the kanban status)
-- wip -> doing
+mgmt
+    /sprints
+        /sprint_1
+    /epics
+    /initiatives
+    /projects
+        /repo1
+        /repo2
+- ripi sprint create ...
+- ripi sprint list ...
+- ripi sprint list issues
+issue_name/sprints
 
 - publish on crates.io
+    - MR with ismael
     - https://doc.rust-lang.org/cargo/reference/publishing.html
-
-# draft
-
-https://doc.rust-lang.org/std/fs/fn.rename.html
-
-```rust
-use std::fs;
-
-fn main() -> std::io::Result<()> {
-    fs::rename("a.txt", "b.txt")?; // Rename a.txt to b.txt
-    Ok(())
-}
-```
