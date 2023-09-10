@@ -71,6 +71,11 @@ pub fn close_issue(issues: &Issues, issue_cmd: &CloseIssue) -> Result<()> {
     issues_to_add.push(issue.path.to_str().unwrap().to_owned());
     let msg = format!("(closes) issue #{}.", &issue.name);
     git_commit(Some(&issues_to_add), &msg)?;
+    let stdout = stdout();
+    let mut writer = stdout.lock();
+    writeln!(writer,"closed issue #{} ({}).",
+             &issue.name,
+             &issue.path.display())?;
     Ok(())
 }
 

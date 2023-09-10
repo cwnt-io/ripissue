@@ -41,13 +41,3 @@ Inspired by:
             /repo2
         /proj_2
             /repo3
-
-- ripi sprint create ...
-- ripi sprint list ...
-- ripi sprint list items
-
-issue_name/sprints
-
-- publish on crates.io
-    - MR with ismael
-    - https://doc.rust-lang.org/cargo/reference/publishing.html
