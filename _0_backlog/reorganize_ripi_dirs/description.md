@@ -1,1 +1,0 @@
-# reorganize_ripi_dirs

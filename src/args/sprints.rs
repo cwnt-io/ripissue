@@ -4,7 +4,7 @@ use clap::{Subcommand, Args};
 
 #[derive(Debug, Subcommand)]
 pub enum SprintCommand {
-    /// Creates a new issue
+    /// Creates a new sprint
     Create(CreateSprint),
     // /// Lists all issues
     // List(ListIssues),
@@ -18,10 +18,10 @@ pub enum SprintCommand {
 
 #[derive(Debug, Args)]
 pub struct CreateSprint {
-    /// Name of the issue
+    /// Name of the sprint
     #[arg(value_parser = is_not_empty)]
     pub name: String,
-    /// If flag is set, the issue will be updated/registered to the repository (git add and commit)
+    /// If flag is set, the sprint will be updated/registered to the repository (git add and commit)
     #[arg(long, short)]
     pub update: bool,
 }

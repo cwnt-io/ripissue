@@ -7,7 +7,7 @@ extern crate slugify;
 
 use crate::args::{
     Cli,
-    EntityType::{Issue, Sprint},
+    EntityType::Issue,
 };
 
 use crate::args::issues::IssueCommand;
@@ -23,31 +23,31 @@ use crate::executors::issues::{
 
 use clap::Parser;
 use anyhow::Result;
-use elements::issues::Issues;
+use elements::{issues::Issues, sprints::Sprints};
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
-    let mut issues = Issues::get_all()?;
 
     match &cli.entity_type {
         Issue(IssueCommand::Create(issue_cmd)) => {
-            create_issue(&mut issues, issue_cmd)?;
+            create_issue(issue_cmd)?;
         },
-        Issue(IssueCommand::List(_)) => {
-            list_all_issues(&issues)?;
-        },
-        Issue(IssueCommand::Up(issue_cmd)) => {
-            up_issue(&issues, issue_cmd, None)?;
-        },
-        Issue(IssueCommand::Close(issue_cmd)) => {
-            close_issue(&issues, issue_cmd)?;
-        },
-        Issue(IssueCommand::Delete(issue_cmd)) => {
-            delete_issue(&issues, issue_cmd)?;
-        },
-        Sprint(SprintCommand::Create(sprint_cmd)) => {
-            println!("sprint command: {:?}", sprint_cmd);
-        },
+        // Issue(IssueCommand::List(_)) => {
+        //     list_all_issues(&issues)?;
+        // },
+        // Issue(IssueCommand::Up(issue_cmd)) => {
+        //     up_issue(&issues, issue_cmd, None)?;
+        // },
+        // Issue(IssueCommand::Close(issue_cmd)) => {
+        //     close_issue(&issues, issue_cmd)?;
+        // },
+        // Issue(IssueCommand::Delete(issue_cmd)) => {
+        //     delete_issue(&issues, issue_cmd)?;
+        // },
+        // Sprint(SprintCommand::Create(sprint_cmd)) => {
+        //     // println!("sprint create!!!");
+        //     Sprints::get();
+        // },
     }
 
     Ok(())

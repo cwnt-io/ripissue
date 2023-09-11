@@ -95,27 +95,28 @@ pub fn list_all_issues(issues: &Issues) -> Result<()> {
     Ok(())
 }
 
-pub fn create_issue(issues: &mut Issues, issue_cmd: &CreateIssue) -> Result<()> {
-    Kanban::write_all()?;
-    let name = slug(&issue_cmd.name);
-    let issue = Issue::new(name.clone(), Kanban::Backlog);
-    issues.already_exists(&issue)?;
-    issue.write()?;
-    issues.add(issue.clone())?;
-    let stdout = stdout();
-    // let mut writer = BufWriter::new(stdout);
-    let mut writer = stdout.lock();
-    writeln!(writer,"Issue: #{} ({}) created.",
-             &issue.name,
-             &issue.path.display())?;
-    if issue_cmd.update {
-        let up = UpIssue {
-            path: name,
-        };
-        let msg = format!("(created) issue #{} ({}).",
-                 &issue.name,
-                 &issue.path.display());
-        up_issue(&issues, &up, Some(&msg))?;
-    }
+pub fn create_issue(issue_cmd: &CreateIssue) -> Result<()> {
+
+    // Kanban::write_all()?;
+    // let name = slug(&issue_cmd.name);
+    // let issue = Issue::new(name.clone(), Kanban::Backlog);
+    // issues.already_exists(&issue)?;
+    // issue.write()?;
+    // issues.add(issue.clone())?;
+    // let stdout = stdout();
+    // // let mut writer = BufWriter::new(stdout);
+    // let mut writer = stdout.lock();
+    // writeln!(writer,"Issue: #{} ({}) created.",
+    //          &issue.name,
+    //          &issue.path.display())?;
+    // if issue_cmd.update {
+    //     let up = UpIssue {
+    //         path: name,
+    //     };
+    //     let msg = format!("(created) issue #{} ({}).",
+    //              &issue.name,
+    //              &issue.path.display());
+    //     up_issue(&issues, &up, Some(&msg))?;
+    // }
     Ok(())
 }

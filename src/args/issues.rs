@@ -6,14 +6,14 @@ use clap::{Subcommand, Args};
 pub enum IssueCommand {
     /// Creates a new issue
     Create(CreateIssue),
-    /// Lists all issues
-    List(ListIssues),
-    /// Update an issue to the repository (adds and commits with git)
-    Up(UpIssue),
-    /// Closes, adds and commits an issue
-    Close(CloseIssue),
-    /// Deletes an issue
-    Delete(DeleteIssue),
+    // /// Lists all issues
+    // List(ListIssues),
+    // /// Update an issue to the repository (adds and commits with git)
+    // Up(UpIssue),
+    // /// Closes, adds and commits an issue
+    // Close(CloseIssue),
+    // /// Deletes an issue
+    // Delete(DeleteIssue),
 }
 
 #[derive(Debug, Args)]
