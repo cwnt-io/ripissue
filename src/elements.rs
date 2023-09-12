@@ -5,29 +5,44 @@ pub mod issues;
 
 use std::{
     path::PathBuf,
-    str::FromStr,
-    fs::{File, create_dir_all},
-    io::{Write, stdout, BufWriter},
+    str::FromStr, io::{stdout, BufWriter, Write},
 };
 
-// use std::convert::AsRef;
-use anyhow::{Context, Result, bail};
+use anyhow::{Result, bail};
 
-use crate::{
-    helpers::{slug, get_closed_dir, type_to_str},
-    elements::{statuses::Status, tags::Tags},
+use crate::helpers::{
+    get_closed_dir,
+    write_file,
+    get_file_name,
+    git_commit,
 };
 
 pub trait Element {
     type Item;
 
-    fn new(name: &str) -> Result<Self::Item>;
+    fn new(name: &str) -> Self::Item;
 
     fn base_path() -> PathBuf;
 
+    fn path(&self) -> PathBuf {
+        let mut path = Self::base_path();
+        path.push(&self.id());
+        path
+    }
+
+    fn closed_path(&self) -> PathBuf {
+        let mut closed = get_closed_dir();
+        closed.push(Self::elem());
+        closed
+    }
+
     fn id(&self) -> String;
 
-    fn get(&self, path_or_id: &str) -> Result<(String, PathBuf)> {
+    fn elem() -> String {
+        get_file_name(&Self::base_path())
+    }
+
+    fn from(path_or_id: &str) -> Result<Self::Item> {
         let mut id = "".to_owned();
         let vec: Vec<&str> = path_or_id.split("/").collect();
         let path = match vec.len() {
@@ -48,50 +63,40 @@ pub trait Element {
         };
 
         if path.is_none() || !path.unwrap().is_dir() {
-            bail!("Input \"{}\" doesn't match with any {}",
-                  &path_or_id, type_to_str(&self));
+            bail!("Input \"{}\" doesn't match with any {}.",
+                  &path_or_id,
+                  Self::elem().to_uppercase());
         }
 
-        Ok( (id, path.unwrap()) )
+        Ok(Self::new(&id))
     }
 
-    fn gen_unique_id(name: &str) -> Result<(String, PathBuf)> {
-        let id = slug(&name);
-        let mut path = Self::base_path();
-        path.push(&id);
-        let mut closed = get_closed_dir();
-        closed.push(&path);
-        if path.is_dir() || closed.is_dir() {
+    fn already_exists(&self) -> Result<()> {
+        if self.path().is_dir() || self.closed_path().is_dir() {
             bail!("{} with Id #{} already exists.",
-                  Self::base_path().display().to_string().to_uppercase(), &id);
-        }
-        Ok( (id, path) )
-    }
-
-    fn write_file(&self, file_path: &PathBuf, content: &Option<String>) -> Result<()> {
-        let mut file = File::create(file_path)
-            .with_context(|| "Could not create file description.md")?;
-        if let Some(c) = content {
-            file.write_all(c.as_bytes())
-                .with_context(|| format!("Could not write description title at file: {}", file_path.display()))?;
+                  Self::elem().to_uppercase(), &self.id());
         }
         Ok(())
     }
 
-    fn write_new(&self, name: &str) -> Result<(String, PathBuf)> {
-        let (id,path) = self.gen_unique_id(name)?;
-        create_dir_all(&path)
-            .with_context(|| format!("Could not create issue #{}",
-                                     path.display())
-                          )?;
-        let mut file_path = path.clone();
-        file_path.push("description.md");
-        let content = format!("# {}", &id);
-        self.write_file(&file_path, &Some(content))?;
+    fn write_basic_files(&self) -> Result<()> {
+        let (id, path, elem) = (self.id(), self.path(), Self::elem().to_uppercase());
+        let content = format!("# {} ({})", &id, &elem);
+        write_file(&path, "description.md", Some(&content))?;
+        Ok(())
+    }
+
+    fn write(&self) -> Result<()>;
+
+    fn commit(&self, msg: &str) -> Result<()> {
+        let path = self.path().to_str().unwrap().to_owned();
+        let closed_path = self.closed_path().to_str().unwrap().to_owned();
+        let files_to_add = [path, closed_path];
+        git_commit(Some(&files_to_add), msg)?;
         let stdout = stdout();
         let mut writer = BufWriter::new(stdout);
-        writeln!(writer, "{} #{} created.", type_to_str(&self), &id)?;
-        Ok( (id,path) )
+        writeln!(writer, "{} #{} commited to git.", Self::elem().to_uppercase(), self.id())?;
+        Ok(())
     }
 
 }

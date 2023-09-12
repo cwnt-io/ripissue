@@ -7,10 +7,12 @@ extern crate slugify;
 
 use crate::args::{
     Cli,
-    EntityType::Issue,
+    EntityType,
+    issues::IssueCommand,
 };
 
-use crate::args::issues::IssueCommand;
+use crate::elements::issues::Issue;
+use crate::elements::Element;
 
 // use crate::executors::issues::{
 //     create_issue,
@@ -22,14 +24,20 @@ use crate::args::issues::IssueCommand;
 
 use clap::Parser;
 use anyhow::Result;
-use elements::Element;
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match &cli.entity_type {
-        Issue(IssueCommand::Create(cmd)) => {
-            let issue = Element::Issue { id: (), status: (), tags: () }
+        EntityType::Issue(IssueCommand::Create(cmd)) => {
+            let issue = Issue::new(&cmd.name);
+            issue.already_exists()?;
+            issue.write()?;
+            if !cmd.soft {
+                let msg = format!("(created) {} #{}.",
+                &Issue::elem().to_uppercase(), &issue.id());
+                issue.commit(&msg)?;
+            }
         },
         // Issue(IssueCommand::List(_)) => {
         //     list_all_issues(&issues)?;

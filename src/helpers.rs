@@ -1,4 +1,9 @@
-use std::{path::PathBuf, str::FromStr};
+use std::{
+    path::PathBuf,
+    str::FromStr,
+    fs::{File, create_dir_all},
+    io::Write,
+};
 
 use slugify::slugify;
 use anyhow::{Context, Result, bail};
@@ -6,6 +11,35 @@ use git2::{Repository, IndexAddOption};
 
 pub fn type_to_str<T>(_: &T) -> String {
     format!("{}", std::any::type_name::<T>())
+}
+
+pub fn sys_base_path() -> PathBuf {
+    PathBuf::from_str("ripi").unwrap()
+}
+
+pub fn get_closed_dir() -> PathBuf {
+    let mut closed = sys_base_path();
+    closed.push(".closed");
+    closed
+}
+
+
+pub fn write_file(dir: &PathBuf, file: &str, content: Option<&str>) -> Result<()> {
+    create_dir_all(dir)
+        .with_context(|| format!("Could not create {}",
+                                 dir.display()))?;
+    let mut file_path = dir.clone();
+    file_path.push(file);
+    let mut file = File::create(&file_path)
+        .with_context(|| format!("Could not create file {}",
+                                 &file_path.display()))?;
+    if let Some(c) = content {
+        file.write_all(c.as_bytes())
+            .with_context(|| format!(
+                    "Could not write content to file {}",
+                    file_path.display()))?;
+    }
+    Ok(())
 }
 
 pub fn is_not_empty(arg: &str) -> Result<String> {
@@ -25,10 +59,6 @@ pub fn get_file_name(path: &PathBuf) -> String {
 
 pub fn get_parent_dir(path: &PathBuf) -> String {
     path.parent().unwrap().to_str().unwrap().to_owned()
-}
-
-pub fn get_closed_dir() -> PathBuf {
-    PathBuf::from_str(".closed").unwrap()
 }
 
 pub fn git_commit(files_to_add: Option<&[String]>, msg: &str) -> Result<()> {

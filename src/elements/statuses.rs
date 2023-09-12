@@ -4,9 +4,8 @@ use std::{
 };
 
 use anyhow::{Result, bail};
-use walkdir::WalkDir;
 
-use super::Element;
+use crate::helpers::write_file;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum Status {
@@ -16,15 +15,17 @@ pub enum Status {
 
 impl Status {
 
-    pub fn base_path() -> PathBuf {
-        PathBuf::from_str("status").unwrap()
+    pub fn base_path(elem_path: &PathBuf) -> PathBuf {
+        let mut base_path = elem_path.clone();
+        base_path.push("status");
+        base_path
     }
 
-    pub fn as_str(&self) -> &'static str {
+    pub fn as_str(&self) -> String {
         use Status::*;
         match *self {
-            Todo => "todo",
-            Doing => "doing",
+            Todo => "todo".to_owned(),
+            Doing => "doing".to_owned(),
         }
     }
 
@@ -37,25 +38,31 @@ impl Status {
         }
     }
 
-    pub fn get(issue_id: &str) -> Result<Option<Self>> {
-        let issue =
-        let mut path = Element::new(issue_id);
-        path.push(&issue_id);
-        path.push(&Status::base_path());
-        let statuses: Vec<String> = WalkDir::new(path)
-            .min_depth(1)
-            .into_iter()
-            .flatten()
-            .map(|e| e.path().to_str().unwrap().to_owned())
-            .collect();
-        match statuses.len() {
-            0 => Ok(None),
-            1 => {
-                let status_str = statuses.get(0).unwrap();
-                Ok(Some(Status::from(status_str)?))
-            },
-            _ => bail!("Input \"{}\" doesn't match with any issue", &issue_id),
-        }
+    pub fn write(&self, elem_path: &PathBuf) -> Result<()> {
+        let path = Status::base_path(elem_path);
+        write_file(&path, &self.as_str(), None)?;
+        Ok(())
     }
+
+    // pub fn get(elem_id: &str) -> Result<Option<Self>> {
+    //
+    //     let mut path = Element::new(issue_id);
+    //     path.push(&issue_id);
+    //     path.push(&Status::base_path());
+    //     let statuses: Vec<String> = WalkDir::new(path)
+    //         .min_depth(1)
+    //         .into_iter()
+    //         .flatten()
+    //         .map(|e| e.path().to_str().unwrap().to_owned())
+    //         .collect();
+    //     match statuses.len() {
+    //         0 => Ok(None),
+    //         1 => {
+    //             let status_str = statuses.get(0).unwrap();
+    //             Ok(Some(Status::from(status_str)?))
+    //         },
+    //         _ => bail!("Input \"{}\" doesn't match with any issue", &issue_id),
+    //     }
+    // }
 
 }

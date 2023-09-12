@@ -24,9 +24,9 @@ pub struct CreateIssue {
     /// Name of the issue
     #[arg(value_parser = is_not_empty)]
     pub name: String,
-    /// If flag is set, the issue will be updated/registered to the repository (git add and commit)
+    /// Just creates the issue. Do not commit it to git.
     #[arg(long, short)]
-    pub update: bool,
+    pub soft: bool,
 }
 
 #[derive(Debug, Args)]
