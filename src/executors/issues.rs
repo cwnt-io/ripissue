@@ -29,30 +29,6 @@ use anyhow::{Result, Ok};
 //     Ok(())
 // }
 
-// pub fn up_issue(issues: &Issues, issue_cmd: &UpIssue, commit_msg: Option<&str>) -> Result<()> {
-//     let issue = Issue::from_str(&issues, &issue_cmd.path)?;
-//     if issue.kanban == Kanban::Closed {
-//         let stdout = stdout();
-//         let mut writer = BufWriter::new(stdout);
-//         writeln!(writer,
-//                  "issue #{} (\"{}\") is closed, nothing to do.",
-//                  &issue.name,
-//                  issue.path.display())?;
-//         return Ok(());
-//     }
-//
-//     let default_msg = format!("(up) issue #{}.", &issue.name);
-//     let msg = commit_msg.unwrap_or(default_msg.as_str());
-//     git_commit(Some(&[issue.path.to_str().unwrap().to_owned()]), &msg)?;
-//     let stdout = stdout();
-//     // let mut writer = BufWriter::new(stdout);
-//     let mut writer = stdout.lock();
-//     writeln!(writer,"Issue: #{} ({}) updated.",
-//              &issue.name,
-//              &issue.path.display())?;
-//     Ok(())
-// }
-//
 // pub fn close_issue(issues: &Issues, issue_cmd: &CloseIssue) -> Result<()> {
 //     let mut issue = Issue::from_str(&issues, &issue_cmd.path)?;
 //     if issue.kanban == Kanban::Closed {
@@ -77,45 +53,3 @@ use anyhow::{Result, Ok};
 //              &issue.path.display())?;
 //     Ok(())
 // }
-
-// pub fn list_all_issues(issues: &Issues) -> Result<()> {
-//     let stdout = stdout();
-//     let mut writer = BufWriter::new(stdout);
-//     if issues.0.is_empty() {
-//         writeln!(writer,"No issues at this repo")?;
-//         return Ok(());
-//     }
-//     for (name, issue) in issues.0.iter() {
-//         match issue.kanban {
-//             Kanban::Closed => {},
-//             _ => writeln!(writer,"Issue: #{} ({})", name, issue.path.display())?,
-//         }
-//     }
-//     Ok(())
-// }
-
-pub fn create_issue(issue_cmd: &CreateIssue) -> Result<()> {
-
-    // Kanban::write_all()?;
-    // let name = slug(&issue_cmd.name);
-    // let issue = Issue::new(name.clone(), Kanban::Backlog);
-    // issues.already_exists(&issue)?;
-    // issue.write()?;
-    // issues.add(issue.clone())?;
-    // let stdout = stdout();
-    // // let mut writer = BufWriter::new(stdout);
-    // let mut writer = stdout.lock();
-    // writeln!(writer,"Issue: #{} ({}) created.",
-    //          &issue.name,
-    //          &issue.path.display())?;
-    // if issue_cmd.update {
-    //     let up = UpIssue {
-    //         path: name,
-    //     };
-    //     let msg = format!("(created) issue #{} ({}).",
-    //              &issue.name,
-    //              &issue.path.display());
-    //     up_issue(&issues, &up, Some(&msg))?;
-    // }
-    Ok(())
-}

@@ -10,10 +10,8 @@ pub enum IssueCommand {
     Commit(CommitIssue),
     /// Lists all issues
     List(ListIssues),
-    // /// Update an issue to the repository (adds and commits with git)
-    // Up(UpIssue),
-    // /// Closes, adds and commits an issue
-    // Close(CloseIssue),
+    /// Closes, adds and commits an issue
+    Close(CloseIssue),
     // /// Deletes an issue
     // Delete(DeleteIssue),
 }
@@ -29,6 +27,13 @@ pub struct CommitIssue {
     /// Set this issue status
     #[arg(long, short, value_enum)]
     pub status: Option<Status>,
+}
+
+#[derive(Debug, Args)]
+pub struct CloseIssue {
+    /// Name of the issues
+    #[arg(value_parser = is_not_empty)]
+    pub path_or_id: String,
 }
 
 #[derive(Debug, Args)]
@@ -55,12 +60,6 @@ pub struct CreateIssue {
 }
 
 
-#[derive(Debug, Args)]
-pub struct CloseIssue {
-    /// Name of the issues
-    #[arg(value_parser = is_not_empty)]
-    pub path: String,
-}
 
 #[derive(Debug, Args)]
 pub struct DeleteIssue {

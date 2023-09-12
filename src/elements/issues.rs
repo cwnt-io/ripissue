@@ -59,7 +59,6 @@ impl Element for Issue {
         Ok(())
     }
 
-
     fn from_path(elem_path: &ElementPath) -> Result<Self> {
         let mut issue = Issue::new(&elem_path.id());
         issue.set_status_from_files()?;

@@ -3,7 +3,7 @@ pub mod issues;
 
 use std::{
     path::PathBuf,
-    io::{stdout, BufWriter, Write},
+    io::{stdout, BufWriter, Write}, fs::rename,
 };
 
 use anyhow::{Result, bail};
@@ -208,5 +208,17 @@ pub trait Element {
         Ok(())
     }
 
+    fn close(&self) -> Result<()> {
+        let elem = Self::elem().to_uppercase();
+        let id = self.id();
+        if self.closed_path().is_dir() {
+            bail!("{} #{} is already closed.", &elem, &id);
+        }
+        rename(self.path(), self.closed_path())?;
+        let stdout = stdout();
+        let mut writer = BufWriter::new(stdout);
+        writeln!(writer, "{} #{} closed.", &elem, &id)?;
+        Ok(())
+    }
 
 }

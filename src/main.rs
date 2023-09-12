@@ -65,9 +65,6 @@ fn main() -> Result<()> {
             let msg = format!("(up) {} #{}.",
             &Issue::elem().to_uppercase(), &issue.id());
             issue.commit(&msg)?;
-            // let path = PathBuf::from_str(&cmd.path_or_id)?;
-            // println!("{:?}", path.display());
-            // println!("{:?}", path.parent());
         }
         EntityType::Issue(IssueCommand::List(cmd)) => {
             let mut base_dirs = vec![Issue::base_path()];
@@ -79,8 +76,10 @@ fn main() -> Result<()> {
             for base_dir in base_dirs.into_iter() {
                 let issues = WalkDir::new(base_dir)
                     .min_depth(1)
+                    .max_depth(1)
                     .into_iter()
                     .flatten()
+                    .filter(|e| e.path().is_dir())
                     .map(|e| {
                         e.path().to_path_buf()
                     });
@@ -94,15 +93,14 @@ fn main() -> Result<()> {
                 }
             }
         }
-        // Issue(IssueCommand::List(_)) => {
-        //     list_all_issues(&issues)?;
-        // },
-        // Issue(IssueCommand::Up(issue_cmd)) => {
-        //     up_issue(&issues, issue_cmd, None)?;
-        // },
-        // Issue(IssueCommand::Close(issue_cmd)) => {
-        //     close_issue(&issues, issue_cmd)?;
-        // },
+        EntityType::Issue(IssueCommand::Close(cmd)) => {
+            let issue_path = Issue::get_path(&cmd.path_or_id)?;
+            let issue = Issue::from_path(&issue_path)?;
+            issue.close()?;
+            let msg = format!("(closed) {} #{}.",
+            &Issue::elem().to_uppercase(), &issue.id());
+            issue.commit(&msg)?;
+        },
         // Issue(IssueCommand::Delete(issue_cmd)) => {
         //     delete_issue(&issues, issue_cmd)?;
         // },
