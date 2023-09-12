@@ -1,8 +1,12 @@
-use std::path::PathBuf;
+use std::{path::PathBuf, str::FromStr};
 
 use slugify::slugify;
 use anyhow::{Context, Result, bail};
 use git2::{Repository, IndexAddOption};
+
+pub fn type_to_str<T>(_: &T) -> String {
+    format!("{}", std::any::type_name::<T>())
+}
 
 pub fn is_not_empty(arg: &str) -> Result<String> {
     if arg.is_empty() {
@@ -16,11 +20,15 @@ pub fn slug(s: &str) -> String {
 }
 
 pub fn get_file_name(path: &PathBuf) -> String {
-    path.file_name().unwrap().to_os_string().into_string().unwrap()
+    path.file_name().unwrap().to_str().unwrap().to_owned()
 }
 
 pub fn get_parent_dir(path: &PathBuf) -> String {
     path.parent().unwrap().to_str().unwrap().to_owned()
+}
+
+pub fn get_closed_dir() -> PathBuf {
+    PathBuf::from_str(".closed").unwrap()
 }
 
 pub fn git_commit(files_to_add: Option<&[String]>, msg: &str) -> Result<()> {

@@ -11,26 +11,25 @@ use crate::args::{
 };
 
 use crate::args::issues::IssueCommand;
-use crate::args::sprints::SprintCommand;
 
-use crate::executors::issues::{
-    create_issue,
-    list_all_issues,
-    close_issue,
-    up_issue,
-    delete_issue,
-};
+// use crate::executors::issues::{
+//     create_issue,
+//     list_all_issues,
+//     close_issue,
+//     up_issue,
+//     delete_issue,
+// };
 
 use clap::Parser;
 use anyhow::Result;
-use elements::{issues::Issues, sprints::Sprints};
+use elements::Element;
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match &cli.entity_type {
-        Issue(IssueCommand::Create(issue_cmd)) => {
-            create_issue(issue_cmd)?;
+        Issue(IssueCommand::Create(cmd)) => {
+            let issue = Element::Issue { id: (), status: (), tags: () }
         },
         // Issue(IssueCommand::List(_)) => {
         //     list_all_issues(&issues)?;

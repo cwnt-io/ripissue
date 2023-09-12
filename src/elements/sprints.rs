@@ -19,9 +19,9 @@ impl Sprint {
 
     pub fn new(name: &str) -> Self {
         let mut path = PathBuf::from_str(sprint_dir()).unwrap();
-        path.push(&name);
+        path.push(name);
         Self {
-            id: slug(&name),
+            id: slug(name),
             path,
         }
     }
