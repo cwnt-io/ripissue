@@ -45,7 +45,7 @@ pub struct Sprints(HashSet<Sprint>);
 
 impl Sprints {
 
-    pub fn get() -> Self {
+    pub fn list() -> Self {
         let sprints_dir = WalkDir::new(sprint_dir())
             .min_depth(1)
             .into_iter()

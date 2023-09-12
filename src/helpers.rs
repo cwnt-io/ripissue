@@ -23,7 +23,6 @@ pub fn get_closed_dir() -> PathBuf {
     closed
 }
 
-
 pub fn write_file(dir: &PathBuf, file: &str, content: Option<&str>) -> Result<()> {
     create_dir_all(dir)
         .with_context(|| format!("Could not create {}",
@@ -51,6 +50,10 @@ pub fn is_not_empty(arg: &str) -> Result<String> {
 
 pub fn slug(s: &str) -> String {
     slugify!(&s.to_lowercase(), separator = "_")
+}
+
+pub fn slug_tag(s: &str) -> String {
+    slugify!(&s.to_lowercase(), separator = "-")
 }
 
 pub fn get_file_name(path: &PathBuf) -> String {

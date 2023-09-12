@@ -2,6 +2,7 @@ mod args;
 mod elements;
 mod helpers;
 mod executors;
+mod properties;
 
 extern crate slugify;
 
@@ -24,21 +25,46 @@ use crate::elements::Element;
 
 use clap::Parser;
 use anyhow::Result;
+use properties::tags::Tags;
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match &cli.entity_type {
         EntityType::Issue(IssueCommand::Create(cmd)) => {
-            let issue = Issue::new(&cmd.name);
+            let mut issue = Issue::new(&cmd.name);
             issue.already_exists()?;
+            if let Some(ts) = &cmd.tag {
+                issue.set_tags(Some(Tags::from_vec_str(&ts)));
+            }
+            if let Some(s) = &cmd.status {
+                issue.set_status(Some(s.clone()));
+            }
             issue.write()?;
-            if !cmd.soft {
+            if !cmd.dry {
                 let msg = format!("(created) {} #{}.",
                 &Issue::elem().to_uppercase(), &issue.id());
                 issue.commit(&msg)?;
             }
         },
+        EntityType::Issue(IssueCommand::Commit(cmd)) => {
+            let issue_path = Issue::get_path(&cmd.path_or_id)?;
+            let mut issue = Issue::from_path(&issue_path)?;
+            if let Some(ts) = &cmd.tag {
+                issue.set_tags(Some(Tags::from_vec_str(&ts)));
+                issue.write_tags()?;
+            }
+            if let Some(s) = &cmd.status {
+                issue.set_status(Some(s.clone()));
+                issue.write_status()?;
+            }
+            let msg = format!("(up) {} #{}.",
+            &Issue::elem().to_uppercase(), &issue.id());
+            issue.commit(&msg)?;
+            // let path = PathBuf::from_str(&cmd.path_or_id)?;
+            // println!("{:?}", path.display());
+            // println!("{:?}", path.parent());
+        }
         // Issue(IssueCommand::List(_)) => {
         //     list_all_issues(&issues)?;
         // },

@@ -1,7 +1,7 @@
 use std::fs::remove_dir_all;
 use std::io::{stdout, BufWriter, Write};
 
-use crate::args::issues::{CreateIssue, CloseIssue, UpIssue, DeleteIssue};
+use crate::args::issues::{CreateIssue, CloseIssue, DeleteIssue};
 use crate::elements::{
     issues::Issue,
 };
