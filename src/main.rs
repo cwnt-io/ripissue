@@ -102,10 +102,6 @@ fn main() -> Result<()> {
                 issue.commit(&msg)?;
             }
         },
-        // Sprint(SprintCommand::Create(sprint_cmd)) => {
-        //     // println!("sprint create!!!");
-        //     Sprints::get();
-        // },
     }
 
     Ok(())
