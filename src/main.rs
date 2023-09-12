@@ -5,6 +5,10 @@ mod executors;
 mod properties;
 
 extern crate slugify;
+use helpers::get_file_name;
+use walkdir::WalkDir;
+
+use std::io::{stdout, BufWriter, Write};
 
 use crate::args::{
     Cli,
@@ -64,6 +68,31 @@ fn main() -> Result<()> {
             // let path = PathBuf::from_str(&cmd.path_or_id)?;
             // println!("{:?}", path.display());
             // println!("{:?}", path.parent());
+        }
+        EntityType::Issue(IssueCommand::List(cmd)) => {
+            let mut base_dirs = vec![Issue::base_path()];
+            if cmd.all {
+                base_dirs.push(Issue::base_closed());
+            }
+            let stdout = stdout();
+            let mut writer = BufWriter::new(stdout);
+            for base_dir in base_dirs.into_iter() {
+                let issues = WalkDir::new(base_dir)
+                    .min_depth(1)
+                    .into_iter()
+                    .flatten()
+                    .map(|e| {
+                        e.path().to_path_buf()
+                    });
+                for issue in issues {
+                    let id = get_file_name(&issue);
+                    writeln!(writer,"{} #{} ({})",
+                             Issue::elem().to_uppercase(),
+                             &id,
+                             issue.display()
+                             )?;
+                }
+            }
         }
         // Issue(IssueCommand::List(_)) => {
         //     list_all_issues(&issues)?;

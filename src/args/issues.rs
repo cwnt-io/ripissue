@@ -8,9 +8,8 @@ pub enum IssueCommand {
     Create(CreateIssue),
     /// Commits issue to git
     Commit(CommitIssue),
-
-    // /// Lists all issues
-    // List(ListIssues),
+    /// Lists all issues
+    List(ListIssues),
     // /// Update an issue to the repository (adds and commits with git)
     // Up(UpIssue),
     // /// Closes, adds and commits an issue
@@ -33,7 +32,11 @@ pub struct CommitIssue {
 }
 
 #[derive(Debug, Args)]
-pub struct ListIssues {}
+pub struct ListIssues {
+    /// List all issues, including the closed ones
+    #[arg(long, short)]
+    pub all: bool,
+}
 
 #[derive(Debug, Args)]
 pub struct CreateIssue {
