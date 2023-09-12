@@ -3,7 +3,7 @@ pub mod issues;
 
 use std::{
     path::PathBuf,
-    io::{stdout, BufWriter, Write}, fs::rename,
+    io::{stdout, BufWriter, Write}, fs::{rename, remove_dir_all},
 };
 
 use anyhow::{Result, bail};
@@ -218,6 +218,16 @@ pub trait Element {
         let stdout = stdout();
         let mut writer = BufWriter::new(stdout);
         writeln!(writer, "{} #{} closed.", &elem, &id)?;
+        Ok(())
+    }
+
+    fn delete(&self) -> Result<()> {
+        let elem = Self::elem().to_uppercase();
+        let id = self.id();
+        remove_dir_all(&self.path())?;
+        let stdout = stdout();
+        let mut writer = BufWriter::new(stdout);
+        writeln!(writer, "{} #{} deleted.", &elem, &id)?;
         Ok(())
     }
 

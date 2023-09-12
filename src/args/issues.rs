@@ -12,13 +12,13 @@ pub enum IssueCommand {
     List(ListIssues),
     /// Closes, adds and commits an issue
     Close(CloseIssue),
-    // /// Deletes an issue
-    // Delete(DeleteIssue),
+    /// Deletes an issue
+    Delete(DeleteIssue),
 }
 
 #[derive(Debug, Args)]
 pub struct CommitIssue {
-    /// Name of the issue
+    /// Path or Id of the issue
     #[arg(value_parser = is_not_empty)]
     pub path_or_id: String,
     /// Associate tags with this issue
@@ -31,7 +31,7 @@ pub struct CommitIssue {
 
 #[derive(Debug, Args)]
 pub struct CloseIssue {
-    /// Name of the issues
+    /// Path or Id of the issue
     #[arg(value_parser = is_not_empty)]
     pub path_or_id: String,
 }
@@ -63,10 +63,10 @@ pub struct CreateIssue {
 
 #[derive(Debug, Args)]
 pub struct DeleteIssue {
-    /// Name of the issue
+    /// Path or Id of the issue
     #[arg(value_parser = is_not_empty)]
-    pub path: String,
-    /// If flag is set, the issue will be updated/registered to the repository (git add and commit)
+    pub path_or_id: String,
+    /// Just deletes the issue. Do not commit it to git.
     #[arg(long, short)]
-    pub update: bool,
+    pub dry: bool,
 }

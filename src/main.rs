@@ -1,7 +1,6 @@
 mod args;
 mod elements;
 mod helpers;
-mod executors;
 mod properties;
 
 extern crate slugify;
@@ -18,14 +17,6 @@ use crate::args::{
 
 use crate::elements::issues::Issue;
 use crate::elements::Element;
-
-// use crate::executors::issues::{
-//     create_issue,
-//     list_all_issues,
-//     close_issue,
-//     up_issue,
-//     delete_issue,
-// };
 
 use clap::Parser;
 use anyhow::Result;
@@ -101,9 +92,16 @@ fn main() -> Result<()> {
             &Issue::elem().to_uppercase(), &issue.id());
             issue.commit(&msg)?;
         },
-        // Issue(IssueCommand::Delete(issue_cmd)) => {
-        //     delete_issue(&issues, issue_cmd)?;
-        // },
+        EntityType::Issue(IssueCommand::Delete(cmd)) => {
+            let issue_path = Issue::get_path(&cmd.path_or_id)?;
+            let issue = Issue::from_path(&issue_path)?;
+            issue.delete()?;
+            if !cmd.dry {
+                let msg = format!("(deleted) {} #{}.",
+                &Issue::elem().to_uppercase(), &issue.id());
+                issue.commit(&msg)?;
+            }
+        },
         // Sprint(SprintCommand::Create(sprint_cmd)) => {
         //     // println!("sprint create!!!");
         //     Sprints::get();
