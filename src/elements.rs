@@ -3,7 +3,7 @@ pub mod issues;
 
 use std::{
     path::PathBuf,
-    io::{stdout, BufWriter, Write}, fs::{rename, remove_dir_all},
+    io::{stdout, BufWriter, Write}, fs::{rename, remove_dir_all, create_dir_all},
 };
 
 use anyhow::{Result, bail};
@@ -151,6 +151,10 @@ pub trait Element {
         closed
     }
 
+    fn all_paths(&self) -> [PathBuf; 2] {
+        [self.path(), self.closed_path()]
+    }
+
     fn id(&self) -> String;
 
     fn elem() -> String {
@@ -198,9 +202,9 @@ pub trait Element {
     fn write(&self) -> Result<()>;
 
     fn commit(&self, msg: &str) -> Result<()> {
-        let path = self.path().to_str().unwrap().to_owned();
-        let closed_path = self.closed_path().to_str().unwrap().to_owned();
-        let files_to_add = [path, closed_path];
+        let files_to_add = self.all_paths().into_iter().map(|p| {
+            p.to_str().unwrap().to_owned()
+        }).collect::<Vec<String>>();
         git_commit(Some(&files_to_add), msg)?;
         let stdout = stdout();
         let mut writer = BufWriter::new(stdout);
@@ -213,6 +217,8 @@ pub trait Element {
         let id = self.id();
         if self.closed_path().is_dir() {
             bail!("{} #{} is already closed.", &elem, &id);
+        } else {
+            create_dir_all(self.closed_path())?;
         }
         rename(self.path(), self.closed_path())?;
         let stdout = stdout();
@@ -224,7 +230,11 @@ pub trait Element {
     fn delete(&self) -> Result<()> {
         let elem = Self::elem().to_uppercase();
         let id = self.id();
-        remove_dir_all(&self.path())?;
+        for p in self.all_paths().iter() {
+            if p.is_dir() {
+                remove_dir_all(p)?;
+            }
+        }
         let stdout = stdout();
         let mut writer = BufWriter::new(stdout);
         writeln!(writer, "{} #{} deleted.", &elem, &id)?;

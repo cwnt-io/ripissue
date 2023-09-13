@@ -82,5 +82,4 @@ impl Element for Issue {
         self.tags = tags
     }
 
-
 }
