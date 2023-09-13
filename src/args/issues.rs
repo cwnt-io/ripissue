@@ -59,8 +59,6 @@ pub struct CreateIssue {
     pub dry: bool,
 }
 
-
-
 #[derive(Debug, Args)]
 pub struct DeleteIssue {
     /// Path or Id of the issue
