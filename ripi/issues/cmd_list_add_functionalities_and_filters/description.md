@@ -1,7 +1,7 @@
 # cmd_list_add_functionalities_and_filters (ISSUES)
 
 - [x] rename base_closed -> base_path_closed
-- [ ] Issue::base_path_all
+- [x] Issue::base_path_all
 - [ ] V 
 ```
 struct Issues

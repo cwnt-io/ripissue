@@ -60,7 +60,7 @@ fn main() -> Result<()> {
         EntityType::Issue(IssueCommand::List(cmd)) => {
             let mut base_dirs = vec![Issue::base_path()];
             if cmd.all {
-                base_dirs.push(Issue::base_closed());
+                base_dirs.push(Issue::base_path_closed());
             }
             let stdout = stdout();
             let mut writer = BufWriter::new(stdout);

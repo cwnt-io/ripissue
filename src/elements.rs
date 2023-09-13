@@ -49,6 +49,19 @@ pub trait Element {
 
     fn base_path() -> PathBuf;
 
+    fn base_path_closed() -> PathBuf {
+        let mut closed = get_closed_dir();
+        closed.push(Self::elem());
+        closed
+    }
+
+    fn base_path_all() -> [PathBuf; 2] {
+        [
+            Self::base_path(),
+            Self::base_path_closed(),
+        ]
+    }
+
     fn status_path(&self) -> PathBuf {
         let mut status_path = self.path();
         status_path.push("status");
@@ -146,11 +159,6 @@ pub trait Element {
         Ok(())
     }
 
-    fn base_closed() -> PathBuf {
-        let mut closed = get_closed_dir();
-        closed.push(Self::elem());
-        closed
-    }
 
     fn path(&self) -> PathBuf {
         let mut path = Self::base_path();
@@ -159,7 +167,7 @@ pub trait Element {
     }
 
     fn closed_path(&self) -> PathBuf {
-        let mut closed = Self::base_closed();
+        let mut closed = Self::base_path_closed();
         closed.push(self.id());
         closed
     }
@@ -181,7 +189,7 @@ pub trait Element {
         let id = vec.last().unwrap();
         let mut path = Self::base_path();
         path.push(&id);
-        let mut closed = Self::base_closed();
+        let mut closed = Self::base_path_closed();
         closed.push(&id);
 
         let elem_path = match (path.is_dir(), closed.is_dir()) {
