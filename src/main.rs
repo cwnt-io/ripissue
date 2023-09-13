@@ -46,6 +46,8 @@ fn main() -> Result<()> {
             let issue_path = Issue::get_path(&cmd.path_or_id)?;
             let mut issue = Issue::from_path(&issue_path)?;
             if let Some(ts) = &cmd.tag {
+                // TODO: is not set, but append
+                // issue.append_tags(Tags::from_vec_str(&ts))
                 issue.set_tags(Some(Tags::from_vec_str(&ts)));
                 issue.write_tags()?;
             }

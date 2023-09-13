@@ -19,7 +19,7 @@ pub enum EntityType {
     /// Create, list, update, close or delete issues.
     #[command(subcommand)]
     Issue(IssueCommand),
-    // /// Create, list, update, close or delete issues.
+    // /// Create, list, update, close or delete sprints.
     // #[command(subcommand)]
     // Sprint(SprintCommand),
 
