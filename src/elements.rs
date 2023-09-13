@@ -86,11 +86,13 @@ pub trait Element {
     }
 
     fn write_status(&self) -> Result<()> {
+        let status_path = &self.status_path();
+        if status_path.is_dir() {
+            remove_dir_all(status_path)?;
+        }
         if let Some(status) = self.status() {
-            let dir = &self.status_path();
             let file = &status.as_str();
-            let content = None;
-            write_file(dir,file,content)?;
+            write_file(status_path,file,None)?;
         }
         Ok(())
     }
