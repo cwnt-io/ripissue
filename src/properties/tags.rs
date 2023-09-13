@@ -36,4 +36,12 @@ impl Tags {
         Self(tags_vec)
     }
 
+    pub fn push(&mut self, tag: Tag) {
+        self.0.push(tag);
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
+
 }

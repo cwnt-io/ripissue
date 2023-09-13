@@ -105,6 +105,17 @@ pub trait Element {
 
     fn set_tags(&mut self, tags: Option<Tags>);
 
+    fn append_tags(&mut self, tags: Tags) {
+        if tags.is_empty() {
+            return;
+        }
+        let mut new_tags = self.tags().unwrap_or(Tags::new(vec![]));
+        for tag in tags.iter() {
+            new_tags.push(tag.clone());
+        }
+        self.set_tags(Some(new_tags));
+    }
+
     fn set_tags_from_files(&mut self) -> Result<()> {
         let tags_vec: Vec<Tag> = WalkDir::new(self.tags_path())
             .min_depth(1)
