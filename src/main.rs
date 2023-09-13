@@ -52,6 +52,7 @@ fn main() -> Result<()> {
                 issue.write_tags()?;
             }
             if let Some(s) = &cmd.status {
+                // TODO: remove old and add new
                 issue.set_status(Some(s.clone()));
                 issue.write_status()?;
             }
