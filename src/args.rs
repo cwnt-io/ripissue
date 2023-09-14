@@ -2,7 +2,6 @@ pub mod issues;
 pub mod sprints;
 
 use crate::args::issues::IssueCommand;
-use crate::args::sprints::SprintCommand;
 
 use clap::{Parser, Subcommand};
 

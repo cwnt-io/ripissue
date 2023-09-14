@@ -2,16 +2,40 @@ use std::{
     path::PathBuf,
     str::FromStr,
     fs::{File, create_dir_all},
-    io::Write,
+    io::Write, iter::Flatten,
 };
 
 use slugify::slugify;
 use anyhow::{Context, Result, bail};
 use git2::{Repository, IndexAddOption};
+use walkdir::WalkDir;
 
-pub fn type_to_str<T>(_: &T) -> String {
-    format!("{}", std::any::type_name::<T>())
+// pub fn type_to_str<T>(_: &T) -> String {
+//     format!("{}", std::any::type_name::<T>())
+// }
+
+pub fn walkdir_into_iter(path: &PathBuf) -> Flatten<walkdir::IntoIter> {
+    WalkDir::new(path)
+        .min_depth(1)
+        .max_depth(1)
+        .into_iter()
+        .flatten()
 }
+
+pub fn traverse_files(path: &PathBuf) -> Vec<PathBuf> {
+    let walk_iter = walkdir_into_iter(path);
+    walk_iter
+        .map(|e| e.into_path())
+        .collect()
+}
+
+// pub fn traverse_dirs(path: &PathBuf) -> Vec<PathBuf> {
+//     let walk_iter = walkdir_into_iter(path);
+//     walk_iter
+//         .filter(|e| e.file_type().is_dir())
+//         .map(|e| e.into_path())
+//         .collect()
+// }
 
 pub fn sys_base_path() -> PathBuf {
     PathBuf::from_str("ripi").unwrap()
@@ -60,9 +84,13 @@ pub fn get_file_name(path: &PathBuf) -> String {
     path.file_name().unwrap().to_str().unwrap().to_owned()
 }
 
-pub fn get_parent_dir(path: &PathBuf) -> String {
-    path.parent().unwrap().to_str().unwrap().to_owned()
+pub fn id_from_input(input: &str) -> String {
+    input.split("/").last().unwrap().to_owned()
 }
+
+// pub fn get_parent_dir(path: &PathBuf) -> String {
+//     path.parent().unwrap().to_str().unwrap().to_owned()
+// }
 
 pub fn git_commit(files_to_add: Option<&[String]>, msg: &str) -> Result<()> {
     let repo = Repository::open(".")

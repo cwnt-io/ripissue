@@ -5,6 +5,8 @@ mod properties;
 
 extern crate slugify;
 use helpers::get_file_name;
+use properties::statuses::Status;
+use properties::tags::Tag;
 use walkdir::WalkDir;
 
 use std::io::{stdout, BufWriter, Write};
@@ -20,7 +22,6 @@ use crate::elements::Element;
 
 use clap::Parser;
 use anyhow::Result;
-use properties::tags::Tags;
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
@@ -30,7 +31,8 @@ fn main() -> Result<()> {
             let mut issue = Issue::new(&cmd.name);
             issue.already_exists()?;
             if let Some(ts) = &cmd.tag {
-                issue.set_tags(Some(Tags::from_vec_str(&ts)));
+                let vec_tags = Tag::vec_tags_from_vec_str(ts);
+                issue.set_tags(vec_tags);
             }
             if let Some(s) = &cmd.status {
                 issue.set_status(Some(s.clone()));
@@ -43,10 +45,17 @@ fn main() -> Result<()> {
             }
         },
         EntityType::Issue(IssueCommand::Commit(cmd)) => {
-            let issue_path = Issue::get_path(&cmd.path_or_id)?;
-            let mut issue = Issue::from_path(&issue_path)?;
+            let mut issue = Issue::raw(&cmd.path_or_id)?;
+            issue.update_path()?;
+            let vec_tags = Tag::vec_tags_from_files(&issue.tags_path());
+            issue.set_tags(vec_tags);
+            let status = Status::status_from_files(&issue.status_path())?;
+            issue.set_status(status);
             if let Some(ts) = &cmd.tag {
-                issue.append_tags(Tags::from_vec_str(&ts));
+                let new_vec_tags = Tag::vec_tags_from_vec_str(ts);
+                if let Some(vt) = new_vec_tags.as_ref() {
+                    issue.append_tags(vt);
+                }
                 issue.write_tags()?;
             }
             if let Some(s) = &cmd.status {
@@ -54,7 +63,7 @@ fn main() -> Result<()> {
                 issue.write_status()?;
             }
             let msg = format!("(up) {} #{}.",
-            &Issue::elem().to_uppercase(), &issue.id());
+                &Issue::elem().to_uppercase(), &issue.id());
             issue.commit(&msg)?;
         }
         EntityType::Issue(IssueCommand::List(cmd)) => {
@@ -85,20 +94,20 @@ fn main() -> Result<()> {
             }
         }
         EntityType::Issue(IssueCommand::Close(cmd)) => {
-            let issue_path = Issue::get_path(&cmd.path_or_id)?;
-            let issue = Issue::from_path(&issue_path)?;
+            let mut issue = Issue::raw(&cmd.path_or_id)?;
+            issue.update_path()?;
             issue.close()?;
             let msg = format!("(closed) {} #{}.",
-            &Issue::elem().to_uppercase(), &issue.id());
+                &Issue::elem().to_uppercase(), &issue.id());
             issue.commit(&msg)?;
         },
         EntityType::Issue(IssueCommand::Delete(cmd)) => {
-            let issue_path = Issue::get_path(&cmd.path_or_id)?;
-            let issue = Issue::from_path(&issue_path)?;
+            let mut issue = Issue::raw(&cmd.path_or_id)?;
+            issue.update_path()?;
             issue.delete()?;
             if !cmd.dry {
                 let msg = format!("(deleted) {} #{}.",
-                &Issue::elem().to_uppercase(), &issue.id());
+                    &Issue::elem().to_uppercase(), &issue.id());
                 issue.commit(&msg)?;
             }
         },

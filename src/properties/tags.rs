@@ -1,4 +1,6 @@
-use crate::helpers::slug_tag;
+use std::path::PathBuf;
+
+use crate::helpers::{slug_tag, walkdir_into_iter};
 
 #[derive(Debug, Clone)]
 pub struct Tag(Vec<String>);
@@ -14,34 +16,23 @@ impl Tag {
         self.0.join("-")
     }
 
-
-}
-
-#[derive(Debug, Clone)]
-pub struct Tags(Vec<Tag>);
-
-impl Tags {
-
-    pub fn new(tags_vec: Vec<Tag>) -> Self {
-        Tags(tags_vec)
+    pub fn vec_tags_from_files(path: &PathBuf) -> Option<Vec<Self>> {
+        let walk_iter = walkdir_into_iter(path);
+        let vec_tags: Vec<Tag> = walk_iter
+            .map(|e|  Tag::new(e.file_name().to_str().unwrap()) )
+            .collect();
+        match vec_tags.is_empty() {
+            true => None,
+            false => Some(vec_tags),
+        }
     }
 
-    pub fn iter(&self) -> std::slice::Iter<'_, Tag> {
-        self.0.iter()
-    }
-
-    pub fn from_vec_str(v: &Vec<String>) -> Self {
-        let tags_vec: Vec<Tag> = v.iter()
-            .map(|e| Tag::new(e)).collect();
-        Self(tags_vec)
-    }
-
-    pub fn push(&mut self, tag: Tag) {
-        self.0.push(tag);
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.0.is_empty()
+    pub fn vec_tags_from_vec_str(vec: &Vec<String>) -> Option<Vec<Self>> {
+        let vec_tags: Vec<Tag> = vec.iter().map(|s| Tag::new(s)).collect();
+        match vec_tags.is_empty() {
+            true => None,
+            false => Some(vec_tags),
+        }
     }
 
 }

@@ -1,39 +1,36 @@
 use std::{
-    path::PathBuf,
     io::{Write, stdout, BufWriter},
+    path::PathBuf,
 };
 
 use anyhow::Result;
 
 use crate::{
-    helpers::{
-        slug,
-        sys_base_path,
-        get_file_name
-    },
-    properties::statuses::{
-        Status,
-    },
-    properties::tags::{
-        Tags,
-    }
+    helpers::{slug, write_file},
+    properties::statuses::Status,
+    properties::tags::Tag,
 };
 
-use super::{Element, ElementPath};
+use super::Element;
 
 #[derive(Debug)]
 pub struct Issue {
     id: String,
     status: Option<Status>,
-    tags: Option<Tags>,
+    tags: Option<Vec<Tag>>,
+    path: PathBuf,
 }
 
 impl Element for Issue {
     type Item = Issue;
 
     fn new(name: &str) -> Self {
+        let id = slug(&name);
+        let mut path = Self::base_path();
+        path.push(&id);
         Self {
-            id: slug(&name),
+            id,
+            path,
             status: None,
             tags: None,
         }
@@ -43,14 +40,14 @@ impl Element for Issue {
         self.id.clone()
     }
 
-    fn base_path() -> PathBuf {
-        let mut base_path = sys_base_path();
-        base_path.push("issues");
-        base_path
+    fn elem() -> &'static str {
+        "issues"
     }
 
     fn write(&self) -> Result<()> {
-        self.write_basic_files()?;
+        let (id, path, elem) = (self.id(), self.path(), Self::elem().to_uppercase());
+        let content = format!("# {} ({})", &id, &elem);
+        write_file(&path, "description.md", Some(&content))?;
         self.write_status()?;
         self.write_tags()?;
         let stdout = stdout();
@@ -59,27 +56,31 @@ impl Element for Issue {
         Ok(())
     }
 
-    fn from_path(elem_path: &ElementPath) -> Result<Self> {
-        let mut issue = Issue::new(&elem_path.id());
-        issue.set_status_from_files()?;
-        issue.set_tags_from_files()?;
-        Ok(issue)
+    // PATHS
+    fn path(&self) -> &PathBuf {
+        &self.path
+    }
+    fn set_path(&mut self, path: &PathBuf) {
+        self.path = path.clone();
     }
 
-    fn status(&self) -> Option<Status> {
-        self.status
+    // STATUSES
+
+    fn status(&self) -> &Option<Status> {
+        &self.status
     }
 
     fn set_status(&mut self, status: Option<Status>) {
-        self.status = status
+        self.status = status;
     }
 
-    fn tags(&self) -> Option<Tags> {
-        self.tags.clone()
+    // TAGS
+    fn tags(&self) -> &Option<Vec<Tag>> {
+        &self.tags
     }
 
-    fn set_tags(&mut self, tags: Option<Tags>) {
-        self.tags = tags
+    fn set_tags(&mut self, tags: Option<Vec<Tag>>) {
+        self.tags = tags;
     }
 
 }
