@@ -3,7 +3,7 @@ pub mod issues;
 
 use std::{
     io::{stdout, BufWriter, Write},
-    fs::{rename, remove_dir_all, create_dir_all}, path::PathBuf
+    fs::{rename, remove_dir_all, create_dir_all}, path::PathBuf, collections::BTreeMap, fmt::Debug
 };
 
 use anyhow::{Result, bail};
@@ -14,12 +14,12 @@ use crate::{
         id_from_input,
         sys_base_path,
         get_closed_dir,
-        write_file,
+        write_file, traverse_dirs, get_file_name, get_elem_from_path,
     },
     properties::{statuses::Status, tags::Tag}
 };
 
-pub trait Element {
+pub trait Element: Debug {
     type Item;
 
     fn new(name: &str) -> Self::Item;
@@ -120,8 +120,8 @@ pub trait Element {
         closed
     }
 
-    fn base_path_all() -> [PathBuf; 2] {
-        [
+    fn base_path_all() -> Vec<PathBuf> {
+        vec![
             Self::base_path(),
             Self::base_path_closed(),
         ]

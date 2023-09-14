@@ -1,5 +1,6 @@
 # cmd_list_add_functionalities_and_filters (ISSUES)
 
+- [x] get_all_elems working
 - [ ] prints by filter
     - [ ] filter by status
     - [ ] filter by tags, tag groups

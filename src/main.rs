@@ -4,7 +4,7 @@ mod helpers;
 mod properties;
 
 extern crate slugify;
-use helpers::get_file_name;
+use helpers::{get_file_name, get_elem_from_path, get_all_elems};
 use properties::statuses::Status;
 use properties::tags::Tag;
 use walkdir::WalkDir;
@@ -45,12 +45,7 @@ fn main() -> Result<()> {
             }
         },
         EntityType::Issue(IssueCommand::Commit(cmd)) => {
-            let mut issue = Issue::raw(&cmd.path_or_id)?;
-            issue.update_path()?;
-            let vec_tags = Tag::vec_tags_from_files(&issue.tags_path());
-            issue.set_tags(vec_tags);
-            let status = Status::status_from_files(&issue.status_path())?;
-            issue.set_status(status);
+            let mut issue = get_elem_from_path(Issue::raw(&cmd.path_or_id)?)?;
             if let Some(ts) = &cmd.tag {
                 let new_vec_tags = Tag::vec_tags_from_vec_str(ts);
                 if let Some(vt) = new_vec_tags.as_ref() {
@@ -67,31 +62,16 @@ fn main() -> Result<()> {
             issue.commit(&msg)?;
         }
         EntityType::Issue(IssueCommand::List(cmd)) => {
-            let mut base_dirs = vec![Issue::base_path()];
-            if cmd.all {
-                base_dirs.push(Issue::base_path_closed());
-            }
-            let stdout = stdout();
-            let mut writer = BufWriter::new(stdout);
-            for base_dir in base_dirs.into_iter() {
-                let issues = WalkDir::new(base_dir)
-                    .min_depth(1)
-                    .max_depth(1)
-                    .into_iter()
-                    .flatten()
-                    .filter(|e| e.path().is_dir())
-                    .map(|e| {
-                        e.path().to_path_buf()
-                    });
-                for issue in issues {
-                    let id = get_file_name(&issue);
-                    writeln!(writer,"{} #{} ({})",
-                             Issue::elem().to_uppercase(),
-                             &id,
-                             issue.display()
-                             )?;
-                }
-            }
+            // let stdout = stdout();
+            // let mut writer = BufWriter::new(stdout);
+            // writeln!(writer,"{} #{} ({})",
+            // Issue::elem().to_uppercase(),
+            // &id,
+            // issue.display()
+            // )?;
+            let issues = get_all_elems::<Issue>()?;
+            println!("{:#?}", issues);
+
         }
         EntityType::Issue(IssueCommand::Close(cmd)) => {
             let mut issue = Issue::raw(&cmd.path_or_id)?;
