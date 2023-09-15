@@ -5,3 +5,4 @@
 - [x] issue create ok
 - [x] issue close ok
 - [x] issue commit ok
+- [x] issue delete ok
