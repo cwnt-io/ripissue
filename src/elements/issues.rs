@@ -1,17 +1,17 @@
 use std::{
     io::{Write, stdout, BufWriter},
-    path::PathBuf,
+    path::PathBuf, collections::BTreeMap,
 };
 
-use anyhow::Result;
+use anyhow::{Result, bail};
 
 use crate::{
-    helpers::{slug, write_file},
+    helpers::{slug, write_file, traverse_dirs, get_elem_from_path},
     properties::statuses::Status,
     properties::tags::Tag,
 };
 
-use super::Element;
+use super::{Element, Elements};
 
 #[derive(Debug)]
 pub struct Issue {
@@ -84,3 +84,45 @@ impl Element for Issue {
     }
 
 }
+
+#[derive(Debug)]
+pub struct Issues(BTreeMap<String, Issue>);
+
+impl Elements for Issues {
+    type Item = Issue;
+
+    fn new() -> Self {
+        Issues(BTreeMap::new())
+    }
+
+    fn add(&mut self, item: Self::Item) -> Result<()> {
+        let id = item.id();
+        if self.0.insert(id.clone(),item).is_some() {
+            let elem = Self::Item::elem();
+            bail!("{} #{} already exists.", elem.to_uppercase(), id);
+        }
+        Ok(())
+    }
+
+    fn update_all(&mut self) -> Result<()> {
+        let mut all_elems = vec![];
+        for p in Self::Item::base_path_all().iter() {
+            let vec_elems = traverse_dirs(p);
+            all_elems.extend(vec_elems);
+        }
+        for e in all_elems.iter() {
+            let e_str = e.to_str().unwrap();
+            let mut issue = Self::Item::raw(e_str)?;
+            let vec_tags = Tag::vec_tags_from_files(&issue.tags_path());
+            issue.set_tags(vec_tags);
+            let status = Status::status_from_files(&issue.status_path())?;
+            issue.set_status(status);
+            // let elem = get_elem_from_path(elem_raw)?;
+            self.add(issue)?;
+        }
+        Ok(())
+    }
+
+}
+
+

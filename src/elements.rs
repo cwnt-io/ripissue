@@ -191,6 +191,14 @@ pub trait Element: Debug {
 
 }
 
+pub trait Elements {
+    type Item;
+
+    fn new() -> Self;
+    fn add(&mut self, item: Self::Item) -> Result<()>;
+    fn update_all(&mut self) -> Result<()>;
+
+}
 
 // pub trait Elements {
 //     type Item;
