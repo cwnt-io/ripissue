@@ -2,17 +2,18 @@ use std::path::PathBuf;
 use std::str::FromStr;
 
 use clap::ValueEnum;
-use anyhow::{Result, bail, Context};
-use strum::IntoEnumIterator;
-use strum_macros::{AsRefStr, EnumString, EnumIter};
+use anyhow::{Result, bail};
+use strum_macros::{AsRefStr, EnumString};
 
 use crate::helpers::{traverse_files, get_file_name};
 
-#[derive(AsRefStr, EnumString, EnumIter, Debug, Copy, Clone, PartialEq, ValueEnum)]
+#[derive(AsRefStr, EnumString, Debug, Copy, Clone, PartialEq, ValueEnum)]
 pub enum Status {
     /// Issue must be done and is waiting to begin
+    #[strum(serialize = "todo")]
     Todo,
     /// Issue is in execution
+    #[strum(serialize = "doing")]
     Doing,
 }
 
@@ -25,20 +26,7 @@ impl Status {
             1 => {
                 let status_full_path = statuses.get(0).unwrap();
                 let status_str = get_file_name(&status_full_path);
-                let status = FromStr::from_str(&status_str)
-                    .with_context(|| {
-                        let statuses_available = Status::iter()
-                            .fold(vec![], |mut v, s| {
-                                v.push(s.as_ref().to_owned());
-                                v
-                            });
-                        let statuses = statuses_available.join(", ");
-                        format!(
-                            "Input Status \"{}\" is incorrect. Possible values are {}.",
-                            &status_str,
-                            &statuses
-                            )
-                    })?;
+                let status = FromStr::from_str(&status_str)?;
                 Some(status)
             },
             _ => {
