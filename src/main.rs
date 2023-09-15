@@ -4,21 +4,16 @@ mod helpers;
 mod properties;
 
 extern crate slugify;
-use helpers::{get_file_name, get_elem_from_path, get_all_elems};
-use properties::statuses::Status;
-use properties::tags::Tag;
-use walkdir::WalkDir;
-
-use std::io::{stdout, BufWriter, Write};
+use elements::elem::{Elem, ElemType};
+use helpers::id_from_input;
+// use helpers::{get_all_elems};
+use properties::{tags::Tag, statuses::Status};
 
 use crate::args::{
     Cli,
     EntityType,
     issues::IssueCommand,
 };
-
-use crate::elements::issues::Issue;
-use crate::elements::Element;
 
 use clap::Parser;
 use anyhow::Result;
@@ -28,7 +23,11 @@ fn main() -> Result<()> {
 
     match &cli.entity_type {
         EntityType::Issue(IssueCommand::Create(cmd)) => {
-            let mut issue = Issue::new(&cmd.name);
+            let etype = ElemType::Issue;
+            let name = &cmd.name;
+            let status = None;
+            let tags = None;
+            let mut issue = Elem::new(etype, name, status, tags);
             issue.already_exists()?;
             if let Some(ts) = &cmd.tag {
                 let vec_tags = Tag::vec_tags_from_vec_str(ts);
@@ -39,13 +38,23 @@ fn main() -> Result<()> {
             }
             issue.write()?;
             if !cmd.dry {
-                let msg = format!("(created) {} #{}.",
-                &Issue::elem().to_uppercase(), &issue.id());
+                let msg = format!(
+                    "(created) {} #{}.",
+                    issue.etype().as_ref(), &issue.id());
                 issue.commit(&msg)?;
             }
         },
         EntityType::Issue(IssueCommand::Commit(cmd)) => {
-            let mut issue = get_elem_from_path(Issue::raw(&cmd.path_or_id)?)?;
+            let etype = ElemType::Issue;
+            let name = id_from_input(&cmd.path_or_id);
+            let status = None;
+            let tags = None;
+            let mut issue = Elem::new(etype, name, status, tags);
+            issue.update_path()?;
+            let vec_tags = Tag::vec_tags_from_files(&issue.tags_path());
+            issue.set_tags(vec_tags);
+            let status = Status::status_from_files(&issue.status_path())?;
+            issue.set_status(status);
             if let Some(ts) = &cmd.tag {
                 let new_vec_tags = Tag::vec_tags_from_vec_str(ts);
                 if let Some(vt) = new_vec_tags.as_ref() {
@@ -58,7 +67,7 @@ fn main() -> Result<()> {
                 issue.write_status()?;
             }
             let msg = format!("(up) {} #{}.",
-                &Issue::elem().to_uppercase(), &issue.id());
+                issue.etype().as_ref(), &issue.id());
             issue.commit(&msg)?;
         }
         EntityType::Issue(IssueCommand::List(cmd)) => {
@@ -69,25 +78,33 @@ fn main() -> Result<()> {
             // &id,
             // issue.display()
             // )?;
-            let issues = get_all_elems::<Issue>()?;
-            println!("{:#?}", issues);
+            // let issues = get_all_elems::<Issue>()?;
+            // println!("{:#?}", issues);
 
         }
         EntityType::Issue(IssueCommand::Close(cmd)) => {
-            let mut issue = Issue::raw(&cmd.path_or_id)?;
+            let etype = ElemType::Issue;
+            let name = id_from_input(&cmd.path_or_id);
+            let status = None;
+            let tags = None;
+            let mut issue = Elem::new(etype, name, status, tags);
             issue.update_path()?;
             issue.close()?;
             let msg = format!("(closed) {} #{}.",
-                &Issue::elem().to_uppercase(), &issue.id());
+                issue.etype().as_ref(), &issue.id());
             issue.commit(&msg)?;
         },
         EntityType::Issue(IssueCommand::Delete(cmd)) => {
-            let mut issue = Issue::raw(&cmd.path_or_id)?;
+            let etype = ElemType::Issue;
+            let name = id_from_input(&cmd.path_or_id);
+            let status = None;
+            let tags = None;
+            let mut issue = Elem::new(etype, name, status, tags);
             issue.update_path()?;
             issue.delete()?;
             if !cmd.dry {
                 let msg = format!("(deleted) {} #{}.",
-                    &Issue::elem().to_uppercase(), &issue.id());
+                    issue.etype().as_ref(), &issue.id());
                 issue.commit(&msg)?;
             }
         },

@@ -1,11 +1,13 @@
 use std::path::PathBuf;
+use std::str::FromStr;
 
 use clap::ValueEnum;
 use anyhow::{Result, bail};
+use strum_macros::{AsRefStr, EnumString};
 
 use crate::helpers::{traverse_files, get_file_name};
 
-#[derive(Debug, Copy, Clone, PartialEq, ValueEnum)]
+#[derive(AsRefStr, EnumString, Debug, Copy, Clone, PartialEq, ValueEnum)]
 pub enum Status {
     /// Issue must be done and is waiting to begin
     Todo,
@@ -15,23 +17,6 @@ pub enum Status {
 
 impl Status {
 
-    pub fn as_str(&self) -> String {
-        use Status::*;
-        match *self {
-            Todo => "todo".to_owned(),
-            Doing => "doing".to_owned(),
-        }
-    }
-
-    pub fn from_str(s: &str) -> Result<Self> {
-        use Status::*;
-        match s {
-            "todo" => Ok(Todo),
-            "doing" => Ok(Doing),
-            &_ => bail!("Input \"{}\" is not a valid status", s),
-        }
-    }
-
     pub fn status_from_files(path: &PathBuf) -> Result<Option<Self>> {
         let statuses: Vec<PathBuf> = traverse_files(path);
         let status = match statuses.len() {
@@ -39,7 +24,8 @@ impl Status {
             1 => {
                 let status_full_path = statuses.get(0).unwrap();
                 let status_str = get_file_name(&status_full_path);
-                Some(Status::from_str(&status_str)?)
+                let status = FromStr::from_str(&status_str)?;
+                Some(status)
             },
             _ => {
                 let msg: Vec<String> = statuses.into_iter()
