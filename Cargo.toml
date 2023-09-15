@@ -12,6 +12,8 @@ anyhow = "1.0.75"
 slugify = "0.1.0"
 walkdir = "2.4.0"
 git2 = "0.18.0"
+strum = "0.25.0"
+strum_macros = "0.25.2"
 
 [[bin]]
 name = "ripi"
