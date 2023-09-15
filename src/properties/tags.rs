@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use anyhow::Result;
 
-use crate::{helpers::{slug_tag, walkdir_into_iter, write_file}, elements::issue::ElemBase};
+use crate::{helpers::{slug_tag, walkdir_into_iter, write_file}, elements::elem::ElemBase};
 
 #[derive(Debug, Clone)]
 pub struct Tag(Vec<String>);

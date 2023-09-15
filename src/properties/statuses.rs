@@ -6,7 +6,7 @@ use anyhow::{Result, bail};
 use strum_macros::{AsRefStr, EnumString};
 
 use crate::helpers::write_file;
-use crate::{helpers::{traverse_files, get_file_name}, elements::issue::ElemBase};
+use crate::{helpers::{traverse_files, get_file_name}, elements::elem::ElemBase};
 
 #[derive(AsRefStr, EnumString, Debug, Copy, Clone, PartialEq, ValueEnum)]
 pub enum Status {

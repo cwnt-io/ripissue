@@ -4,9 +4,9 @@ mod helpers;
 mod properties;
 
 extern crate slugify;
-use elements::{issue::{Issue, ElemBase, Elem, WriteAll}};
+use elements::issue::{Issue, WriteAll};
+use elements::elem::{Elem, ElemBase};
 use helpers::id_from_input;
-// use helpers::{get_all_elems};
 use properties::{tags::{Tag, TagTrait}, statuses::{Status, StatusTrait}};
 
 use crate::args::{
