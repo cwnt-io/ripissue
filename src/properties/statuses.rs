@@ -1,11 +1,12 @@
-use std::path::PathBuf;
+use std::{path::PathBuf, fs::remove_dir_all};
 use std::str::FromStr;
 
 use clap::ValueEnum;
 use anyhow::{Result, bail};
 use strum_macros::{AsRefStr, EnumString};
 
-use crate::helpers::{traverse_files, get_file_name};
+use crate::helpers::write_file;
+use crate::{helpers::{traverse_files, get_file_name}, elements::issue::ElemBase};
 
 #[derive(AsRefStr, EnumString, Debug, Copy, Clone, PartialEq, ValueEnum)]
 pub enum Status {
@@ -40,4 +41,25 @@ impl Status {
         Ok(status)
     }
 
+}
+
+pub trait StatusTrait: ElemBase {
+    fn status(&self) -> &Option<Status>;
+    fn set_status(&mut self, status: Option<Status>);
+    fn status_path(&self) -> PathBuf {
+        let mut status_path = self.epath();
+        status_path.push("status");
+        status_path
+    }
+    fn write_status(&self) -> Result<()> {
+        let status_path = self.status_path();
+        if status_path.is_dir() {
+            remove_dir_all(&status_path)?;
+        }
+        if let Some(status) = self.status() {
+            let file = &status.as_ref();
+            write_file(&status_path,file,None)?;
+        }
+        Ok(())
+    }
 }

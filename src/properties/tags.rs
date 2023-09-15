@@ -1,6 +1,8 @@
 use std::path::PathBuf;
 
-use crate::helpers::{slug_tag, walkdir_into_iter};
+use anyhow::Result;
+
+use crate::{helpers::{slug_tag, walkdir_into_iter, write_file}, elements::issue::ElemBase};
 
 #[derive(Debug, Clone)]
 pub struct Tag(Vec<String>);
@@ -35,4 +37,34 @@ impl Tag {
         }
     }
 
+}
+
+pub trait TagTrait: ElemBase {
+    fn tags(&self) -> &Option<Vec<Tag>>;
+    fn set_tags(&mut self, tags: Option<Vec<Tag>>);
+    fn tags_path(&self) -> PathBuf {
+        let mut tags_path = self.epath().clone();
+        tags_path.push("tags");
+        tags_path
+    }
+    fn append_tags(&mut self, tags: &Vec<Tag>) {
+        if tags.is_empty() {
+            return;
+        }
+        let mut new_tags = self.tags().clone().unwrap_or(vec![]);
+        for tag in tags {
+            new_tags.push(tag.clone());
+        }
+        self.set_tags(Some(new_tags));
+    }
+    fn write_tags(&self) -> Result<()> {
+        if let Some(tags) = self.tags() {
+            let dir = &self.tags_path();
+            for tag in tags.iter() {
+                let file = &tag.to_str();
+                write_file(dir,file,None)?;
+            }
+        }
+        Ok(())
+    }
 }
