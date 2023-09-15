@@ -1,6 +1,21 @@
 # cmd_list_add_functionalities_and_filters (ISSUES)
 
-- [ ] V 
+<!-- toc GFM -->
+
+* [todo](#todo)
+* [done/old](#doneold)
+
+<!-- toc -->
+
+## todo
+
+- [ ] get all elems
+- [ ] prints by filter
+    - [ ] filter by status
+    - [ ] filter by tags, tag groups
+
+## done/old
+
 ```rust
 struct Issues
 let issues: <Id, Issue> = Issue::get_all(&[ElemPath]);
@@ -9,9 +24,6 @@ let issues: <Id, Issue> = Issue::get_all(&[ElemPath]);
 ```rust
 let issues = get_all_elems::<Issue>()?;
 ```
-- [ ] prints by filter
-    - [ ] filter by status
-    - [ ] filter by tags, tag groups
 
 - [x] rename base_closed -> base_path_closed
 - [x] Issue::base_path_all
@@ -24,8 +36,3 @@ let issues = get_all_elems::<Issue>()?;
     - [x] write
     - [x] ElemPath
     - [x] ElemId
-
-## next issues
-
-- For `Element` and `Issue` I'm using the Self::Item type wrongly
-    - it has to be user for specifing the general type of internal element

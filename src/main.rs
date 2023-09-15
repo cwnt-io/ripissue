@@ -4,7 +4,7 @@ mod helpers;
 mod properties;
 
 extern crate slugify;
-use elements::elem::{Elem, ElemType};
+use elements::{elem::{Elem, ElemType}, elems::Elems};
 use helpers::id_from_input;
 // use helpers::{get_all_elems};
 use properties::{tags::Tag, statuses::Status};
@@ -97,6 +97,8 @@ fn main() -> Result<()> {
             }
         },
         EntityType::Issue(IssueCommand::List(cmd)) => {
+            // let mut issues = Elems::new(ElemType::Issue);
+            // issues.update()?;
             // let stdout = stdout();
             // let mut writer = BufWriter::new(stdout);
             // writeln!(writer,"{} #{} ({})",

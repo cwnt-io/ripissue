@@ -19,6 +19,11 @@ Inspired by:
 - [ ] issue as branch
     - [ ] Option to open a branch when open an issue?
     - [ ] Optino to rebase a branch when close an issue?
+- For `Element` and `Issue` I'm using the Self::Item type wrongly
+    - it has to be user for specifing the general type of internal element
+- Use Git as the backend for chat https://opensource.com/article/19/4/git-based-chat
+    - https://github.com/ephigabay/GIC
+    - https://git-scm.com/docs/git-notes
 
 /repo1
     /_...(issues)
