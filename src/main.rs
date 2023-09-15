@@ -70,18 +70,6 @@ fn main() -> Result<()> {
                 issue.etype().as_ref(), &issue.id());
             issue.commit(&msg)?;
         }
-        EntityType::Issue(IssueCommand::List(cmd)) => {
-            // let stdout = stdout();
-            // let mut writer = BufWriter::new(stdout);
-            // writeln!(writer,"{} #{} ({})",
-            // Issue::elem().to_uppercase(),
-            // &id,
-            // issue.display()
-            // )?;
-            // let issues = get_all_elems::<Issue>()?;
-            // println!("{:#?}", issues);
-
-        }
         EntityType::Issue(IssueCommand::Close(cmd)) => {
             let etype = ElemType::Issue;
             let name = id_from_input(&cmd.path_or_id);
@@ -108,6 +96,18 @@ fn main() -> Result<()> {
                 issue.commit(&msg)?;
             }
         },
+        EntityType::Issue(IssueCommand::List(cmd)) => {
+            // let stdout = stdout();
+            // let mut writer = BufWriter::new(stdout);
+            // writeln!(writer,"{} #{} ({})",
+            // Issue::elem().to_uppercase(),
+            // &id,
+            // issue.display()
+            // )?;
+            // let issues = get_all_elems::<Issue>()?;
+            // println!("{:#?}", issues);
+
+        }
     }
 
     Ok(())
