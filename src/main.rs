@@ -106,7 +106,6 @@ fn main() -> Result<()> {
             // )?;
             // let issues = get_all_elems::<Issue>()?;
             // println!("{:#?}", issues);
-
         }
     }
 

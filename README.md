@@ -15,6 +15,11 @@ Inspired by:
 
 # todo:
 
+- [ ] Elements: Sprint, Epic, etc...
+- [ ] issue as branch
+    - [ ] Option to open a branch when open an issue?
+    - [ ] Optino to rebase a branch when close an issue?
+
 /repo1
     /_...(issues)
 /repo2
