@@ -15,6 +15,8 @@ Inspired by:
 
 # todo:
 
+- [ ] clap args inheritance
+- [ ] unite all create/delete/etc traits executables in one trait?
 - [ ] Elements: Sprint, Epic, etc...
 - [ ] issue as branch
     - [ ] Option to open a branch when open an issue?

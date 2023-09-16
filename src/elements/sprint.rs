@@ -1,4 +1,4 @@
-use crate::{properties::{statuses::{Status, StatusTrait}, tags::{Tag, TagTrait}}, helpers::slug};
+use crate::{properties::{statuses::{Status, StatusTrait}, tags::{Tag, TagTrait}}, helpers::slug, executors::create::Createable};
 
 use super::elem::{ElemBase, WriteAll};
 
@@ -28,6 +28,8 @@ impl ElemBase for Sprint {
 }
 
 impl WriteAll for Sprint {}
+
+impl Createable<Sprint> for Sprint {}
 
 impl StatusTrait for Sprint {
     fn status(&self) -> &Option<Status> {

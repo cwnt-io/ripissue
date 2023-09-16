@@ -2,12 +2,17 @@ mod args;
 mod elements;
 mod helpers;
 mod properties;
+mod executors;
 
 extern crate slugify;
 use args::sprints::SprintCommand;
 use elements::{issue::Issue, elem::WriteAll};
 use elements::sprint::Sprint;
 use elements::elem::ElemBase;
+use executors::close::Closeable;
+use executors::commit::Commitable;
+use executors::create::Createable;
+use executors::delete::Deleteable;
 use helpers::id_from_input;
 use properties::{tags::{Tag, TagTrait}, statuses::{Status, StatusTrait}};
 
@@ -25,62 +30,19 @@ fn main() -> Result<()> {
 
     match &cli.entity_type {
         EntityType::Sprint(SprintCommand::Create(cmd)) => {
-            let mut sprint = Sprint::new(&cmd.name);
-            sprint.already_exists()?;
-            sprint.set_tags_from_vec_str(&cmd.tag);
-            sprint.set_status(cmd.status);
-            sprint.write()?;
-            if !cmd.dry {
-                let msg = format!(
-                    "(created) {} #{}.",
-                    sprint.stype(), sprint.id());
-                sprint.commit(&msg)?;
-            }
+            Sprint::create(cmd)?;
         }
         EntityType::Issue(IssueCommand::Create(cmd)) => {
-            let mut issue = Issue::new(&cmd.name);
-            issue.already_exists()?;
-            issue.set_tags_from_vec_str(&cmd.tag);
-            issue.set_status(cmd.status);
-            issue.write()?;
-            if !cmd.dry {
-                let msg = format!(
-                    "(created) {} #{}.",
-                    issue.stype(), issue.id());
-                issue.commit(&msg)?;
-            }
+            Issue::create(cmd)?;
         },
         EntityType::Issue(IssueCommand::Commit(cmd)) => {
-            let name = id_from_input(&cmd.path_or_id);
-            let mut issue = Issue::new(name);
-            issue.update_path()?;
-            issue.set_tags_from_files();
-            issue.set_status_from_files()?;
-            issue.write_tags_from_cmd(&cmd.tag)?;
-            issue.write_status_from_cmd(cmd.status)?;
-            let msg = format!("(up) {} #{}.",
-                issue.stype(), &issue.id());
-            issue.commit(&msg)?;
+            Issue::commit(&cmd)?;
         }
         EntityType::Issue(IssueCommand::Close(cmd)) => {
-            let name = id_from_input(&cmd.path_or_id);
-            let mut issue = Issue::new(name);
-            issue.update_path()?;
-            issue.close()?;
-            let msg = format!("(closed) {} #{}.",
-                issue.stype(), &issue.id());
-            issue.commit(&msg)?;
+            Issue::close(&cmd)?;
         },
         EntityType::Issue(IssueCommand::Delete(cmd)) => {
-            let name = id_from_input(&cmd.path_or_id);
-            let mut issue = Issue::new(name);
-            issue.update_path()?;
-            issue.delete()?;
-            if !cmd.dry {
-                let msg = format!("(deleted) {} #{}.",
-                    issue.stype(), &issue.id());
-                issue.commit(&msg)?;
-            }
+            Issue::delete(&cmd)?;
         },
         EntityType::Issue(IssueCommand::List(cmd)) => {
             // let mut issues = Elems::new(ElemType::Issue);

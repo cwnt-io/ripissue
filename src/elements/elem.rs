@@ -41,7 +41,7 @@ pub trait ElemBase {
         ]
     }
 
-    fn commit(&self, msg: &str) -> Result<()> {
+    fn commit_self(&self, msg: &str) -> Result<()> {
         let files_to_add = self.epaths_all().into_iter().map(|p| {
             p.to_str().unwrap().to_owned()
         }).collect::<Vec<String>>();
@@ -51,7 +51,7 @@ pub trait ElemBase {
         writeln!(writer, "{} #{} commited to git.", self.stype(), self.id())?;
         Ok(())
     }
-    fn close(&self) -> Result<()> {
+    fn close_self(&self) -> Result<()> {
         let stype = self.stype();
         let id = self.id();
         if self.epath_closed().is_dir() {
@@ -65,7 +65,7 @@ pub trait ElemBase {
         writeln!(writer, "{} #{} closed.", stype, &id)?;
         Ok(())
     }
-    fn delete(&self) -> Result<()> {
+    fn delete_self(&self) -> Result<()> {
         let stype = self.stype();
         let id = self.id();
         for p in self.epaths_all().iter() {

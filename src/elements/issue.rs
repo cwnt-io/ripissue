@@ -1,4 +1,4 @@
-use crate::{properties::{statuses::{Status, StatusTrait}, tags::{Tag, TagTrait}}, helpers::slug};
+use crate::{properties::{statuses::{Status, StatusTrait}, tags::{Tag, TagTrait}}, helpers::slug, executors::{create::Createable, commit::Commitable, close::Closeable, delete::Deleteable}};
 
 use super::elem::{ElemBase, WriteAll};
 
@@ -47,6 +47,12 @@ impl TagTrait for Issue {
         self.tags = tags;
     }
 }
+
+// EXECUTORS
+impl Createable<Issue> for Issue {}
+impl Commitable<Issue> for Issue {}
+impl Closeable<Issue> for Issue {}
+impl Deleteable<Issue> for Issue {}
 
     // fn add<Issue: ElemBase + Clone>(&mut self, elem: Elem<Issue>) -> Result<()> {
     //     let elem2: Elem<Issue> = elem.clone();
