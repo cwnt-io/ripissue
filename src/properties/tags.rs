@@ -67,4 +67,25 @@ pub trait TagTrait: ElemBase {
         }
         Ok(())
     }
+    fn write_tags_from_cmd(&mut self, tags_cmd: &Option<Vec<String>>) -> Result<()> {
+        if let Some(ts) = tags_cmd {
+            let new_vec_tags = Tag::vec_tags_from_vec_str(ts);
+            if let Some(vt) = new_vec_tags.as_ref() {
+                self.append_tags(vt);
+            }
+            self.write_tags()?;
+        }
+        Ok(())
+    }
+
+    fn set_tags_from_vec_str(&mut self, vec: &Option<Vec<String>>) {
+        if let Some(ts) = vec {
+            let vec_tags = Tag::vec_tags_from_vec_str(ts);
+            self.set_tags(vec_tags);
+        }
+    }
+    fn set_tags_from_files(&mut self) {
+        let vec_tags = Tag::vec_tags_from_files(&self.tags_path());
+        self.set_tags(vec_tags);
+    }
 }

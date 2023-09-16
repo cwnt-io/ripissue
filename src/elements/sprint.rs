@@ -1,10 +1,6 @@
-use std::{io::{stdout, BufWriter, Write}, collections::BTreeMap};
+use crate::{properties::{statuses::{Status, StatusTrait}, tags::{Tag, TagTrait}}, helpers::slug};
 
-use anyhow::{Result, bail};
-
-use crate::{properties::{statuses::{Status, StatusTrait}, tags::{Tag, TagTrait}}, helpers::{slug, write_file}};
-
-use super::{elem::{ElemBase, Elem, WriteAll}, elems::ElemsBase};
+use super::elem::{ElemBase, WriteAll};
 
 #[derive(Debug, Clone)]
 pub struct Sprint {

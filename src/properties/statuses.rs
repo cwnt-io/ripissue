@@ -62,4 +62,16 @@ pub trait StatusTrait: ElemBase {
         }
         Ok(())
     }
+    fn set_status_from_files(&mut self) -> Result<()> {
+        let status = Status::status_from_files(&self.status_path())?;
+        self.set_status(status);
+        Ok(())
+    }
+    fn write_status_from_cmd(&mut self, status_cmd: Option<Status>) -> Result<()> {
+        if status_cmd.is_some() {
+            self.set_status(status_cmd);
+            self.write_status()?;
+        }
+        Ok(())
+    }
 }

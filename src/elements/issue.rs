@@ -1,10 +1,6 @@
-use std::{io::{stdout, BufWriter, Write}, collections::BTreeMap};
+use crate::{properties::{statuses::{Status, StatusTrait}, tags::{Tag, TagTrait}}, helpers::slug};
 
-use anyhow::{Result, bail};
-
-use crate::{properties::{statuses::{Status, StatusTrait}, tags::{Tag, TagTrait}}, helpers::{slug, write_file}};
-
-use super::{elem::{ElemBase, Elem, WriteAll}, elems::ElemsBase};
+use super::elem::{ElemBase, WriteAll};
 
 #[derive(Debug, Clone)]
 pub struct Issue {
@@ -52,12 +48,6 @@ impl TagTrait for Issue {
     }
 }
 
-pub struct Issues(BTreeMap<String, Issue>);
-
-impl ElemsBase for Issues {
-    fn new() -> Self {
-        Self(BTreeMap::new())
-    }
     // fn add<Issue: ElemBase + Clone>(&mut self, elem: Elem<Issue>) -> Result<()> {
     //     let elem2: Elem<Issue> = elem.clone();
     //     let issue: Issue = elem2.e().clone();
@@ -68,4 +58,3 @@ impl ElemsBase for Issues {
     //     }
     //     Ok(())
     // }
-}

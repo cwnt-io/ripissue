@@ -2,7 +2,7 @@ use std::{
     path::PathBuf,
     str::FromStr,
     fs::{File, create_dir_all},
-    io::Write, iter::Flatten, collections::BTreeMap,
+    io::Write, iter::Flatten,
 };
 
 use slugify::slugify;
