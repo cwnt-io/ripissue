@@ -1,4 +1,4 @@
-use crate::helpers::is_not_empty;
+use crate::{helpers::is_not_empty, properties::statuses::Status};
 
 use clap::{Subcommand, Args};
 
@@ -18,10 +18,16 @@ pub enum SprintCommand {
 
 #[derive(Debug, Args)]
 pub struct CreateSprint {
-    /// Name of the sprint
+    /// Name of the issue
     #[arg(value_parser = is_not_empty)]
     pub name: String,
-    /// If flag is set, the sprint will be updated/registered to the repository (git add and commit)
+    /// Associate tags with this issue
     #[arg(long, short)]
-    pub update: bool,
+    pub tag: Option<Vec<String>>,
+    /// Set this issue status
+    #[arg(long, short, value_enum)]
+    pub status: Option<Status>,
+    /// Just creates the issue. Do not commit it to git.
+    #[arg(long, short)]
+    pub dry: bool,
 }

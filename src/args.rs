@@ -5,6 +5,8 @@ use crate::args::issues::IssueCommand;
 
 use clap::{Parser, Subcommand};
 
+use self::sprints::SprintCommand;
+
 /// Manage your project and issues
 #[derive(Debug, Parser)]
 #[command(author, version, about)]
@@ -18,10 +20,9 @@ pub enum EntityType {
     /// Create, list, update, close or delete issues.
     #[command(subcommand)]
     Issue(IssueCommand),
-    // /// Create, list, update, close or delete sprints.
-    // #[command(subcommand)]
-    // Sprint(SprintCommand),
-
+    /// Create, list, update, close or delete sprints.
+    #[command(subcommand)]
+    Sprint(SprintCommand),
     // /// Create, edit, list, delete, close epic
     // Epic(EpicCommand),
     // /// Create, edit, list, delete, close initiative

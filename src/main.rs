@@ -4,8 +4,10 @@ mod helpers;
 mod properties;
 
 extern crate slugify;
-use elements::issue::{Issue, WriteAll};
-use elements::elem::{Elem, ElemBase};
+use args::sprints::SprintCommand;
+use elements::issue::Issue;
+use elements::sprint::Sprint;
+use elements::elem::{Elem, ElemBase, WriteAll};
 use helpers::id_from_input;
 use properties::{tags::{Tag, TagTrait}, statuses::{Status, StatusTrait}};
 
@@ -22,6 +24,25 @@ fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match &cli.entity_type {
+        EntityType::Sprint(SprintCommand::Create(cmd)) => {
+            let mut esprint = Elem::new(Sprint::new(&cmd.name));
+            let sprint = esprint.e();
+            sprint.already_exists()?;
+            if let Some(ts) = &cmd.tag {
+                let vec_tags = Tag::vec_tags_from_vec_str(ts);
+                sprint.set_tags(vec_tags);
+            }
+            if let Some(s) = &cmd.status {
+                sprint.set_status(Some(s.clone()))
+            }
+            sprint.write()?;
+            if !cmd.dry {
+                let msg = format!(
+                    "(created) {} #{}.",
+                    sprint.stype(), sprint.id());
+                sprint.commit(&msg)?;
+            }
+        }
         EntityType::Issue(IssueCommand::Create(cmd)) => {
             let mut eissue = Elem::new(Issue::new(&cmd.name));
             let issue = eissue.e();

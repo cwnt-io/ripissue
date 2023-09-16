@@ -2,9 +2,19 @@ use std::{path::PathBuf, io::{stdout, BufWriter, Write}, fs::{create_dir_all, re
 
 use anyhow::{Result, bail};
 
-use crate::helpers::{sys_base_path, get_closed_dir, git_commit};
+use crate::{helpers::{sys_base_path, get_closed_dir, git_commit, write_file}, properties::{statuses::StatusTrait, tags::TagTrait}};
 
+#[derive(Debug, Clone)]
 pub struct Elem<T>(T);
+
+impl<T: ElemBase> Elem<T> {
+    pub fn new(elem: T) -> Self {
+        Self(elem)
+    }
+    pub fn e(&mut self) -> &mut T {
+        &mut self.0
+    }
+}
 
 pub trait ElemBase {
     fn new(name: &str) -> Self;
@@ -102,11 +112,17 @@ pub trait ElemBase {
     }
 }
 
-impl<T: ElemBase> Elem<T> {
-    pub fn new(elem: T) -> Self {
-        Self(elem)
-    }
-    pub fn e(&mut self) -> &mut T {
-        &mut self.0
+pub trait WriteAll: StatusTrait + TagTrait {
+    fn write(&self) -> Result<()> {
+        let (id, epath, stype) =
+            (self.id(), self.epath(), self.stype());
+        let content = format!("# {} ({})", id, stype);
+        write_file(&epath, "description.md", Some(&content))?;
+        self.write_status()?;
+        self.write_tags()?;
+        let stdout = stdout();
+        let mut writer = BufWriter::new(stdout);
+        writeln!(writer, "{} #{} created.", stype, id)?;
+        Ok(())
     }
 }

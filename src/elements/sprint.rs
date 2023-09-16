@@ -7,18 +7,18 @@ use crate::{properties::{statuses::{Status, StatusTrait}, tags::{Tag, TagTrait}}
 use super::{elem::{ElemBase, Elem, WriteAll}, elems::ElemsBase};
 
 #[derive(Debug, Clone)]
-pub struct Issue {
+pub struct Sprint {
     id: String,
     stype: &'static str,
     status: Option<Status>,
     tags: Option<Vec<Tag>>,
 }
 
-impl ElemBase for Issue {
+impl ElemBase for Sprint {
     fn new(name: &str) -> Self {
         Self {
             id: slug(name),
-            stype: "Issue",
+            stype: "Sprint",
             status: None,
             tags: None
         }
@@ -31,10 +31,9 @@ impl ElemBase for Issue {
     }
 }
 
+impl WriteAll for Sprint {}
 
-impl WriteAll for Issue {}
-
-impl StatusTrait for Issue {
+impl StatusTrait for Sprint {
     fn status(&self) -> &Option<Status> {
         &self.status
     }
@@ -43,7 +42,7 @@ impl StatusTrait for Issue {
     }
 }
 
-impl TagTrait for Issue {
+impl TagTrait for Sprint {
     fn tags(&self) -> &Option<Vec<Tag>> {
         &self.tags
     }
@@ -52,20 +51,3 @@ impl TagTrait for Issue {
     }
 }
 
-pub struct Issues(BTreeMap<String, Issue>);
-
-impl ElemsBase for Issues {
-    fn new() -> Self {
-        Self(BTreeMap::new())
-    }
-    // fn add<Issue: ElemBase + Clone>(&mut self, elem: Elem<Issue>) -> Result<()> {
-    //     let elem2: Elem<Issue> = elem.clone();
-    //     let issue: Issue = elem2.e().clone();
-    //     let id = elem.e().id().to_owned();
-    //     let stype = elem.e().stype().to_owned();
-    //     if self.0.insert(id.clone(),issue).is_some() {
-    //         bail!("{} #{} already exists.", stype, id);
-    //     }
-    //     Ok(())
-    // }
-}

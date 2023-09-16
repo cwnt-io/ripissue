@@ -1,7 +1,27 @@
-// use std::collections::BTreeMap;
-//
-// use::anyhow::{ Result, bail };
-//
+use anyhow::{Result, bail};
+
+use super::elem::{Elem, ElemBase};
+
+
+pub struct Elems<TC>(TC);
+
+impl<TC: ElemsBase> Elems<TC> {
+    pub fn new(elems: TC) -> Self {
+        Self(elems)
+    }
+    pub fn es(&mut self) -> &mut TC {
+        &mut self.0
+    }
+}
+
+pub trait ElemsBase {
+    fn new() -> Self;
+    // fn add<TI>(&mut self, elem: Elem<TI>) -> Result<()>;
+}
+
+
+
+
 // #[derive(Debug)]
 // pub struct Elems(BTreeMap<String, Elem>);
 //
