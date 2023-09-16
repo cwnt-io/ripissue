@@ -8,12 +8,12 @@ pub enum IssueCommand {
     Create(CreateArgs),
     /// Commits issue to git
     Commit(CommitArgs),
-    /// Lists all issues
-    List(ListIssues),
     /// Closes, adds and commits an issue
     Close(CloseArgs),
     /// Deletes an issue
     Delete(DeleteArgs),
+    /// Lists all issues
+    List(ListIssues),
 }
 
 #[derive(Debug, Args)]
