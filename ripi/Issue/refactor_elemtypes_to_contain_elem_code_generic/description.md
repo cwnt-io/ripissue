@@ -1,6 +1,8 @@
 # refactor_elemtypes_to_contain_elem_code_generic (Issue)
 
-- [ ] Generalize Elem to String "Issue", Sprint, Etc...
+- [ ] test
+    - issues
+- [x] Generalize Elem to String "Issue", Sprint, Etc...
 - [x] generalize main function
 - [x] create executors trait (generalize behaviour of Sprints, Epics, etc...)
     - [x] unify: commands create, delete, etc... in traits

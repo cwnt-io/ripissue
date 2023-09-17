@@ -2,32 +2,29 @@ mod args;
 mod elements;
 mod helpers;
 mod properties;
-mod executors;
 
 extern crate slugify;
-use crate::args::{Cli,EntityType};
+use crate::args::Cli;
 use clap::Parser;
 use anyhow::Result;
-
-use elements::issue::Issue;
-use elements::sprint::Sprint;
-use elements::elem::ElemBase;
-use executors::run_subc::Runnable;
-
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
 
-    match &cli.entity_type {
-        EntityType::Issue(subc) => {
-            let mut elem = Issue::new();
-            elem.run_cmd(subc)?;
-        }
-        EntityType::Sprint(subc) => {
-            let mut elem = Sprint::new();
-            elem.run_cmd(subc)?;
-        }
-    }
+    println!("Enterred here");
+    println!("{:?}", &cli.entity_type.to_string());
+    cli.entity_type.run_cmd()?;
+
+    // match &cli.entity_type {
+    //     EntityType::Issue(subc) => {
+    //         // let mut elem = Issue::new();
+    //         // elem.run_cmd(subc)?;
+    //     }
+    //     EntityType::Sprint(subc) => {
+    //         // let mut elem = Sprint::new();
+    //         // elem.run_cmd(subc)?;
+    //     }
+    // }
 
 
         // EntityType::Issue(SubCommand::List(cmd)) => {

@@ -2,21 +2,135 @@ use std::{path::PathBuf, io::{stdout, BufWriter, Write}, fs::{create_dir_all, re
 
 use anyhow::{Result, bail};
 
-use crate::{helpers::{sys_base_path, get_closed_dir, git_commit, write_file}, properties::{statuses::{StatusTrait, Status}, tags::{TagTrait, Tag}}};
+use crate::{helpers::{sys_base_path, get_closed_dir, git_commit, write_file, slug}, properties::{statuses::Status, tags::Tag}, args::subcommand::{SubCommand, CreateArgs, CommitArgs, CloseArgs, DeleteArgs}};
 
 #[derive(Debug, Clone)]
 pub struct Elem {
     id: String,
-    stype: &'static str,
+    stype: String,
     status: Option<Status>,
     tags: Option<Vec<Tag>>,
 }
 
-pub trait ElemBase {
-    fn new() -> Self;
-    fn id(&self) -> &str;
-    fn set_id(&mut self, input: &str);
-    fn stype(&self) -> &str;
+impl Elem {
+    fn new(stype: &str) -> Self {
+        Self {
+            id: String::default(),
+            stype: stype.to_owned(),
+            status: None,
+            tags: None
+        }
+    }
+    pub fn run_cmd(stype: &str, subcmd: &SubCommand) -> Result<()> {
+        let mut elem = Self::new(stype);
+        use SubCommand::*;
+        match subcmd {
+            Create(cmd) => elem.create(&cmd)?,
+            Commit(cmd) => elem.commit(&cmd)?,
+            Close(cmd) => elem.close(&cmd)?,
+            Delete(cmd) => elem.delete(&cmd)?,
+        }
+        Ok(())
+    }
+    fn id(&self) -> &str {
+        &self.id
+    }
+    fn set_id(&mut self, input: &str) {
+        self.id = if input.contains("/") {
+            input.split("/").last().unwrap().to_owned()
+        } else {
+            slug(input)
+        };
+    }
+    fn stype(&self) -> &str {
+        &self.stype
+    }
+    fn status(&self) -> &Option<Status> {
+        &self.status
+    }
+    fn set_status(&mut self, status: Option<Status>) {
+        self.status = status;
+    }
+    fn status_path(&self) -> PathBuf {
+        let mut status_path = self.epath();
+        status_path.push("status");
+        status_path
+    }
+    fn write_status(&self) -> Result<()> {
+        let status_path = self.status_path();
+        if status_path.is_dir() {
+            remove_dir_all(&status_path)?;
+        }
+        if let Some(status) = self.status() {
+            let file = &status.as_ref();
+            write_file(&status_path,file,None)?;
+        }
+        Ok(())
+    }
+    fn set_status_from_files(&mut self) -> Result<()> {
+        let status = Status::status_from_files(&self.status_path())?;
+        self.set_status(status);
+        Ok(())
+    }
+    fn write_status_from_cmd(&mut self, status_cmd: Option<Status>) -> Result<()> {
+        if status_cmd.is_some() {
+            self.set_status(status_cmd);
+            self.write_status()?;
+        }
+        Ok(())
+    }
+    fn tags(&self) -> &Option<Vec<Tag>> {
+        &self.tags
+    }
+    fn set_tags(&mut self, tags: Option<Vec<Tag>>) {
+        self.tags = tags;
+    }
+    fn tags_path(&self) -> PathBuf {
+        let mut tags_path = self.epath().clone();
+        tags_path.push("tags");
+        tags_path
+    }
+    fn append_tags(&mut self, tags: &Vec<Tag>) {
+        if tags.is_empty() {
+            return;
+        }
+        let mut new_tags = self.tags().clone().unwrap_or(vec![]);
+        for tag in tags {
+            new_tags.push(tag.clone());
+        }
+        self.set_tags(Some(new_tags));
+    }
+    fn write_tags(&self) -> Result<()> {
+        if let Some(tags) = self.tags() {
+            let dir = &self.tags_path();
+            for tag in tags.iter() {
+                let file = &tag.to_str();
+                write_file(dir,file,None)?;
+            }
+        }
+        Ok(())
+    }
+    fn write_tags_from_cmd(&mut self, tags_cmd: &Option<Vec<String>>) -> Result<()> {
+        if let Some(ts) = tags_cmd {
+            let new_vec_tags = Tag::vec_tags_from_vec_str(ts);
+            if let Some(vt) = new_vec_tags.as_ref() {
+                self.append_tags(vt);
+            }
+            self.write_tags()?;
+        }
+        Ok(())
+    }
+
+    fn set_tags_from_vec_str(&mut self, vec: &Option<Vec<String>>) {
+        if let Some(ts) = vec {
+            let vec_tags = Tag::vec_tags_from_vec_str(ts);
+            self.set_tags(vec_tags);
+        }
+    }
+    fn set_tags_from_files(&mut self) {
+        let vec_tags = Tag::vec_tags_from_files(&self.tags_path());
+        self.set_tags(vec_tags);
+    }
     fn epath(&self) -> PathBuf {
         let mut epath = self.base_path();
         epath.push(self.id());
@@ -107,9 +221,6 @@ pub trait ElemBase {
             _ => Ok(())
         }
     }
-}
-
-pub trait WriteAll: StatusTrait + TagTrait {
     fn write(&self) -> Result<()> {
         let (id, epath, stype) =
             (self.id(), self.epath(), self.stype());
@@ -120,6 +231,54 @@ pub trait WriteAll: StatusTrait + TagTrait {
         let stdout = stdout();
         let mut writer = BufWriter::new(stdout);
         writeln!(writer, "{} #{} created.", stype, id)?;
+        Ok(())
+    }
+
+    // EXECUTORS
+    fn create(&mut self, cmd: &CreateArgs) -> Result<()> {
+        self.set_id(&cmd.name);
+        self.already_exists()?;
+        self.set_tags_from_vec_str(&cmd.tag);
+        self.set_status(cmd.status);
+        self.write()?;
+        if !cmd.dry {
+            let msg = format!(
+                "(created) {} #{}.",
+                self.stype(), self.id());
+            self.commit_self(&msg)?;
+        }
+        Ok(())
+    }
+    fn commit(&mut self, cmd: &CommitArgs) -> Result<()> {
+        self.set_id(&cmd.path_or_id);
+        self.update_path()?;
+        self.set_tags_from_files();
+        self.set_status_from_files()?;
+        self.write_tags_from_cmd(&cmd.tag)?;
+        self.write_status_from_cmd(cmd.status)?;
+        let msg = format!("(up) {} #{}.",
+            self.stype(), &self.id());
+        self.commit_self(&msg)?;
+        Ok(())
+    }
+    fn close(&mut self, cmd: &CloseArgs) -> Result<()> {
+        self.set_id(&cmd.path_or_id);
+        self.update_path()?;
+        self.close_self()?;
+        let msg = format!("(closed) {} #{}.",
+            self.stype(), &self.id());
+        self.commit_self(&msg)?;
+        Ok(())
+    }
+    fn delete(&mut self, cmd: &DeleteArgs) -> Result<()> {
+        self.set_id(&cmd.path_or_id);
+        self.update_path()?;
+        self.delete_self()?;
+        if !cmd.dry {
+            let msg = format!("(deleted) {} #{}.",
+                self.stype(), &self.id());
+            self.commit_self(&msg)?;
+        }
         Ok(())
     }
 }
