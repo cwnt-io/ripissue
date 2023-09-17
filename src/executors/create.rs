@@ -19,18 +19,18 @@ pub struct CreateArgs {
     pub dry: bool,
 }
 
-pub trait Createable<T: ElemBase + TagTrait + StatusTrait + WriteAll> {
-    fn create(cmd: &CreateArgs) -> Result<()> {
-        let mut elem = T::new(&cmd.name);
-        elem.already_exists()?;
-        elem.set_tags_from_vec_str(&cmd.tag);
-        elem.set_status(cmd.status);
-        elem.write()?;
+pub trait Createable: ElemBase + TagTrait + StatusTrait + WriteAll {
+    fn create(&mut self, cmd: &CreateArgs) -> Result<()> {
+        self.set_id(&cmd.name);
+        self.already_exists()?;
+        self.set_tags_from_vec_str(&cmd.tag);
+        self.set_status(cmd.status);
+        self.write()?;
         if !cmd.dry {
             let msg = format!(
                 "(created) {} #{}.",
-                elem.stype(), elem.id());
-            elem.commit_self(&msg)?;
+                self.stype(), self.id());
+            self.commit_self(&msg)?;
         }
         Ok(())
     }

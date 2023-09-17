@@ -1,4 +1,4 @@
-use crate::{helpers::{is_not_empty, id_from_input}, elements::elem::ElemBase};
+use crate::{helpers::is_not_empty, elements::elem::ElemBase};
 
 use clap::Args;
 use anyhow::Result;
@@ -13,16 +13,15 @@ pub struct DeleteArgs {
     pub dry: bool,
 }
 
-pub trait Deleteable<T: ElemBase> {
-    fn delete(cmd: &DeleteArgs) -> Result<()> {
-        let name = id_from_input(&cmd.path_or_id);
-        let mut elem = T::new(name);
-        elem.update_path()?;
-        elem.delete_self()?;
+pub trait Deleteable: ElemBase {
+    fn delete(&mut self, cmd: &DeleteArgs) -> Result<()> {
+        self.set_id(&cmd.path_or_id);
+        self.update_path()?;
+        self.delete_self()?;
         if !cmd.dry {
             let msg = format!("(deleted) {} #{}.",
-                elem.stype(), &elem.id());
-            elem.commit_self(&msg)?;
+                self.stype(), &self.id());
+            self.commit_self(&msg)?;
         }
         Ok(())
     }

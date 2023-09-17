@@ -29,13 +29,13 @@ pub fn traverse_files(path: &PathBuf) -> Vec<PathBuf> {
         .collect()
 }
 
-pub fn traverse_dirs(path: &PathBuf) -> Vec<PathBuf> {
-    let walk_iter = walkdir_into_iter(path);
-    walk_iter
-        .filter(|e| e.file_type().is_dir())
-        .map(|e| e.into_path())
-        .collect()
-}
+// pub fn traverse_dirs(path: &PathBuf) -> Vec<PathBuf> {
+//     let walk_iter = walkdir_into_iter(path);
+//     walk_iter
+//         .filter(|e| e.file_type().is_dir())
+//         .map(|e| e.into_path())
+//         .collect()
+// }
 
 // pub fn get_all_elems<T>() -> Result<BTreeMap<String, impl Element>>
 //     where T: Element,
@@ -101,10 +101,6 @@ pub fn slug_tag(s: &str) -> String {
 
 pub fn get_file_name(path: &PathBuf) -> String {
     path.file_name().unwrap().to_str().unwrap().to_owned()
-}
-
-pub fn id_from_input(input: &str) -> &str {
-    input.split("/").last().unwrap()
 }
 
 // pub fn get_parent_dir(path: &PathBuf) -> String {

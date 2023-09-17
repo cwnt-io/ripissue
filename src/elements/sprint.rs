@@ -1,4 +1,4 @@
-use crate::{properties::{statuses::{Status, StatusTrait}, tags::{Tag, TagTrait}}, helpers::slug, executors::create::Createable};
+use crate::{properties::{statuses::{Status, StatusTrait}, tags::{Tag, TagTrait}}, helpers::slug, executors::{create::Createable, commit::Commitable, close::Closeable, delete::Deleteable, run_subc::Runnable}};
 
 use super::elem::{ElemBase, WriteAll};
 
@@ -11,9 +11,9 @@ pub struct Sprint {
 }
 
 impl ElemBase for Sprint {
-    fn new(name: &str) -> Self {
+    fn new() -> Self {
         Self {
-            id: slug(name),
+            id: String::default(),
             stype: "Sprint",
             status: None,
             tags: None
@@ -22,14 +22,19 @@ impl ElemBase for Sprint {
     fn id(&self) -> &str {
         &self.id
     }
+    fn set_id(&mut self, input: &str) {
+        self.id = if input.contains("/") {
+            input.split("/").last().unwrap().to_owned()
+        } else {
+            slug(input)
+        };
+    }
     fn stype(&self) -> &str {
         self.stype
     }
 }
 
 impl WriteAll for Sprint {}
-
-impl Createable<Sprint> for Sprint {}
 
 impl StatusTrait for Sprint {
     fn status(&self) -> &Option<Status> {
@@ -49,3 +54,9 @@ impl TagTrait for Sprint {
     }
 }
 
+// EXECUTORS
+impl Createable for Sprint {}
+impl Commitable for Sprint {}
+impl Closeable for Sprint {}
+impl Deleteable for Sprint {}
+impl Runnable for Sprint {}

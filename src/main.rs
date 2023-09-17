@@ -5,46 +5,31 @@ mod properties;
 mod executors;
 
 extern crate slugify;
-use args::sprints::SprintCommand;
-use args::subcommand::SubCommand;
-use elements::{issue::Issue, elem::WriteAll};
-use elements::sprint::Sprint;
-use elements::elem::ElemBase;
-use executors::close::Closeable;
-use executors::commit::Commitable;
-use executors::create::Createable;
-use executors::delete::Deleteable;
-use helpers::id_from_input;
-use properties::{tags::{Tag, TagTrait}, statuses::{Status, StatusTrait}};
-
-use crate::args::{
-    Cli,
-    EntityType,
-    issues::IssueCommand,
-};
-
+use crate::args::{Cli,EntityType};
 use clap::Parser;
 use anyhow::Result;
+
+use elements::issue::Issue;
+use elements::sprint::Sprint;
+use elements::elem::ElemBase;
+use executors::run_subc::Runnable;
+
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match &cli.entity_type {
-        // EntityType::Sprint(SubCommand::Create(cmd)) => {
-        //     Sprint::create(cmd)?;
-        // }
-        EntityType::Issue(SubCommand::Create(cmd)) => {
-            Issue::create(cmd)?;
-        },
-        EntityType::Issue(SubCommand::Commit(cmd)) => {
-            Issue::commit(&cmd)?;
+        EntityType::Issue(subc) => {
+            let mut elem = Issue::new();
+            elem.run_cmd(subc)?;
         }
-        EntityType::Issue(SubCommand::Close(cmd)) => {
-            Issue::close(&cmd)?;
-        },
-        EntityType::Issue(SubCommand::Delete(cmd)) => {
-            Issue::delete(&cmd)?;
-        },
+        EntityType::Sprint(subc) => {
+            let mut elem = Sprint::new();
+            elem.run_cmd(subc)?;
+        }
+    }
+
+
         // EntityType::Issue(SubCommand::List(cmd)) => {
         //     let mut issues = Elems::new(ElemType::Issue);
         //     issues.update()?;
@@ -58,7 +43,6 @@ fn main() -> Result<()> {
         //     let issues = get_all_elems::<Issue>()?;
         //     println!("{:#?}", issues);
         // }
-    }
 
     Ok(())
 }

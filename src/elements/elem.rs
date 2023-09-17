@@ -2,11 +2,20 @@ use std::{path::PathBuf, io::{stdout, BufWriter, Write}, fs::{create_dir_all, re
 
 use anyhow::{Result, bail};
 
-use crate::{helpers::{sys_base_path, get_closed_dir, git_commit, write_file}, properties::{statuses::StatusTrait, tags::TagTrait}};
+use crate::{helpers::{sys_base_path, get_closed_dir, git_commit, write_file}, properties::{statuses::{StatusTrait, Status}, tags::{TagTrait, Tag}}};
+
+#[derive(Debug, Clone)]
+pub struct Elem {
+    id: String,
+    stype: &'static str,
+    status: Option<Status>,
+    tags: Option<Vec<Tag>>,
+}
 
 pub trait ElemBase {
-    fn new(name: &str) -> Self;
+    fn new() -> Self;
     fn id(&self) -> &str;
+    fn set_id(&mut self, input: &str);
     fn stype(&self) -> &str;
     fn epath(&self) -> PathBuf {
         let mut epath = self.base_path();

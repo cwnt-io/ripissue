@@ -1,7 +1,7 @@
 use anyhow::Result;
 use clap::Args;
 
-use crate::{helpers::{is_not_empty, id_from_input}, elements::elem::ElemBase};
+use crate::{helpers::is_not_empty, elements::elem::ElemBase};
 
 #[derive(Debug, Args)]
 pub struct CloseArgs {
@@ -10,15 +10,14 @@ pub struct CloseArgs {
     pub path_or_id: String,
 }
 
-pub trait Closeable<T: ElemBase> {
-    fn close(cmd: &CloseArgs) -> Result<()> {
-        let name = id_from_input(&cmd.path_or_id);
-        let mut elem = T::new(name);
-        elem.update_path()?;
-        elem.close_self()?;
+pub trait Closeable: ElemBase {
+    fn close(&mut self, cmd: &CloseArgs) -> Result<()> {
+        self.set_id(&cmd.path_or_id);
+        self.update_path()?;
+        self.close_self()?;
         let msg = format!("(closed) {} #{}.",
-            elem.stype(), &elem.id());
-        elem.commit_self(&msg)?;
+            self.stype(), &self.id());
+        self.commit_self(&msg)?;
         Ok(())
     }
 }

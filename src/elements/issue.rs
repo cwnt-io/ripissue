@@ -1,4 +1,4 @@
-use crate::{properties::{statuses::{Status, StatusTrait}, tags::{Tag, TagTrait}}, helpers::slug, executors::{create::Createable, commit::Commitable, close::Closeable, delete::Deleteable}};
+use crate::{properties::{statuses::{Status, StatusTrait}, tags::{Tag, TagTrait}}, helpers::slug, executors::{create::Createable, commit::Commitable, close::Closeable, delete::Deleteable, run_subc::Runnable}};
 
 use super::elem::{ElemBase, WriteAll};
 
@@ -11,9 +11,9 @@ pub struct Issue {
 }
 
 impl ElemBase for Issue {
-    fn new(name: &str) -> Self {
+    fn new() -> Self {
         Self {
-            id: slug(name),
+            id: String::default(),
             stype: "Issue",
             status: None,
             tags: None
@@ -21,6 +21,13 @@ impl ElemBase for Issue {
     }
     fn id(&self) -> &str {
         &self.id
+    }
+    fn set_id(&mut self, input: &str) {
+        self.id = if input.contains("/") {
+            input.split("/").last().unwrap().to_owned()
+        } else {
+            slug(input)
+        };
     }
     fn stype(&self) -> &str {
         self.stype
@@ -49,10 +56,11 @@ impl TagTrait for Issue {
 }
 
 // EXECUTORS
-impl Createable<Issue> for Issue {}
-impl Commitable<Issue> for Issue {}
-impl Closeable<Issue> for Issue {}
-impl Deleteable<Issue> for Issue {}
+impl Createable for Issue {}
+impl Commitable for Issue {}
+impl Closeable for Issue {}
+impl Deleteable for Issue {}
+impl Runnable for Issue {}
 
     // fn add<Issue: ElemBase + Clone>(&mut self, elem: Elem<Issue>) -> Result<()> {
     //     let elem2: Elem<Issue> = elem.clone();
