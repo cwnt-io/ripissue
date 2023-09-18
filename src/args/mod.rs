@@ -24,10 +24,12 @@ pub enum EntityType {
     /// Operations for item Sprint: create, list, update, close, deletes, etc.
     #[command(subcommand)]
     Sprint(SubCommand),
-    // /// Create, edit, list, delete, close epic
-    // Epic(EpicCommand),
-    // /// Create, edit, list, delete, close initiative
-    // Initiative(InitiativeCommand),
+    /// Operations for item Epic: create, list, update, close, deletes, etc.
+    #[command(subcommand)]
+    Epic(SubCommand),
+    /// Operations for item Initiative: create, list, update, close, deletes, etc.
+    #[command(subcommand)]
+    Initiative(SubCommand),
 }
 
 impl EntityType {
@@ -36,6 +38,8 @@ impl EntityType {
         match self {
             Issue(subcmd) => Elem::run_cmd(&self.to_string(), subcmd)?,
             Sprint(subcmd) => Elem::run_cmd(&self.to_string(), subcmd)?,
+            Epic(subcmd) => Elem::run_cmd(&self.to_string(), subcmd)?,
+            Initiative(subcmd) => Elem::run_cmd(&self.to_string(), subcmd)?,
         }
         Ok(())
     }

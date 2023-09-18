@@ -1,4 +1,4 @@
-use std::{path::PathBuf, io::{stdout, BufWriter, Write}, fs::{create_dir_all, rename, remove_dir_all}};
+use std::{path::PathBuf, io::Write, fs::{create_dir_all, rename, remove_dir_all}};
 
 use anyhow::{Result, bail};
 

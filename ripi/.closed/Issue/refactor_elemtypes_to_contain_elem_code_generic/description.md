@@ -1,6 +1,6 @@
 # refactor_elemtypes_to_contain_elem_code_generic (Issue)
 
-- [ ] Epics, Initiatives, PR?
+- [x] Epics, Initiatives, PR?
 - [x] tests
 - [x] cleaning warnings
 - [x] Generalize Elem to String "Issue", Sprint, Etc...
