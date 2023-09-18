@@ -25,10 +25,10 @@ impl Elem {
         let mut elem = Self::new(stype);
         use SubCommand::*;
         match subcmd {
-            Create(cmd) => elem.create(&cmd)?,
-            Commit(cmd) => elem.commit(&cmd)?,
-            Close(cmd) => elem.close(&cmd)?,
-            Delete(cmd) => elem.delete(&cmd)?,
+            Create(cmd) => elem.create(cmd)?,
+            Commit(cmd) => elem.commit(cmd)?,
+            Close(cmd) => elem.close(cmd)?,
+            Delete(cmd) => elem.delete(cmd)?,
         }
         Ok(())
     }
@@ -36,8 +36,8 @@ impl Elem {
         &self.id
     }
     fn set_id(&mut self, input: &str) {
-        self.id = if input.contains("/") {
-            input.split("/").last().unwrap().to_owned()
+        self.id = if input.contains('/') {
+            input.split('/').last().unwrap().to_owned()
         } else {
             slug(input)
         };
@@ -157,12 +157,12 @@ impl Elem {
         closed.push(self.stype());
         closed
     }
-    fn base_path_all(&self) -> Vec<PathBuf> {
-        vec![
-            self.base_path(),
-            self.base_path_closed(),
-        ]
-    }
+    // fn base_path_all(&self) -> Vec<PathBuf> {
+    //     vec![
+    //         self.base_path(),
+    //         self.base_path_closed(),
+    //     ]
+    // }
 
     fn commit_self(&self, msg: &str) -> Result<()> {
         let files_to_add = self.epaths_all().into_iter().map(|p| {

@@ -1,5 +1,5 @@
 use std::{
-    path::PathBuf,
+    path::{PathBuf, Path},
     str::FromStr,
     fs::{File, create_dir_all},
     io::Write, iter::Flatten,
@@ -99,7 +99,7 @@ pub fn slug_tag(s: &str) -> String {
     slugify!(&s.to_lowercase(), separator = "-")
 }
 
-pub fn get_file_name(path: &PathBuf) -> String {
+pub fn get_file_name(path: &Path) -> String {
     path.file_name().unwrap().to_str().unwrap().to_owned()
 }
 

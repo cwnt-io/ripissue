@@ -2,6 +2,7 @@
 
 - [ ] test
     - issues
+- [x] cleaning warnings
 - [x] Generalize Elem to String "Issue", Sprint, Etc...
 - [x] generalize main function
 - [x] create executors trait (generalize behaviour of Sprints, Epics, etc...)

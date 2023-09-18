@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use crate::helpers::{slug_tag, walkdir_into_iter, write_file};
+use crate::helpers::{slug_tag, walkdir_into_iter};
 
 #[derive(Debug, Clone)]
 pub struct Tag(Vec<String>);
@@ -9,7 +9,7 @@ impl Tag {
 
     pub fn new(s: &str) -> Self {
         let s = slug_tag(s);
-        Self(s.split("-").map(|p|p.to_owned()).collect())
+        Self(s.split('-').map(|p|p.to_owned()).collect())
     }
 
     pub fn to_str(&self) -> String {
@@ -27,7 +27,7 @@ impl Tag {
         }
     }
 
-    pub fn vec_tags_from_vec_str(vec: &Vec<String>) -> Option<Vec<Self>> {
+    pub fn vec_tags_from_vec_str(vec: &[String]) -> Option<Vec<Self>> {
         let vec_tags: Vec<Tag> = vec.iter().map(|s| Tag::new(s)).collect();
         match vec_tags.is_empty() {
             true => None,

@@ -34,10 +34,9 @@ impl EntityType {
     pub fn run_cmd(&self) -> Result<()> {
         use EntityType::*;
         match self {
-            Issue(subcmd) => Elem::run_cmd(&self.to_string(), &subcmd)?,
-            Sprint(subcmd) => Elem::run_cmd(&self.to_string(), &subcmd)?,
+            Issue(subcmd) => Elem::run_cmd(&self.to_string(), subcmd)?,
+            Sprint(subcmd) => Elem::run_cmd(&self.to_string(), subcmd)?,
         }
-
         Ok(())
     }
 }
