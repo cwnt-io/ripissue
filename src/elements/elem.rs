@@ -2,7 +2,7 @@ use std::{path::PathBuf, io::{stdout, BufWriter, Write}, fs::{create_dir_all, re
 
 use anyhow::{Result, bail};
 
-use crate::{helpers::{sys_base_path, get_closed_dir, git_commit, write_file, slug}, properties::{statuses::Status, tags::Tag}, args::subcommand::{SubCommand, CreateArgs, CommitArgs, CloseArgs, DeleteArgs}};
+use crate::{helpers::{sys_base_path, get_closed_dir, git_commit, write_file, slug, wstdout}, properties::{statuses::Status, tags::Tag}, args::subcmd_args::{SubCommand, CreateArgs, CommitArgs, CloseArgs, DeleteArgs}};
 
 #[derive(Debug, Clone)]
 pub struct Elem {
@@ -169,9 +169,7 @@ impl Elem {
             p.to_str().unwrap().to_owned()
         }).collect::<Vec<String>>();
         git_commit(Some(&files_to_add), msg)?;
-        let stdout = stdout();
-        let mut writer = BufWriter::new(stdout);
-        writeln!(writer, "{} #{} commited to git.", self.stype(), self.id())?;
+        writeln!(wstdout(), "{} #{} commited to git.", self.stype(), self.id())?;
         Ok(())
     }
     fn close_self(&self) -> Result<()> {
@@ -183,9 +181,7 @@ impl Elem {
             create_dir_all(self.epath_closed())?;
         }
         rename(self.epath(), self.epath_closed())?;
-        let stdout = stdout();
-        let mut writer = BufWriter::new(stdout);
-        writeln!(writer, "{} #{} closed.", stype, &id)?;
+        writeln!(wstdout(), "{} #{} closed.", stype, &id)?;
         Ok(())
     }
     fn delete_self(&self) -> Result<()> {
@@ -196,9 +192,7 @@ impl Elem {
                 remove_dir_all(p)?;
             }
         }
-        let stdout = stdout();
-        let mut writer = BufWriter::new(stdout);
-        writeln!(writer, "{} #{} deleted.", stype, &id)?;
+        writeln!(wstdout(), "{} #{} deleted.", stype, &id)?;
         Ok(())
     }
     fn already_exists(&self) -> Result<()> {
@@ -228,9 +222,7 @@ impl Elem {
         write_file(&epath, "description.md", Some(&content))?;
         self.write_status()?;
         self.write_tags()?;
-        let stdout = stdout();
-        let mut writer = BufWriter::new(stdout);
-        writeln!(writer, "{} #{} created.", stype, id)?;
+        writeln!(wstdout(), "{} #{} created.", stype, id)?;
         Ok(())
     }
 

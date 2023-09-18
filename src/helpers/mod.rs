@@ -2,7 +2,7 @@ use std::{
     path::{PathBuf, Path},
     str::FromStr,
     fs::{File, create_dir_all},
-    io::Write, iter::Flatten,
+    io::{Write, BufWriter, Stdout, stdout}, iter::Flatten,
 };
 
 use slugify::slugify;
@@ -13,6 +13,11 @@ use walkdir::WalkDir;
 // pub fn type_to_str<T>(_: &T) -> String {
 //     format!("{}", std::any::type_name::<T>())
 // }
+
+pub fn wstdout() -> BufWriter<Stdout> {
+    let stdout = stdout();
+    BufWriter::new(stdout)
+}
 
 pub fn walkdir_into_iter(path: &PathBuf) -> Flatten<walkdir::IntoIter> {
     WalkDir::new(path)

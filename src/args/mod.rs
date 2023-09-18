@@ -1,4 +1,4 @@
-pub mod subcommand;
+pub mod subcmd_args;
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
@@ -6,7 +6,7 @@ use strum_macros::Display;
 
 use crate::elements::elem::Elem;
 
-use self::subcommand::SubCommand;
+use self::subcmd_args::SubCommand;
 
 /// Manage your project and issues
 #[derive(Debug, Parser)]
