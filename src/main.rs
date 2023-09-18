@@ -11,21 +11,7 @@ use anyhow::Result;
 fn main() -> Result<()> {
     let cli = Cli::parse();
 
-    println!("Enterred here");
-    println!("{:?}", &cli.entity_type.to_string());
     cli.entity_type.run_cmd()?;
-
-    // match &cli.entity_type {
-    //     EntityType::Issue(subc) => {
-    //         // let mut elem = Issue::new();
-    //         // elem.run_cmd(subc)?;
-    //     }
-    //     EntityType::Sprint(subc) => {
-    //         // let mut elem = Sprint::new();
-    //         // elem.run_cmd(subc)?;
-    //     }
-    // }
-
 
         // EntityType::Issue(SubCommand::List(cmd)) => {
         //     let mut issues = Elems::new(ElemType::Issue);
