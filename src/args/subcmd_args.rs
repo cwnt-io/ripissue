@@ -13,8 +13,8 @@ pub enum SubCommand {
     Close(CloseArgs),
     /// Deletes an item
     Delete(DeleteArgs),
-    // /// Lists all issues
-    // List(ListIssues),
+    /// Lists all items
+    List(ListArgs),
 }
 
 #[derive(Debug, Args)]
@@ -55,10 +55,23 @@ pub struct CloseArgs {
 
 #[derive(Debug, Args)]
 pub struct DeleteArgs {
-    /// Path or Id of the issue
+    /// Path or Id of the existing item
     #[arg(value_parser = is_not_empty)]
     pub path_or_id: String,
-    /// Just deletes the issue. Do not commit it to git.
+    /// Just deletes the item. Do not commit it to git.
     #[arg(long, short)]
     pub dry: bool,
+}
+
+#[derive(Debug, Args)]
+pub struct ListArgs {
+    /// All items (opened and closed).
+    #[arg(long, short)]
+    pub all: bool,
+    /// Filter by status
+    #[arg(long, short, value_enum)]
+    pub status: Option<Status>,
+    /// Filter by tag
+    #[arg(long, short)]
+    pub tag: Option<Vec<String>>,
 }

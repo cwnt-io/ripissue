@@ -3,12 +3,15 @@ use std::{
     str::FromStr,
     fs::{File, create_dir_all},
     io::{Write, BufWriter, Stdout, stdout}, iter::Flatten,
+    iter::Iterator,
+    iter::{IntoIterator, Chain}
 };
+
 
 use slugify::slugify;
 use anyhow::{Context, Result, bail};
 use git2::{Repository, IndexAddOption};
-use walkdir::WalkDir;
+use walkdir::{WalkDir, DirEntry};
 
 // pub fn type_to_str<T>(_: &T) -> String {
 //     format!("{}", std::any::type_name::<T>())
@@ -34,13 +37,17 @@ pub fn traverse_files(path: &PathBuf) -> Vec<PathBuf> {
         .collect()
 }
 
-// pub fn traverse_dirs(path: &PathBuf) -> Vec<PathBuf> {
-//     let walk_iter = walkdir_into_iter(path);
-//     walk_iter
-//         .filter(|e| e.file_type().is_dir())
-//         .map(|e| e.into_path())
-//         .collect()
-// }
+pub fn traverse_dirs(paths: &[PathBuf]) -> Vec<PathBuf> {
+    let mut vec = vec![];
+    for path in paths {
+        let walk_iter = walkdir_into_iter(path);
+        vec.extend(walk_iter
+                   .filter(|e| e.file_type().is_dir())
+                   .map(|e| e.into_path())
+                   .collect::<Vec<PathBuf>>());
+    }
+    vec
+}
 
 // pub fn get_all_elems<T>() -> Result<BTreeMap<String, impl Element>>
 //     where T: Element,

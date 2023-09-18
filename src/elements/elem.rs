@@ -1,8 +1,8 @@
-use std::{path::PathBuf, io::Write, fs::{create_dir_all, rename, remove_dir_all}};
+use std::{path::PathBuf, io::Write, fs::{create_dir_all, rename, remove_dir_all}, collections::BTreeMap};
 
 use anyhow::{Result, bail};
 
-use crate::{helpers::{sys_base_path, get_closed_dir, git_commit, write_file, slug, wstdout}, properties::{statuses::Status, tags::Tag}, args::subcmd_args::{SubCommand, CreateArgs, CommitArgs, CloseArgs, DeleteArgs}};
+use crate::{helpers::{sys_base_path, get_closed_dir, git_commit, write_file, slug, wstdout, walkdir_into_iter, traverse_dirs}, properties::{statuses::Status, tags::Tag}, args::subcmd_args::{SubCommand, CreateArgs, CommitArgs, CloseArgs, DeleteArgs, ListArgs}};
 
 #[derive(Debug, Clone)]
 pub struct Elem {
@@ -13,7 +13,14 @@ pub struct Elem {
 }
 
 impl Elem {
-    fn new(stype: &str) -> Self {
+    fn set_all_from_files(&mut self, input_id: &str) -> Result<()> {
+        self.set_id(input_id);
+        self.update_path()?;
+        self.set_tags_from_files();
+        self.set_status_from_files()?;
+        Ok(())
+    }
+    fn raw(stype: &str) -> Self {
         Self {
             id: String::default(),
             stype: stype.to_owned(),
@@ -22,13 +29,14 @@ impl Elem {
         }
     }
     pub fn run_cmd(stype: &str, subcmd: &SubCommand) -> Result<()> {
-        let mut elem = Self::new(stype);
+        let mut elem = Self::raw(stype);
         use SubCommand::*;
         match subcmd {
             Create(cmd) => elem.create(cmd)?,
             Commit(cmd) => elem.commit(cmd)?,
             Close(cmd) => elem.close(cmd)?,
             Delete(cmd) => elem.delete(cmd)?,
+            List(cmd) => elem.list(cmd)?,
         }
         Ok(())
     }
@@ -157,12 +165,12 @@ impl Elem {
         closed.push(self.stype());
         closed
     }
-    // fn base_path_all(&self) -> Vec<PathBuf> {
-    //     vec![
-    //         self.base_path(),
-    //         self.base_path_closed(),
-    //     ]
-    // }
+    fn base_path_all(&self) -> Vec<PathBuf> {
+        vec![
+            self.base_path(),
+            self.base_path_closed(),
+        ]
+    }
 
     fn commit_self(&self, msg: &str) -> Result<()> {
         let files_to_add = self.epaths_all().into_iter().map(|p| {
@@ -242,10 +250,7 @@ impl Elem {
         Ok(())
     }
     fn commit(&mut self, cmd: &CommitArgs) -> Result<()> {
-        self.set_id(&cmd.path_or_id);
-        self.update_path()?;
-        self.set_tags_from_files();
-        self.set_status_from_files()?;
+        self.set_all_from_files(&cmd.path_or_id)?;
         self.write_tags_from_cmd(&cmd.tag)?;
         self.write_status_from_cmd(cmd.status)?;
         let msg = format!("(up) {} #{}.",
@@ -270,6 +275,23 @@ impl Elem {
             let msg = format!("(deleted) {} #{}.",
                 self.stype(), &self.id());
             self.commit_self(&msg)?;
+        }
+        Ok(())
+    }
+    // TODO:
+    fn list(self, _cmd: &ListArgs) -> Result<()> {
+        let mut map = BTreeMap::new();
+        let epaths = traverse_dirs(&self.base_path_all());
+        let mut out = wstdout();
+        for epath in epaths {
+            let mut elem = self.clone();
+            elem.set_all_from_files(epath.to_str().unwrap())?;
+            let id = elem.id().to_owned();
+            map.insert(id, elem);
+        }
+        writeln!(out, "\n{}S:\n", self.stype().to_uppercase())?;
+        for (_,v) in map {
+            writeln!(out, "#{}",v.id())?;
         }
         Ok(())
     }

@@ -15,8 +15,8 @@ Inspired by:
 
 # todo:
 
-- [ ] git_workflow
 - [ ] cmd_list_add_functionalities_and_filters
+- [x] git_workflow
 - [ ] sprint/epics/initiatives:
     - yaml file: https://stackoverflow.com/questions/53243795/how-do-you-read-a-yaml-file-in-rust
 - [ ] clean cwnt github repo (delete popcorn-web-app)
