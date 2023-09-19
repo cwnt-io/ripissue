@@ -11,6 +11,8 @@ pub enum SubCommand {
     Commit(CommitArgs),
     /// Closes, adds and commits an item
     Close(CloseArgs),
+    /// Reopens an item and adds and commits to git
+    Reopen(CloseArgs),
     /// Deletes an item
     Delete(DeleteArgs),
     /// Lists all items

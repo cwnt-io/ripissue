@@ -20,7 +20,8 @@ Inspired by:
 
 # todo:
 
-- [ ] to publish a version:
+- [ ] to publish to cargo:
+    - [ ] project elem
     - [ ] sprint/epics/initiatives
         - yaml file: https://stackoverflow.com/questions/53243795/how-do-you-read-a-yaml-file-in-rust
 

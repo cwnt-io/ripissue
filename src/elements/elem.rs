@@ -195,6 +195,18 @@ impl Elem {
         writeln!(wstdout(), "{} #{} closed.", stype, &id)?;
         Ok(())
     }
+    fn reopen_self(&self) -> Result<()> {
+        let stype = self.stype();
+        let id = self.id();
+        if self.epath().is_dir() {
+            bail!("{} #{} is already opened.", stype, &id);
+        } else {
+            create_dir_all(self.epath())?;
+        }
+        rename(self.epath_closed(), self.epath())?;
+        writeln!(wstdout(), "{} #{} reopened.", stype, &id)?;
+        Ok(())
+    }
     fn delete_self(&self) -> Result<()> {
         let stype = self.stype();
         let id = self.id();
@@ -266,6 +278,15 @@ impl Elem {
         self.update_path()?;
         self.close_self()?;
         let msg = format!("(closed) {} #{}.",
+            self.stype(), &self.id());
+        self.commit_self(&msg)?;
+        Ok(())
+    }
+    pub fn reopen(&mut self, cmd: &CloseArgs) -> Result<()> {
+        self.set_id(&cmd.path_or_id);
+        self.update_path()?;
+        self.reopen_self()?;
+        let msg = format!("(reopened) {} #{}.",
             self.stype(), &self.id());
         self.commit_self(&msg)?;
         Ok(())

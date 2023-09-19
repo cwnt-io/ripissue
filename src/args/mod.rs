@@ -30,6 +30,9 @@ pub enum EntityType {
     /// Operations for item Initiative: create, list, update, close, deletes, etc.
     #[command(subcommand)]
     Initiative(SubCommand),
+    /// Operations for item Project: create, list, update, close, deletes, etc.
+    #[command(subcommand)]
+    Project(SubCommand),
 }
 
 impl EntityType {
@@ -40,6 +43,7 @@ impl EntityType {
             Sprint(subcmd) => run_cmd(&self.to_string(), subcmd)?,
             Epic(subcmd) => run_cmd(&self.to_string(), subcmd)?,
             Initiative(subcmd) => run_cmd(&self.to_string(), subcmd)?,
+            Project(subcmd) => run_cmd(&self.to_string(), subcmd)?,
         }
         Ok(())
     }
@@ -59,6 +63,10 @@ fn run_cmd(stype: &str, subcmd: &SubCommand) -> Result<()> {
         Close(cmd) => {
             let mut elem = Elem::raw(stype);
             elem.close(cmd)?
+        },
+        Reopen(cmd) => {
+            let mut elem = Elem::raw(stype);
+            elem.reopen(cmd)?
         },
         Delete(cmd) => {
             let mut elem = Elem::raw(stype);
