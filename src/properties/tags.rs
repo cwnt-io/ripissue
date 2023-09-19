@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{path::PathBuf, slice::Iter};
 
 use crate::helpers::{slug_tag, walkdir_into_iter};
 
@@ -33,6 +33,14 @@ impl Tag {
             true => None,
             false => Some(vec_tags),
         }
+    }
+
+    pub fn iter(&self) -> Iter<'_, String> {
+        self.0.iter()
+    }
+
+    pub fn contains(&self, s: &str) -> bool {
+        self.0.contains(&s.to_owned())
     }
 
 }

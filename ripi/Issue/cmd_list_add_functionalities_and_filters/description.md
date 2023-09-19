@@ -9,13 +9,12 @@
 
 ## todo
 
-- [x] basic print layout
-    - [ ]
-- [ ] get all elems, save to struct Elems
-- [ ] prints by filter
-    - [ ] all (closed / opened)
-    - [ ] filter by status
-    - [ ] filter by tags, tag groups
+- [ ] basic print layout
+- [x] get all elems, save to struct Elems
+- [x] get by filter
+    - [x] all (closed / opened)
+    - [x] filter by status
+    - [x] filter by tags, tag groups
 
 ## done/old
 

@@ -2,7 +2,7 @@ use std::{path::PathBuf, io::Write, fs::{create_dir_all, rename, remove_dir_all}
 
 use anyhow::{Result, bail};
 
-use crate::{helpers::{sys_base_path, get_closed_dir, git_commit, write_file, slug, wstdout, walkdir_into_iter, traverse_dirs}, properties::{statuses::Status, tags::Tag}, args::subcmd_args::{SubCommand, CreateArgs, CommitArgs, CloseArgs, DeleteArgs, ListArgs}};
+use crate::{helpers::{sys_base_path, get_closed_dir, git_commit, write_file, slug, wstdout, walkdir_into_iter, traverse_dirs, base_path, base_path_closed, base_path_all}, properties::{statuses::Status, tags::Tag}, args::subcmd_args::{SubCommand, CreateArgs, CommitArgs, CloseArgs, DeleteArgs, ListArgs}};
 
 #[derive(Debug, Clone)]
 pub struct Elem {
@@ -13,14 +13,14 @@ pub struct Elem {
 }
 
 impl Elem {
-    fn set_all_from_files(&mut self, input_id: &str) -> Result<()> {
+    pub fn set_all_from_files(&mut self, input_id: &str) -> Result<()> {
         self.set_id(input_id);
         self.update_path()?;
         self.set_tags_from_files();
         self.set_status_from_files()?;
         Ok(())
     }
-    fn raw(stype: &str) -> Self {
+    pub fn raw(stype: &str) -> Self {
         Self {
             id: String::default(),
             stype: stype.to_owned(),
@@ -28,19 +28,7 @@ impl Elem {
             tags: None
         }
     }
-    pub fn run_cmd(stype: &str, subcmd: &SubCommand) -> Result<()> {
-        let mut elem = Self::raw(stype);
-        use SubCommand::*;
-        match subcmd {
-            Create(cmd) => elem.create(cmd)?,
-            Commit(cmd) => elem.commit(cmd)?,
-            Close(cmd) => elem.close(cmd)?,
-            Delete(cmd) => elem.delete(cmd)?,
-            List(cmd) => elem.list(cmd)?,
-        }
-        Ok(())
-    }
-    fn id(&self) -> &str {
+    pub fn id(&self) -> &str {
         &self.id
     }
     fn set_id(&mut self, input: &str) {
@@ -53,11 +41,17 @@ impl Elem {
     fn stype(&self) -> &str {
         &self.stype
     }
-    fn status(&self) -> &Option<Status> {
+    pub fn status(&self) -> &Option<Status> {
         &self.status
     }
     fn set_status(&mut self, status: Option<Status>) {
         self.status = status;
+    }
+    pub fn is_status(&self, status: &Option<Status>) -> bool {
+        if status.is_none() {
+            return true;
+        }
+        &self.status == status
     }
     fn status_path(&self) -> PathBuf {
         let mut status_path = self.epath();
@@ -87,11 +81,29 @@ impl Elem {
         }
         Ok(())
     }
-    fn tags(&self) -> &Option<Vec<Tag>> {
+    pub fn tags(&self) -> &Option<Vec<Tag>> {
         &self.tags
     }
     fn set_tags(&mut self, tags: Option<Vec<Tag>>) {
         self.tags = tags;
+    }
+    pub fn compare_tags(&self, tags: &Option<Vec<Tag>>) -> bool {
+        match (self.tags(), tags) {
+            (Some(tags), Some(tags_filter)) => {
+                for tag in tags {
+                    for tag_filter in tags_filter {
+                        for str_filter in tag_filter.iter() {
+                            if tag.contains(str_filter) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+                false
+            },
+            (_, None) => true,
+            _ => false
+        }
     }
     fn tags_path(&self) -> PathBuf {
         let mut tags_path = self.epath().clone();
@@ -140,7 +152,7 @@ impl Elem {
         self.set_tags(vec_tags);
     }
     fn epath(&self) -> PathBuf {
-        let mut epath = self.base_path();
+        let mut epath = base_path(&self.stype);
         epath.push(self.id());
         epath
     }
@@ -151,25 +163,9 @@ impl Elem {
         ]
     }
     fn epath_closed(&self) -> PathBuf {
-        let mut closed = self.base_path_closed();
+        let mut closed = base_path_closed(&self.stype);
         closed.push(self.id());
         closed
-    }
-    fn base_path(&self) -> PathBuf {
-        let mut base_path = sys_base_path();
-        base_path.push(self.stype());
-        base_path
-    }
-    fn base_path_closed(&self) -> PathBuf {
-        let mut closed = get_closed_dir();
-        closed.push(self.stype());
-        closed
-    }
-    fn base_path_all(&self) -> Vec<PathBuf> {
-        vec![
-            self.base_path(),
-            self.base_path_closed(),
-        ]
     }
 
     fn commit_self(&self, msg: &str) -> Result<()> {
@@ -235,10 +231,10 @@ impl Elem {
     }
 
     // EXECUTORS
-    fn create(&mut self, cmd: &CreateArgs) -> Result<()> {
+    pub fn create(&mut self, cmd: &CreateArgs) -> Result<()> {
         self.set_id(&cmd.name);
         self.already_exists()?;
-        self.set_tags_from_vec_str(&cmd.tag);
+        self.set_tags_from_vec_str(&cmd.tags);
         self.set_status(cmd.status);
         self.write()?;
         if !cmd.dry {
@@ -249,16 +245,16 @@ impl Elem {
         }
         Ok(())
     }
-    fn commit(&mut self, cmd: &CommitArgs) -> Result<()> {
+    pub fn commit(&mut self, cmd: &CommitArgs) -> Result<()> {
         self.set_all_from_files(&cmd.path_or_id)?;
-        self.write_tags_from_cmd(&cmd.tag)?;
+        self.write_tags_from_cmd(&cmd.tags)?;
         self.write_status_from_cmd(cmd.status)?;
         let msg = format!("(up) {} #{}.",
             self.stype(), &self.id());
         self.commit_self(&msg)?;
         Ok(())
     }
-    fn close(&mut self, cmd: &CloseArgs) -> Result<()> {
+    pub fn close(&mut self, cmd: &CloseArgs) -> Result<()> {
         self.set_id(&cmd.path_or_id);
         self.update_path()?;
         self.close_self()?;
@@ -267,7 +263,7 @@ impl Elem {
         self.commit_self(&msg)?;
         Ok(())
     }
-    fn delete(&mut self, cmd: &DeleteArgs) -> Result<()> {
+    pub fn delete(&mut self, cmd: &DeleteArgs) -> Result<()> {
         self.set_id(&cmd.path_or_id);
         self.update_path()?;
         self.delete_self()?;
@@ -279,9 +275,9 @@ impl Elem {
         Ok(())
     }
     // TODO:
-    fn list(self, _cmd: &ListArgs) -> Result<()> {
+    pub fn list(self, _cmd: &ListArgs) -> Result<()> {
         let mut map = BTreeMap::new();
-        let epaths = traverse_dirs(&self.base_path_all());
+        let epaths = traverse_dirs(&base_path_all(&self.stype));
         let mut out = wstdout();
         for epath in epaths {
             let mut elem = self.clone();

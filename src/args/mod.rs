@@ -4,7 +4,7 @@ use anyhow::Result;
 use clap::{Parser, Subcommand};
 use strum_macros::Display;
 
-use crate::elements::elem::Elem;
+use crate::elements::{elem::Elem, elems::Elems};
 
 use self::subcmd_args::SubCommand;
 
@@ -36,12 +36,38 @@ impl EntityType {
     pub fn run_cmd(&self) -> Result<()> {
         use EntityType::*;
         match self {
-            Issue(subcmd) => Elem::run_cmd(&self.to_string(), subcmd)?,
-            Sprint(subcmd) => Elem::run_cmd(&self.to_string(), subcmd)?,
-            Epic(subcmd) => Elem::run_cmd(&self.to_string(), subcmd)?,
-            Initiative(subcmd) => Elem::run_cmd(&self.to_string(), subcmd)?,
+            Issue(subcmd) => run_cmd(&self.to_string(), subcmd)?,
+            Sprint(subcmd) => run_cmd(&self.to_string(), subcmd)?,
+            Epic(subcmd) => run_cmd(&self.to_string(), subcmd)?,
+            Initiative(subcmd) => run_cmd(&self.to_string(), subcmd)?,
         }
         Ok(())
     }
 }
 
+fn run_cmd(stype: &str, subcmd: &SubCommand) -> Result<()> {
+    use SubCommand::*;
+    match subcmd {
+        Create(cmd) => {
+            let mut elem = Elem::raw(stype);
+            elem.create(cmd)?
+        },
+        Commit(cmd) => {
+            let mut elem = Elem::raw(stype);
+            elem.commit(cmd)?
+        },
+        Close(cmd) => {
+            let mut elem = Elem::raw(stype);
+            elem.close(cmd)?
+        },
+        Delete(cmd) => {
+            let mut elem = Elem::raw(stype);
+            elem.delete(cmd)?
+        },
+        List(cmd) => {
+            let mut elems = Elems::raw(stype);
+            elems.list(cmd)?;
+        },
+    }
+    Ok(())
+}

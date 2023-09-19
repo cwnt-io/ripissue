@@ -72,6 +72,25 @@ pub fn sys_base_path() -> PathBuf {
     PathBuf::from_str("ripi").unwrap()
 }
 
+pub fn base_path(stype: &str) -> PathBuf {
+    let mut base_path = sys_base_path();
+    base_path.push(stype);
+    base_path
+}
+
+pub fn base_path_closed(stype: &str) -> PathBuf {
+    let mut closed = get_closed_dir();
+    closed.push(stype);
+    closed
+}
+
+pub fn base_path_all(stype: &str) -> Vec<PathBuf> {
+    vec![
+        base_path(stype),
+        base_path_closed(stype),
+    ]
+}
+
 pub fn get_closed_dir() -> PathBuf {
     let mut closed = sys_base_path();
     closed.push(".closed");

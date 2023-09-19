@@ -24,7 +24,7 @@ pub struct CreateArgs {
     pub name: String,
     /// Associate tags with this item
     #[arg(long, short)]
-    pub tag: Option<Vec<String>>,
+    pub tags: Option<Vec<String>>,
     /// Set a status to this item
     #[arg(long, short, value_enum)]
     pub status: Option<Status>,
@@ -40,7 +40,7 @@ pub struct CommitArgs {
     pub path_or_id: String,
     /// Associate tags with this item
     #[arg(long, short)]
-    pub tag: Option<Vec<String>>,
+    pub tags: Option<Vec<String>>,
     /// Set a status to this item
     #[arg(long, short, value_enum)]
     pub status: Option<Status>,
@@ -73,5 +73,5 @@ pub struct ListArgs {
     pub status: Option<Status>,
     /// Filter by tag
     #[arg(long, short)]
-    pub tag: Option<Vec<String>>,
+    pub tags: Option<Vec<String>>,
 }
