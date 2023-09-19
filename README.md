@@ -2,6 +2,7 @@
 
 <!-- toc GFM -->
 
++ [Development Workflow](#development-workflow)
 + [todo:](#todo)
 
 <!-- toc -->
@@ -13,23 +14,19 @@ Inspired by:
 - https://github.com/driusan/bug
 - https://github.com/driusan/PoormanIssueTracker
 
+# Development Workflow
+
+- [cwnt.io Git Workflow](https://github.com/cwnt-io/mgmt/blob/master/git-workflow.md)
+
 # todo:
 
-- [ ] sprint/epics/initiatives
-    - yaml file: https://stackoverflow.com/questions/53243795/how-do-you-read-a-yaml-file-in-rust
+- [ ] to publish a version:
+    - [ ] sprint/epics/initiatives
+        - yaml file: https://stackoverflow.com/questions/53243795/how-do-you-read-a-yaml-file-in-rust
+
 - [ ] increment print layout for cmd list: show issues properties to stdout (status, tags, etc...)
 - [ ] clean cwnt github repo (delete popcorn-web-app)
 - [ ] clap args inheritance
-- [ ] unite all create/delete/etc traits executables in one trait?
-- [ ] Elements: Sprint, Epic, etc...
-- [ ] issue as branch
-    - [ ] Option to open a branch when open an issue?
-    - [ ] Optino to rebase a branch when close an issue?
-- For `Element` and `Issue` I'm using the Self::Item type wrongly
-    - it has to be user for specifing the general type of internal element
-- Use Git as the backend for chat https://opensource.com/article/19/4/git-based-chat
-    - https://github.com/ephigabay/GIC
-    - https://git-scm.com/docs/git-notes
 
 /repo1
     /_...(issues)
