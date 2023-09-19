@@ -1,22 +1,53 @@
-use std::{collections::BTreeMap, path::PathBuf};
+use std::{collections::BTreeMap, path::PathBuf, io::{Write, BufWriter, Stdout}};
 
 use anyhow::{Result, bail};
 
-use crate::{properties::{statuses::Status, tags::Tag}, args::subcmd_args::ListArgs, helpers::{base_path_all, base_path, traverse_dirs}};
+use crate::{properties::{statuses::Status, tags::Tag}, args::subcmd_args::ListArgs, helpers::{base_path_all, base_path, traverse_dirs, wstdout}};
 
 use super::elem::Elem;
 
 #[derive(Clone, Debug)]
 struct FilterBy {
-    epaths: Vec<PathBuf>,
+    all: bool,
     status: Option<Status>,
     tags: Option<Vec<Tag>>,
+}
+
+impl FilterBy {
+    pub fn stdout_filters(&self, bw: &mut BufWriter<Stdout>) -> Result<()> {
+        writeln!(bw, "Filtered by:")?;
+        self.stdout_all(bw)?;
+        self.stdout_status(bw)?;
+        self.stdout_tags(bw)?;
+        writeln!(bw, "")?;
+        Ok(())
+    }
+    pub fn stdout_all(&self, bw: &mut BufWriter<Stdout>) -> Result<()> {
+        if self.all {
+            writeln!(bw, "Opened and closed")?;
+        }
+        Ok(())
+    }
+    pub fn stdout_status(&self, bw: &mut BufWriter<Stdout>) -> Result<()> {
+        if let Some(status) = self.status {
+            writeln!(bw, "Status: {}", status.as_ref())?;
+        }
+        Ok(())
+    }
+    pub fn stdout_tags(&self, bw: &mut BufWriter<Stdout>) -> Result<()> {
+        if let Some(tags) = &self.tags {
+            let vec_str: Vec<String> = tags.iter().map(|t| t.to_str()).collect();
+            let str = vec_str.join(", ");
+            writeln!(bw, "Tags: {}", str)?;
+        }
+        Ok(())
+    }
 }
 
 impl Default for FilterBy {
     fn default() -> Self {
         Self {
-            epaths: Vec::default(),
+            all: false,
             status: None,
             tags: None,
         }
@@ -27,7 +58,8 @@ impl Default for FilterBy {
 pub struct Elems {
     data: BTreeMap<String, Elem>,
     stype: String,
-    filter_by: FilterBy
+    filter_by: Option<FilterBy>,
+    epaths: Vec<PathBuf>,
 }
 
 impl Elems {
@@ -38,58 +70,85 @@ impl Elems {
         Self {
             data: BTreeMap::new(),
             stype: stype.to_owned(),
-            filter_by: FilterBy::default(),
+            epaths: vec![],
+            filter_by: None,
         }
     }
     fn add(&mut self, elem: Elem) -> Result<()> {
         let id = elem.id().to_owned();
+        let will_be_added = if let Some(FilterBy { status, tags, .. }) = self.filter_by() {
+            elem.is_status(&status)
+                && elem.compare_tags(&tags)
+        } else {
+            true
+        };
+        if !will_be_added {
+            return Ok(());
+        }
         if self.data.insert(id.clone(), elem).is_some() {
             bail!("{} with id #{} already exists.", self.stype(), id);
         }
         Ok(())
     }
-    fn filter_by(&self) -> FilterBy {
+    fn filter_by(&self) -> Option<FilterBy> {
         self.filter_by.clone()
     }
+    fn epaths(&self) -> &Vec<PathBuf> {
+        &self.epaths
+    }
+    fn set_epaths(&mut self, epaths: Vec<PathBuf>) {
+        self.epaths = epaths;
+    }
+    fn update_epaths(&mut self) {
+        let base_paths = if self.filter_by().is_some()
+            && self.filter_by().as_ref().unwrap().all
+            {
+                base_path_all(&self.stype)
+            } else {
+                vec![base_path(&self.stype)]
+            };
+        self.set_epaths(traverse_dirs(&base_paths));
+    }
     fn set_filter_by(&mut self, cmd: &ListArgs) {
-        let base_paths = if cmd.all {
-            base_path_all(&self.stype)
-        } else {
-            vec![base_path(&self.stype)]
-        };
-        let epaths = traverse_dirs(&base_paths);
+        if !cmd.all && cmd.tags.is_none() && cmd.status.is_none() {
+            self.filter_by = None;
+            return;
+        }
         let mut tags = None;
         if let Some(ts) = &cmd.tags {
             tags = Tag::vec_tags_from_vec_str(ts);
         }
-        self.filter_by = FilterBy {
-            epaths,
+        self.filter_by = Some(FilterBy {
+            all: cmd.all,
             status: cmd.status,
-            tags
-        }
-    }
-    fn get(&mut self) -> Result<()> {
-        let FilterBy {
-            epaths,
-            status,
             tags,
-        } = self.filter_by();
+        })
+    }
+    fn get(&mut self, cmd: &ListArgs) -> Result<()> {
+        self.set_filter_by(cmd);
+        self.update_epaths();
+        let epaths = self.epaths().clone();
         for epath in epaths {
             let mut elem = Elem::raw(self.stype());
             elem.set_all_from_files(epath.to_str().unwrap())?;
-            if elem.is_status(&status)
-                && elem.compare_tags(&tags)
-            {
-                self.add(elem)?;
-            }
+            self.add(elem)?;
         }
         Ok(())
     }
     pub fn list(&mut self, cmd: &ListArgs) -> Result<()> {
-        self.set_filter_by(cmd);
-        self.get()?;
-        println!("{:#?}", self);
-
+        self.get(cmd)?;
+        let mut bw = wstdout();
+        writeln!(bw, "# {}S", self.stype().to_uppercase())?;
+        if let Some(filter) = self.filter_by() {
+            filter.stdout_filters(&mut bw)?;
+        }
+        if self.data.is_empty() {
+            writeln!(bw, "No {}s found.", self.stype())?;
+            return Ok(());
+        }
+        for (_, e) in self.data.iter() {
+            writeln!(bw, "#{} ({})", e.id(), e.opened_closed_status()?)?;
+        }
         // Text:
         // # ISSUES: Filtered by:
         // - Status: doing

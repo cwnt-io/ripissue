@@ -9,7 +9,7 @@
 
 ## todo
 
-- [ ] basic print layout
+- [x] basic print layout
 - [x] get all elems, save to struct Elems
 - [x] get by filter
     - [x] all (closed / opened)

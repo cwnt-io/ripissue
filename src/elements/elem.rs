@@ -31,6 +31,13 @@ impl Elem {
     pub fn id(&self) -> &str {
         &self.id
     }
+    pub fn opened_closed_status(&self) -> Result<&str> {
+        match (self.epath().is_dir(), self.epath_closed().is_dir()) {
+            (true, _) => Ok("Opened"),
+            (_, true) => Ok("Closed"),
+            _ => bail!("{} #{} doen't exists.", self.stype(), self.id()),
+        }
+    }
     fn set_id(&mut self, input: &str) {
         self.id = if input.contains('/') {
             input.split('/').last().unwrap().to_owned()
