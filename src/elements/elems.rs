@@ -1,8 +1,19 @@
-use std::{collections::BTreeMap, path::PathBuf, io::{Write, BufWriter, Stdout}};
+use std::{
+    collections::BTreeMap,
+    io::{BufWriter, Stdout, Write},
+    path::PathBuf,
+};
 
-use anyhow::{Result, bail};
+use anyhow::{bail, Result};
 
-use crate::{properties::{statuses::Status, tags::{Tag, Tags}}, args::subcmd_args::ListArgs, helpers::{base_path_all, base_path, traverse_dirs, wstdout}};
+use crate::{
+    args::subcmd_args::ListArgs,
+    helpers::{base_path, base_path_all, traverse_dirs, wstdout},
+    properties::{
+        statuses::Status,
+        tags::{Tag, Tags},
+    },
+};
 
 use super::elem::Elem;
 
@@ -77,8 +88,7 @@ impl Elems {
     fn add(&mut self, elem: Elem) -> Result<()> {
         let id = elem.id().to_owned();
         let will_be_added = if let Some(FilterBy { status, tags, .. }) = self.filter_by() {
-            elem.is_status(&status)
-                && elem.compare_tags(&tags)
+            elem.is_status(&status) && elem.compare_tags(&tags)
         } else {
             true
         };
@@ -100,13 +110,11 @@ impl Elems {
         self.epaths = epaths;
     }
     fn update_epaths(&mut self) {
-        let base_paths = if self.filter_by().is_some()
-            && self.filter_by().as_ref().unwrap().all
-            {
-                base_path_all(&self.stype)
-            } else {
-                vec![base_path(&self.stype)]
-            };
+        let base_paths = if self.filter_by().is_some() && self.filter_by().as_ref().unwrap().all {
+            base_path_all(&self.stype)
+        } else {
+            vec![base_path(&self.stype)]
+        };
         self.set_epaths(traverse_dirs(&base_paths));
     }
     fn set_filter_by(&mut self, cmd: &ListArgs) {
@@ -135,6 +143,7 @@ impl Elems {
         }
         Ok(())
     }
+    // TODO: improve output format
     pub fn list(&mut self, cmd: &ListArgs) -> Result<()> {
         self.get(cmd)?;
         let mut bw = wstdout();
