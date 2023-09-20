@@ -1,15 +1,21 @@
-mod args;
 mod elements;
-mod helpers;
-mod properties;
+mod executors;
 
-extern crate slugify;
-use crate::args::Cli;
-use clap::Parser;
 use anyhow::Result;
+use clap::Parser;
+use elements::ElemType;
+
+/// Ripissue: Manage your project and issues with `ripi` CLI app!
+#[derive(Debug, Parser)]
+#[command(author, version, about)]
+pub struct Cli {
+    // Choose which element type to operate over.
+    #[command(subcommand)]
+    pub element_type: ElemType,
+}
 
 fn main() -> Result<()> {
-    let cli = Cli::parse();
-    cli.entity_type.run_cmd()?;
+    let mut cli = Cli::parse();
+    cli.element_type.run_cmd()?;
     Ok(())
 }
