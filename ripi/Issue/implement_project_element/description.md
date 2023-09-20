@@ -9,6 +9,10 @@ ripi project create "my new project" -r repo_1 -r repo_2
 
 ## Comments
 
+> **isma**
+> 
+> Ok. You are right! It's approved.
+
 > **gubasso**
 > 
 > I've opened an issue to improve list output format
