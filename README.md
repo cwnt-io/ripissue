@@ -25,6 +25,7 @@ Inspired by:
     - [ ] sprint/epics/initiatives
         - yaml file: https://stackoverflow.com/questions/53243795/how-do-you-read-a-yaml-file-in-rust
 
+- [ ] refactor app with clap builder
 - [ ] increment print layout for cmd list: show issues properties to stdout (status, tags, etc...)
 - [ ] clean cwnt github repo (delete popcorn-web-app)
 - [ ] clap args inheritance

@@ -1,15 +1,49 @@
-use std::{path::PathBuf, io::Write, fs::{create_dir_all, rename, remove_dir_all}, collections::BTreeMap};
+use std::{path::PathBuf, io::{Write, BufWriter, Stdout}, fs::{create_dir_all, rename, remove_dir_all}, collections::BTreeMap};
 
 use anyhow::{Result, bail};
+use clap::Args;
 
-use crate::{helpers::{sys_base_path, get_closed_dir, git_commit, write_file, slug, wstdout, walkdir_into_iter, traverse_dirs, base_path, base_path_closed, base_path_all}, properties::{statuses::Status, tags::Tag}, args::subcmd_args::{SubCommand, CreateArgs, CommitArgs, CloseArgs, DeleteArgs, ListArgs}};
+use crate::{helpers::{sys_base_path, get_closed_dir, git_commit, write_file, slug, wstdout, walkdir_into_iter, traverse_dirs, base_path, base_path_closed, base_path_all}, properties::{statuses::Status, tags::{Tag, Tags}}, args::subcmd_args::{SubCommand, CreateArgs, CommitArgs, CloseArgs, DeleteArgs, ListArgs}};
+
+use crate::properties::repos::Repos;
+
+#[derive(Debug, Clone)]
+struct SpecialFields {
+    repos: Option<Repos>,
+}
+
+impl SpecialFields {
+    pub fn new() -> Self {
+        Self {
+            repos: None,
+        }
+    }
+    pub fn set_repos(&mut self, repos: Repos) {
+        self.repos = Some(repos)
+    }
+    pub fn stdout_repos(&self, bw: &mut BufWriter<Stdout>) -> Result<()> {
+        println!("{:?}", self);
+        if let Some(repos) = &self.repos {
+            writeln!(bw, "Repos in this project:")?;
+            for r in repos.iter() {
+                writeln!(bw, "{}", r.get().display())?;
+            }
+        } else {
+            writeln!(bw, "There are no Repository associated with this Project")?;
+        }
+
+        Ok(())
+    }
+    // sfields.stdout_repos(&mut bw)?;
+}
 
 #[derive(Debug, Clone)]
 pub struct Elem {
     id: String,
     stype: String,
     status: Option<Status>,
-    tags: Option<Vec<Tag>>,
+    tags: Option<Tags>,
+    sfields: Option<SpecialFields>,
 }
 
 impl Elem {
@@ -18,14 +52,37 @@ impl Elem {
         self.update_path()?;
         self.set_tags_from_files();
         self.set_status_from_files()?;
+        self.set_repos();
         Ok(())
+    }
+    fn set_sfields(&mut self, sfields: Option<SpecialFields>) {
+        self.sfields = sfields;
+    }
+    fn sfields(&self) -> &Option<SpecialFields> {
+        &self.sfields
+    }
+    fn repos_from_tags(&self) -> Option<Repos> {
+        if let Some(tags) = self.tags() {
+            let tags = tags.filter_by_str("repo");
+            let repos = tags.iter().filter_map(|t| t.nth(2)).collect();
+            return Some(Repos::from_vec_str(repos));
+        }
+        None
+    }
+    fn set_repos(&mut self) {
+        if let Some(repos) = self.repos_from_tags() {
+            let mut sfields = self.sfields.to_owned().unwrap_or(SpecialFields::new());
+            sfields.set_repos(repos);
+            self.set_sfields(Some(sfields));
+        }
     }
     pub fn raw(stype: &str) -> Self {
         Self {
             id: String::default(),
             stype: stype.to_owned(),
             status: None,
-            tags: None
+            tags: None,
+            sfields: None,
         }
     }
     pub fn id(&self) -> &str {
@@ -88,22 +145,18 @@ impl Elem {
         }
         Ok(())
     }
-    pub fn tags(&self) -> &Option<Vec<Tag>> {
+    pub fn tags(&self) -> &Option<Tags> {
         &self.tags
     }
-    fn set_tags(&mut self, tags: Option<Vec<Tag>>) {
+    fn set_tags(&mut self, tags: Option<Tags>) {
         self.tags = tags;
     }
-    pub fn compare_tags(&self, tags: &Option<Vec<Tag>>) -> bool {
+    pub fn compare_tags(&self, tags: &Option<Tags>) -> bool {
         match (self.tags(), tags) {
-            (Some(tags), Some(tags_filter)) => {
-                for tag in tags {
-                    for tag_filter in tags_filter {
-                        for str_filter in tag_filter.iter() {
-                            if tag.contains(str_filter) {
-                                return true;
-                            }
-                        }
+            (Some(this_tags), Some(tags_filter)) => {
+                for tf in tags_filter.iter() {
+                    if this_tags.has_any_tag_str(tf) {
+                        return true;
                     }
                 }
                 false
@@ -117,12 +170,12 @@ impl Elem {
         tags_path.push("tags");
         tags_path
     }
-    fn append_tags(&mut self, tags: &Vec<Tag>) {
+    fn append_tags(&mut self, tags: &Tags) {
         if tags.is_empty() {
             return;
         }
-        let mut new_tags = self.tags().clone().unwrap_or(vec![]);
-        for tag in tags {
+        let mut new_tags = self.tags().clone().unwrap_or(Tags::new());
+        for tag in tags.iter() {
             new_tags.push(tag.clone());
         }
         self.set_tags(Some(new_tags));
@@ -139,7 +192,7 @@ impl Elem {
     }
     fn write_tags_from_cmd(&mut self, tags_cmd: &Option<Vec<String>>) -> Result<()> {
         if let Some(ts) = tags_cmd {
-            let new_vec_tags = Tag::vec_tags_from_vec_str(ts);
+            let new_vec_tags = Tags::vec_tags_from_vec_str(ts);
             if let Some(vt) = new_vec_tags.as_ref() {
                 self.append_tags(vt);
             }
@@ -150,12 +203,12 @@ impl Elem {
 
     fn set_tags_from_vec_str(&mut self, vec: &Option<Vec<String>>) {
         if let Some(ts) = vec {
-            let vec_tags = Tag::vec_tags_from_vec_str(ts);
+            let vec_tags = Tags::vec_tags_from_vec_str(ts);
             self.set_tags(vec_tags);
         }
     }
     fn set_tags_from_files(&mut self) {
-        let vec_tags = Tag::vec_tags_from_files(&self.tags_path());
+        let vec_tags = Tags::vec_tags_from_files(&self.tags_path());
         self.set_tags(vec_tags);
     }
     fn epath(&self) -> PathBuf {
@@ -255,6 +308,7 @@ impl Elem {
         self.already_exists()?;
         self.set_tags_from_vec_str(&cmd.tags);
         self.set_status(cmd.status);
+        self.set_repos();
         self.write()?;
         if !cmd.dry {
             let msg = format!(
@@ -268,9 +322,11 @@ impl Elem {
         self.set_all_from_files(&cmd.path_or_id)?;
         self.write_tags_from_cmd(&cmd.tags)?;
         self.write_status_from_cmd(cmd.status)?;
-        let msg = format!("(up) {} #{}.",
-            self.stype(), &self.id());
-        self.commit_self(&msg)?;
+        if !cmd.dry {
+            let msg = format!("(up) {} #{}.",
+                self.stype(), &self.id());
+            self.commit_self(&msg)?;
+        }
         Ok(())
     }
     pub fn close(&mut self, cmd: &CloseArgs) -> Result<()> {
@@ -302,20 +358,13 @@ impl Elem {
         }
         Ok(())
     }
-    // TODO:
-    pub fn list(self, _cmd: &ListArgs) -> Result<()> {
-        let mut map = BTreeMap::new();
-        let epaths = traverse_dirs(&base_path_all(&self.stype));
-        let mut out = wstdout();
-        for epath in epaths {
-            let mut elem = self.clone();
-            elem.set_all_from_files(epath.to_str().unwrap())?;
-            let id = elem.id().to_owned();
-            map.insert(id, elem);
-        }
-        writeln!(out, "\n{}S:\n", self.stype().to_uppercase())?;
-        for (_,v) in map {
-            writeln!(out, "#{}",v.id())?;
+    // TODO
+    pub fn list_proj(&mut self, cmd: &ListArgs) -> Result<()> {
+        self.set_all_from_files(&cmd.path_or_id.clone().unwrap())?;
+        let mut bw = wstdout();
+        writeln!(bw, "# {} #{}\n", self.stype(), self.id())?;
+        if let Some(sfields) = self.sfields() {
+            sfields.stdout_repos(&mut bw)?;
         }
         Ok(())
     }

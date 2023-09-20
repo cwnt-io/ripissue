@@ -46,6 +46,9 @@ pub struct CommitArgs {
     /// Set a status to this item
     #[arg(long, short, value_enum)]
     pub status: Option<Status>,
+    /// Just creates the items files. Do not add/commit it to git.
+    #[arg(long, short)]
+    pub dry: bool,
 }
 
 #[derive(Debug, Args)]
@@ -67,6 +70,8 @@ pub struct DeleteArgs {
 
 #[derive(Debug, Args)]
 pub struct ListArgs {
+    /// Path or Id of the existing item
+    pub path_or_id: Option<String>,
     /// All items (opened and closed).
     #[arg(long, short)]
     pub all: bool,

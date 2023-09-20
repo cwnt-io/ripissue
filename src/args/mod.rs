@@ -73,8 +73,16 @@ fn run_cmd(stype: &str, subcmd: &SubCommand) -> Result<()> {
             elem.delete(cmd)?
         },
         List(cmd) => {
-            let mut elems = Elems::raw(stype);
-            elems.list(cmd)?;
+            match stype {
+                "Project" if cmd.path_or_id.is_some() => {
+                    let mut proj = Elem::raw(stype);
+                    proj.list_proj(cmd)?;
+                },
+                _ => {
+                    let mut elems = Elems::raw(stype);
+                    elems.list(cmd)?;
+                }
+            }
         },
     }
     Ok(())

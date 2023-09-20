@@ -2,7 +2,7 @@ use std::{collections::BTreeMap, path::PathBuf, io::{Write, BufWriter, Stdout}};
 
 use anyhow::{Result, bail};
 
-use crate::{properties::{statuses::Status, tags::Tag}, args::subcmd_args::ListArgs, helpers::{base_path_all, base_path, traverse_dirs, wstdout}};
+use crate::{properties::{statuses::Status, tags::{Tag, Tags}}, args::subcmd_args::ListArgs, helpers::{base_path_all, base_path, traverse_dirs, wstdout}};
 
 use super::elem::Elem;
 
@@ -10,7 +10,7 @@ use super::elem::Elem;
 struct FilterBy {
     all: bool,
     status: Option<Status>,
-    tags: Option<Vec<Tag>>,
+    tags: Option<Tags>,
 }
 
 impl FilterBy {
@@ -116,7 +116,7 @@ impl Elems {
         }
         let mut tags = None;
         if let Some(ts) = &cmd.tags {
-            tags = Tag::vec_tags_from_vec_str(ts);
+            tags = Tags::vec_tags_from_vec_str(ts);
         }
         self.filter_by = Some(FilterBy {
             all: cmd.all,
@@ -149,13 +149,6 @@ impl Elems {
         for (_, e) in self.data.iter() {
             writeln!(bw, "#{} ({})", e.id(), e.opened_closed_status()?)?;
         }
-        // Text:
-        // # ISSUES: Filtered by:
-        // - Status: doing
-        // - Tags: assignee, feature, screen
-        // for e in elems.iter() {
-            // stdout each e
-        // }
         Ok(())
     }
 }
