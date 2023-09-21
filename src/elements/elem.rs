@@ -1,9 +1,24 @@
-use std::{path::PathBuf, io::{Write, BufWriter, Stdout}, fs::{create_dir_all, rename, remove_dir_all}, collections::BTreeMap};
+use std::{
+    collections::BTreeMap,
+    fs::{create_dir_all, remove_dir_all, rename},
+    io::{BufWriter, Stdout, Write},
+    path::PathBuf,
+};
 
-use anyhow::{Result, bail};
+use anyhow::{bail, Result};
 use clap::Args;
 
-use crate::{helpers::{sys_base_path, get_closed_dir, git_commit, write_file, slug, wstdout, walkdir_into_iter, traverse_dirs, base_path, base_path_closed, base_path_all}, properties::{statuses::Status, tags::{Tag, Tags}}, args::subcmd_args::{SubCommand, CreateArgs, CommitArgs, CloseArgs, DeleteArgs, ListArgs}};
+use crate::{
+    args::subcmd_args::{CloseArgs, CommitArgs, CreateArgs, DeleteArgs, ListArgs, SubCommand},
+    helpers::{
+        base_path, base_path_all, base_path_closed, get_closed_dir, git_commit, slug,
+        sys_base_path, traverse_dirs, walkdir_into_iter, write_file, wstdout,
+    },
+    properties::{
+        statuses::Status,
+        tags::{Tag, Tags},
+    },
+};
 
 use crate::properties::repos::Repos;
 
@@ -14,9 +29,7 @@ struct SpecialFields {
 
 impl SpecialFields {
     pub fn new() -> Self {
-        Self {
-            repos: None,
-        }
+        Self { repos: None }
     }
     pub fn set_repos(&mut self, repos: Repos) {
         self.repos = Some(repos)
@@ -129,7 +142,7 @@ impl Elem {
         }
         if let Some(status) = self.status() {
             let file = &status.as_ref();
-            write_file(&status_path,file,None)?;
+            write_file(&status_path, file, None)?;
         }
         Ok(())
     }
@@ -160,9 +173,9 @@ impl Elem {
                     }
                 }
                 false
-            },
+            }
             (_, None) => true,
-            _ => false
+            _ => false,
         }
     }
     fn tags_path(&self) -> PathBuf {
@@ -185,7 +198,7 @@ impl Elem {
             let dir = &self.tags_path();
             for tag in tags.iter() {
                 let file = &tag.to_str();
-                write_file(dir,file,None)?;
+                write_file(dir, file, None)?;
             }
         }
         Ok(())
@@ -217,10 +230,7 @@ impl Elem {
         epath
     }
     fn epaths_all(&self) -> Vec<PathBuf> {
-        vec![
-            self.epath(),
-            self.epath_closed(),
-        ]
+        vec![self.epath(), self.epath_closed()]
     }
     fn epath_closed(&self) -> PathBuf {
         let mut closed = base_path_closed(&self.stype);
@@ -229,11 +239,18 @@ impl Elem {
     }
 
     fn commit_self(&self, msg: &str) -> Result<()> {
-        let files_to_add = self.epaths_all().into_iter().map(|p| {
-            p.to_str().unwrap().to_owned()
-        }).collect::<Vec<String>>();
+        let files_to_add = self
+            .epaths_all()
+            .into_iter()
+            .map(|p| p.to_str().unwrap().to_owned())
+            .collect::<Vec<String>>();
         git_commit(Some(&files_to_add), msg)?;
-        writeln!(wstdout(), "{} #{} commited to git.", self.stype(), self.id())?;
+        writeln!(
+            wstdout(),
+            "{} #{} commited to git.",
+            self.stype(),
+            self.id()
+        )?;
         Ok(())
     }
     fn close_self(&self) -> Result<()> {
@@ -273,8 +290,7 @@ impl Elem {
     }
     fn already_exists(&self) -> Result<()> {
         if self.epath().is_dir() || self.epath_closed().is_dir() {
-            bail!("{} with Id #{} already exists.",
-                  self.stype(), &self.id());
+            bail!("{} with Id #{} already exists.", self.stype(), &self.id());
         }
         Ok(())
     }
@@ -284,16 +300,17 @@ impl Elem {
 
         match (path.is_dir(), epath_closed.is_dir()) {
             (false, false) => {
-                bail!("Id \"{}\" doesn't match with any {}.",
-                      self.id(),
-                      self.stype());
-            },
-            _ => Ok(())
+                bail!(
+                    "Id \"{}\" doesn't match with any {}.",
+                    self.id(),
+                    self.stype()
+                );
+            }
+            _ => Ok(()),
         }
     }
     fn write(&self) -> Result<()> {
-        let (id, epath, stype) =
-            (self.id(), self.epath(), self.stype());
+        let (id, epath, stype) = (self.id(), self.epath(), self.stype());
         let content = format!("# {} ({})", id, stype);
         write_file(&epath, "description.md", Some(&content))?;
         self.write_status()?;
@@ -311,9 +328,7 @@ impl Elem {
         self.set_repos();
         self.write()?;
         if !cmd.dry {
-            let msg = format!(
-                "(created) {} #{}.",
-                self.stype(), self.id());
+            let msg = format!("(created) {} #{}.", self.stype(), self.id());
             self.commit_self(&msg)?;
         }
         Ok(())
@@ -323,8 +338,7 @@ impl Elem {
         self.write_tags_from_cmd(&cmd.tags)?;
         self.write_status_from_cmd(cmd.status)?;
         if !cmd.dry {
-            let msg = format!("(up) {} #{}.",
-                self.stype(), &self.id());
+            let msg = format!("(up) {} #{}.", self.stype(), &self.id());
             self.commit_self(&msg)?;
         }
         Ok(())
@@ -333,8 +347,7 @@ impl Elem {
         self.set_id(&cmd.path_or_id);
         self.update_path()?;
         self.close_self()?;
-        let msg = format!("(closed) {} #{}.",
-            self.stype(), &self.id());
+        let msg = format!("(closed) {} #{}.", self.stype(), &self.id());
         self.commit_self(&msg)?;
         Ok(())
     }
@@ -342,8 +355,7 @@ impl Elem {
         self.set_id(&cmd.path_or_id);
         self.update_path()?;
         self.reopen_self()?;
-        let msg = format!("(reopened) {} #{}.",
-            self.stype(), &self.id());
+        let msg = format!("(reopened) {} #{}.", self.stype(), &self.id());
         self.commit_self(&msg)?;
         Ok(())
     }
@@ -352,8 +364,7 @@ impl Elem {
         self.update_path()?;
         self.delete_self()?;
         if !cmd.dry {
-            let msg = format!("(deleted) {} #{}.",
-                self.stype(), &self.id());
+            let msg = format!("(deleted) {} #{}.", self.stype(), &self.id());
             self.commit_self(&msg)?;
         }
         Ok(())

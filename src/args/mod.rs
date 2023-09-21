@@ -55,33 +55,31 @@ fn run_cmd(stype: &str, subcmd: &SubCommand) -> Result<()> {
         Create(cmd) => {
             let mut elem = Elem::raw(stype);
             elem.create(cmd)?
-        },
+        }
         Commit(cmd) => {
             let mut elem = Elem::raw(stype);
             elem.commit(cmd)?
-        },
+        }
         Close(cmd) => {
             let mut elem = Elem::raw(stype);
             elem.close(cmd)?
-        },
+        }
         Reopen(cmd) => {
             let mut elem = Elem::raw(stype);
             elem.reopen(cmd)?
-        },
+        }
         Delete(cmd) => {
             let mut elem = Elem::raw(stype);
             elem.delete(cmd)?
-        },
-        List(cmd) => {
-            match stype {
-                "Project" if cmd.path_or_id.is_some() => {
-                    let mut proj = Elem::raw(stype);
-                    proj.list_proj(cmd)?;
-                },
-                _ => {
-                    let mut elems = Elems::raw(stype);
-                    elems.list(cmd)?;
-                }
+        }
+        List(cmd) => match stype {
+            "Project" if cmd.path_or_id.is_some() => {
+                let mut proj = Elem::raw(stype);
+                proj.list_proj(cmd)?;
+            }
+            _ => {
+                let mut elems = Elems::raw(stype);
+                elems.list(cmd)?;
             }
         },
     }
