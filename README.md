@@ -20,6 +20,10 @@ Inspired by:
 
 # todo:
 
+- [ ] issue assignee atribute as default
+    ```sh
+    ripi issue [create/commit] [name/id] assign-to --role [dev/reviewer/authority] --member [member_nick_name]
+    ```
 - [ ] to publish to cargo:
     - [ ] project elem
     - [ ] sprint/epics/initiatives
