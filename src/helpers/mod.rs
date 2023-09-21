@@ -9,6 +9,7 @@ use std::{
 };
 
 use anyhow::{bail, Context, Result};
+use chrono::NaiveDate;
 use git2::{IndexAddOption, Repository};
 use slugify::slugify;
 use walkdir::WalkDir;
@@ -112,6 +113,11 @@ pub fn is_not_empty(arg: &str) -> Result<String> {
         bail!("issue create: name cannot be empty");
     }
     Ok(arg.to_string())
+}
+
+pub fn is_valid_iso_date(arg: &str) -> Result<String> {
+    NaiveDate::parse_from_str(arg, "%Y-%m-%d")?;
+    Ok(arg.to_owned())
 }
 
 pub fn slug(s: &str) -> String {

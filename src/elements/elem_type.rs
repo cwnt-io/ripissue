@@ -2,16 +2,16 @@ use anyhow::Result;
 use clap::Subcommand;
 use strum_macros::Display;
 
-use crate::executors::general::GeneralExecutors;
+use crate::executors::{issues::IssueExecutors, sprints::SprintExecutors};
 
 #[derive(Debug, Subcommand, Display)]
 pub enum ElemType {
     ///Tasks, bugs, features, stories, Pull Requests (PR's), etc. A unit of work.
     #[command(subcommand)]
-    Issue(GeneralExecutors),
+    Issue(IssueExecutors),
     ///Set of issues to be executed in a certain period of time.
     #[command(subcommand)]
-    Sprint(GeneralExecutors),
+    Sprint(SprintExecutors),
     // ///Major feature. Can be a set of sprints and/or issues.
     // #[command(subcommand)]
     // Epic(GeneralExecutors),

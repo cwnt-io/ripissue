@@ -8,8 +8,6 @@ use crate::elements::elem_type::ElemType;
 
 #[derive(Debug, Subcommand)]
 pub enum GeneralExecutors {
-    /// Creates a new item
-    Create(CreateArgs),
     /// Commits item to git
     Commit(CommitArgs),
     /// Closes, adds and commits an item
@@ -26,7 +24,6 @@ impl GeneralExecutors {
     pub fn run_cmd(&self, etype: &ElemType) -> Result<()> {
         use GeneralExecutors::*;
         match self {
-            Create(args) => Elem::create(args, etype)?,
             Commit(args) => Elem::commit(args, etype)?,
             Close(args) => Elem::close(args, etype)?,
             Reopen(args) => Elem::reopen(args, etype)?,
@@ -62,17 +59,6 @@ pub struct PIdArgs {
 }
 
 #[derive(Debug, Args)]
-pub struct CreateArgs {
-    /// Gives a name to the item. An ID will be generated from this name.
-    #[arg(value_parser = is_not_empty)]
-    pub name: String,
-    #[command(flatten)]
-    pub props: PropertiesArgs,
-    #[command(flatten)]
-    pub git: GitArgs,
-}
-
-#[derive(Debug, Args)]
 pub struct CommitArgs {
     #[command(flatten)]
     pub pid: PIdArgs,
@@ -90,4 +76,11 @@ pub struct ListArgs {
     /// Filter by:
     #[command(flatten)]
     pub props: PropertiesArgs,
+}
+
+pub trait Creator {
+    fn name(&self) -> String;
+    fn tags(&self) -> &Option<Vec<String>>;
+    fn status(&self) -> &Option<Status>;
+    fn dry(&self) -> bool;
 }

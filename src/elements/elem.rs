@@ -7,7 +7,7 @@ use std::{
 use anyhow::{bail, Result};
 
 use crate::{
-    executors::general::{CommitArgs, CreateArgs, PIdArgs},
+    executors::general::{CommitArgs, Creator, PIdArgs},
     helpers::{base_path, base_path_closed, git_commit, slug, write_file, wstdout},
     properties::{statuses::Status, tags::Tags},
 };
@@ -260,49 +260,49 @@ impl Elem {
     }
 
     // EXECUTORS
-    pub fn create(cmd: &CreateArgs, etype: &ElemType) -> Result<()> {
+    pub fn create(args: &impl Creator, etype: &ElemType) -> Result<()> {
         let mut elem = Self::raw(etype);
-        elem.set_id(&cmd.name);
+        elem.set_id(&args.name());
         elem.already_exists()?;
-        elem.set_tags_from_vec_str(&cmd.props.tags);
-        elem.set_status(cmd.props.status);
+        elem.set_tags_from_vec_str(&args.tags());
+        elem.set_status(args.status().clone());
         elem.write()?;
-        if !cmd.git.dry {
+        if !args.dry() {
             let msg = format!("(created) {} #{}.", elem.stype(), elem.id());
             elem.commit_self(&msg)?;
         }
         Ok(())
     }
-    pub fn commit(cmd: &CommitArgs, etype: &ElemType) -> Result<()> {
+    pub fn commit(args: &CommitArgs, etype: &ElemType) -> Result<()> {
         let mut elem = Self::raw(etype);
-        elem.set_all_from_files(&cmd.pid.path_or_id)?;
-        elem.write_tags_from_cmd(&cmd.props.tags)?;
-        elem.write_status_from_cmd(cmd.props.status)?;
+        elem.set_all_from_files(&args.pid.path_or_id)?;
+        elem.write_tags_from_cmd(&args.props.tags)?;
+        elem.write_status_from_cmd(args.props.status)?;
         let msg = format!("(up) {} #{}.", elem.stype(), &elem.id());
         elem.commit_self(&msg)?;
         Ok(())
     }
-    pub fn close(cmd: &PIdArgs, etype: &ElemType) -> Result<()> {
+    pub fn close(args: &PIdArgs, etype: &ElemType) -> Result<()> {
         let mut elem = Self::raw(etype);
-        elem.set_id(&cmd.path_or_id);
+        elem.set_id(&args.path_or_id);
         elem.update_path()?;
         elem.close_self()?;
         let msg = format!("(closed) {} #{}.", elem.stype(), &elem.id());
         elem.commit_self(&msg)?;
         Ok(())
     }
-    pub fn reopen(cmd: &PIdArgs, etype: &ElemType) -> Result<()> {
+    pub fn reopen(args: &PIdArgs, etype: &ElemType) -> Result<()> {
         let mut elem = Self::raw(etype);
-        elem.set_id(&cmd.path_or_id);
+        elem.set_id(&args.path_or_id);
         elem.update_path()?;
         elem.reopen_self()?;
         let msg = format!("(reopened) {} #{}.", elem.stype(), &elem.id());
         elem.commit_self(&msg)?;
         Ok(())
     }
-    pub fn delete(cmd: &PIdArgs, etype: &ElemType) -> Result<()> {
+    pub fn delete(args: &PIdArgs, etype: &ElemType) -> Result<()> {
         let mut elem = Self::raw(etype);
-        elem.set_id(&cmd.path_or_id);
+        elem.set_id(&args.path_or_id);
         elem.update_path()?;
         elem.delete_self()?;
         let msg = format!("(deleted) {} #{}.", elem.stype(), &elem.id());

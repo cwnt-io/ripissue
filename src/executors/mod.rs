@@ -1,2 +1,3 @@
 pub mod general;
-pub mod project;
+pub mod issues;
+pub mod sprints;
