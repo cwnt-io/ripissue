@@ -7,15 +7,12 @@ use std::{
 use anyhow::{bail, Result};
 
 use crate::{
-    args::subcmd_args::ListArgs,
+    executors::general::ListArgs,
     helpers::{base_path, base_path_all, traverse_dirs, wstdout},
-    properties::{
-        statuses::Status,
-        tags::{Tag, Tags},
-    },
+    properties::{statuses::Status, tags::Tags},
 };
 
-use super::elem::Elem;
+use super::{elem::Elem, elem_type::ElemType};
 
 #[derive(Clone, Debug)]
 struct FilterBy {
@@ -77,10 +74,10 @@ impl Elems {
     fn stype(&self) -> &str {
         &self.stype
     }
-    pub fn raw(stype: &str) -> Self {
+    pub fn raw(etype: &ElemType) -> Self {
         Self {
             data: BTreeMap::new(),
-            stype: stype.to_owned(),
+            stype: etype.to_string(),
             epaths: vec![],
             filter_by: None,
         }
@@ -118,44 +115,44 @@ impl Elems {
         self.set_epaths(traverse_dirs(&base_paths));
     }
     fn set_filter_by(&mut self, cmd: &ListArgs) {
-        if !cmd.all && cmd.tags.is_none() && cmd.status.is_none() {
+        if !cmd.all && cmd.props.tags.is_none() && cmd.props.status.is_none() {
             self.filter_by = None;
             return;
         }
         let mut tags = None;
-        if let Some(ts) = &cmd.tags {
+        if let Some(ts) = &cmd.props.tags {
             tags = Tags::vec_tags_from_vec_str(ts);
         }
         self.filter_by = Some(FilterBy {
             all: cmd.all,
-            status: cmd.status,
+            status: cmd.props.status,
             tags,
         })
     }
-    fn get(&mut self, cmd: &ListArgs) -> Result<()> {
+    fn get(&mut self, cmd: &ListArgs, etype: &ElemType) -> Result<()> {
         self.set_filter_by(cmd);
         self.update_epaths();
         let epaths = self.epaths().clone();
         for epath in epaths {
-            let mut elem = Elem::raw(self.stype());
+            let mut elem = Elem::raw(etype);
             elem.set_all_from_files(epath.to_str().unwrap())?;
             self.add(elem)?;
         }
         Ok(())
     }
-    // TODO: improve output format
-    pub fn list(&mut self, cmd: &ListArgs) -> Result<()> {
-        self.get(cmd)?;
+    pub fn list(cmd: &ListArgs, etype: &ElemType) -> Result<()> {
+        let mut elems = Elems::raw(etype);
+        elems.get(cmd, etype)?;
         let mut bw = wstdout();
-        writeln!(bw, "# {}S", self.stype().to_uppercase())?;
-        if let Some(filter) = self.filter_by() {
+        writeln!(bw, "# {}S", elems.stype().to_uppercase())?;
+        if let Some(filter) = elems.filter_by() {
             filter.stdout_filters(&mut bw)?;
         }
-        if self.data.is_empty() {
-            writeln!(bw, "No {}s found.", self.stype())?;
+        if elems.data.is_empty() {
+            writeln!(bw, "No {}s found.", elems.stype())?;
             return Ok(());
         }
-        for (_, e) in self.data.iter() {
+        for (_, e) in elems.data.iter() {
             writeln!(bw, "#{} ({})", e.id(), e.opened_closed_status()?)?;
         }
         Ok(())

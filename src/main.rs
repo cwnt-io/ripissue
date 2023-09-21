@@ -1,9 +1,12 @@
 mod elements;
 mod executors;
+mod helpers;
+mod properties;
 
 use anyhow::Result;
 use clap::Parser;
-use elements::ElemType;
+
+use elements::elem_type::ElemType;
 
 /// Ripissue: Manage your project and issues with `ripi` CLI app!
 #[derive(Debug, Parser)]
@@ -15,7 +18,7 @@ pub struct Cli {
 }
 
 fn main() -> Result<()> {
-    let mut cli = Cli::parse();
+    let cli = Cli::parse();
     cli.element_type.run_cmd()?;
     Ok(())
 }

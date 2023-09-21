@@ -25,10 +25,12 @@ impl Tags {
         self.iter().any(|t| tag.iter().any(|s| t.contains(s)))
     }
     pub fn filter_by_str(&self, s: &str) -> Tags {
-        Tags::from_vec(self.iter()
-                       .filter(|t| t.contains(s))
-                       .map(|t| t.clone())
-                       .collect::<Vec<Tag>>())
+        Tags::from_vec(
+            self.iter()
+                .filter(|t| t.contains(s))
+                .map(|t| t.clone())
+                .collect::<Vec<Tag>>(),
+        )
     }
     pub fn iter(&self) -> Iter<'_, Tag> {
         self.0.iter()
@@ -43,7 +45,7 @@ impl Tags {
     pub fn vec_tags_from_files(path: &PathBuf) -> Option<Self> {
         let walk_iter = walkdir_into_iter(path);
         let vec_tags: Vec<Tag> = walk_iter
-            .map(|e|  Tag::new(e.file_name().to_str().unwrap()) )
+            .map(|e| Tag::new(e.file_name().to_str().unwrap()))
             .collect();
         match vec_tags.is_empty() {
             true => None,
@@ -58,7 +60,7 @@ pub struct Tag(Vec<String>);
 impl Tag {
     pub fn new(s: &str) -> Self {
         let s = slug_tag(s);
-        Self(s.split('-').map(|p|p.to_owned()).collect())
+        Self(s.split('-').map(|p| p.to_owned()).collect())
     }
     pub fn to_str(&self) -> String {
         self.0.join("-")

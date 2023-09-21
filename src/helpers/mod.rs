@@ -1,17 +1,17 @@
 use std::{
-    path::{PathBuf, Path},
-    str::FromStr,
-    fs::{File, create_dir_all},
-    io::{Write, BufWriter, Stdout, stdout}, iter::Flatten,
+    fs::{create_dir_all, File},
+    io::{stdout, BufWriter, Stdout, Write},
+    iter::Flatten,
+    iter::IntoIterator,
     iter::Iterator,
-    iter::{IntoIterator, Chain}
+    path::{Path, PathBuf},
+    str::FromStr,
 };
 
-
+use anyhow::{bail, Context, Result};
+use git2::{IndexAddOption, Repository};
 use slugify::slugify;
-use anyhow::{Context, Result, bail};
-use git2::{Repository, IndexAddOption};
-use walkdir::{WalkDir, DirEntry};
+use walkdir::WalkDir;
 
 // pub fn type_to_str<T>(_: &T) -> String {
 //     format!("{}", std::any::type_name::<T>())
@@ -32,19 +32,19 @@ pub fn walkdir_into_iter(path: &PathBuf) -> Flatten<walkdir::IntoIter> {
 
 pub fn traverse_files(path: &PathBuf) -> Vec<PathBuf> {
     let walk_iter = walkdir_into_iter(path);
-    walk_iter
-        .map(|e| e.into_path())
-        .collect()
+    walk_iter.map(|e| e.into_path()).collect()
 }
 
 pub fn traverse_dirs(paths: &[PathBuf]) -> Vec<PathBuf> {
     let mut vec = vec![];
     for path in paths {
         let walk_iter = walkdir_into_iter(path);
-        vec.extend(walk_iter
-                   .filter(|e| e.file_type().is_dir())
-                   .map(|e| e.into_path())
-                   .collect::<Vec<PathBuf>>());
+        vec.extend(
+            walk_iter
+                .filter(|e| e.file_type().is_dir())
+                .map(|e| e.into_path())
+                .collect::<Vec<PathBuf>>(),
+        );
     }
     vec
 }
@@ -85,10 +85,7 @@ pub fn base_path_closed(stype: &str) -> PathBuf {
 }
 
 pub fn base_path_all(stype: &str) -> Vec<PathBuf> {
-    vec![
-        base_path(stype),
-        base_path_closed(stype),
-    ]
+    vec![base_path(stype), base_path_closed(stype)]
 }
 
 pub fn get_closed_dir() -> PathBuf {
@@ -98,19 +95,14 @@ pub fn get_closed_dir() -> PathBuf {
 }
 
 pub fn write_file(dir: &PathBuf, file: &str, content: Option<&str>) -> Result<()> {
-    create_dir_all(dir)
-        .with_context(|| format!("Could not create {}",
-                                 dir.display()))?;
+    create_dir_all(dir).with_context(|| format!("Could not create {}", dir.display()))?;
     let mut file_path = dir.clone();
     file_path.push(file);
     let mut file = File::create(&file_path)
-        .with_context(|| format!("Could not create file {}",
-                                 &file_path.display()))?;
+        .with_context(|| format!("Could not create file {}", &file_path.display()))?;
     if let Some(c) = content {
         file.write_all(c.as_bytes())
-            .with_context(|| format!(
-                    "Could not write content to file {}",
-                    file_path.display()))?;
+            .with_context(|| format!("Could not write content to file {}", file_path.display()))?;
     }
     Ok(())
 }
@@ -139,8 +131,7 @@ pub fn get_file_name(path: &Path) -> String {
 // }
 
 pub fn git_commit(files_to_add: Option<&[String]>, msg: &str) -> Result<()> {
-    let repo = Repository::open(".")
-        .with_context(|| "failed to open repository")?;
+    let repo = Repository::open(".").with_context(|| "failed to open repository")?;
     let signature = repo.signature()?;
     let mut index = repo.index()?;
     if let Some(files_to_add) = files_to_add {
@@ -158,13 +149,6 @@ pub fn git_commit(files_to_add: Option<&[String]>, msg: &str) -> Result<()> {
         vec![]
     };
 
-    repo.commit(
-        ref_name,
-        &signature,
-        &signature,
-        msg,
-        &tree,
-        &parent_commit,
-    )?;
+    repo.commit(ref_name, &signature, &signature, msg, &tree, &parent_commit)?;
     Ok(())
 }

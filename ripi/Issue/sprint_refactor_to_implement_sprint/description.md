@@ -6,16 +6,15 @@
 
 <!-- toc -->
 
-- [ ] refactor app to be composable
-    - [ ] flatten to args to make this api work ↴
-        ```sh
-        ripi sprint create [due-date] # validate iso-date for name
-        ripi sprint add-issue --repo repo_name --issue issue_name
-        ripi sprint remove-issue --repo repo_name --issue issue_name
-        ```
-
+- [ ] impl specific sprint create
+    ```sh
+    ripi sprint create [due-date] # validate iso-date for name
+    ripi sprint add-issue --repo repo_name --issue issue_name
+    ripi sprint remove-issue --repo repo_name --issue issue_name
+    ```
 - [x] setup my (gubasso's) rustfmt in nvim
-
+- [x] refactor app to be composable
+    - [x] flatten to args to make this api work ↴
 
 ## Comments
 

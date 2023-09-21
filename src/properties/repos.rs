@@ -1,4 +1,4 @@
-use std::{path::PathBuf, str::FromStr, slice::Iter};
+use std::{path::PathBuf, slice::Iter, str::FromStr};
 
 #[derive(Debug, Clone)]
 pub struct Repo(PathBuf);
@@ -31,4 +31,3 @@ impl Default for Repos {
         Self(Vec::default())
     }
 }
-

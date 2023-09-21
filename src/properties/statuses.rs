@@ -1,11 +1,11 @@
 use std::path::PathBuf;
 use std::str::FromStr;
 
+use anyhow::{bail, Result};
 use clap::ValueEnum;
-use anyhow::{Result, bail};
 use strum_macros::{AsRefStr, EnumString};
 
-use crate::helpers::{traverse_files, get_file_name};
+use crate::helpers::{get_file_name, traverse_files};
 
 #[derive(AsRefStr, EnumString, Debug, Copy, Clone, PartialEq, ValueEnum)]
 pub enum Status {
@@ -18,7 +18,6 @@ pub enum Status {
 }
 
 impl Status {
-
     pub fn status_from_files(path: &PathBuf) -> Result<Option<Self>> {
         let statuses: Vec<PathBuf> = traverse_files(path);
         let status = match statuses.len() {
@@ -28,16 +27,15 @@ impl Status {
                 let status_str = get_file_name(status_full_path);
                 let status = FromStr::from_str(&status_str)?;
                 Some(status)
-            },
+            }
             _ => {
-                let msg: Vec<String> = statuses.into_iter()
+                let msg: Vec<String> = statuses
+                    .into_iter()
                     .map(|e| e.to_str().unwrap().to_owned())
                     .collect();
-                bail!("Status can't be more than one. Found {}",
-                      &msg.join(", "));
-            },
+                bail!("Status can't be more than one. Found {}", &msg.join(", "));
+            }
         };
         Ok(status)
     }
-
 }
