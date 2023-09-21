@@ -1,5 +1,5 @@
 use anyhow::Result;
-use clap::{Args, Subcommand};
+use clap::{Args, Parser, Subcommand};
 
 use crate::{
     elements::{elem::Elem, elem_type::ElemType},
@@ -7,14 +7,40 @@ use crate::{
     properties::statuses::Status,
 };
 
-use super::general::{Creator, GeneralExecutors, GitArgs, PropertiesArgs};
+use super::general::{Creator, GeneralExecutors, GitArgs, PIdArgs, PropertiesArgs};
 
 #[derive(Debug, Subcommand)]
 pub enum SprintExecutors {
     /// Creates a new Sprint.
     Create(CreateSprintArgs),
+    /// Adds or Removes Issues inside sprints
+    Edit(EditSprintArgs),
     #[command(flatten)]
     General(GeneralExecutors),
+}
+
+#[derive(Debug, Args)]
+pub struct EditSprintArgs {
+    #[command(flatten)]
+    pub pid: PIdArgs,
+    #[command(subcommand)]
+    pub subcmd_issue: SprintToIssueSubCmd,
+}
+
+#[derive(Debug, Subcommand)]
+pub enum SprintToIssueSubCmd {
+    AddIssue(SprintToIssueArgs),
+    RemoveIssue(SprintToIssueArgs),
+}
+
+#[derive(Debug, Args)]
+pub struct SprintToIssueArgs {
+    /// Repository directory name that has the issue
+    #[arg(long, short)]
+    pub repository: bool,
+    /// Issue path or id
+    #[command(flatten)]
+    pub pid: PIdArgs,
 }
 
 impl SprintExecutors {
@@ -22,6 +48,10 @@ impl SprintExecutors {
         use SprintExecutors::*;
         match self {
             Create(args) => Elem::create(args, etype)?,
+            Edit(args) => {
+                let mut elem = Elem::raw(etype);
+                elem.set_all_from_files(&args.pid.path_or_id)?;
+            }
             General(executor) => executor.run_cmd(etype)?,
         }
         Ok(())

@@ -8,8 +8,8 @@
 
 - [ ] impl functions to add/remove issues from sprint
     ```sh
-    ripi sprint add-issue --repo repo_name --issue issue_name
-    ripi sprint remove-issue --repo repo_name --issue issue_name
+    ripi sprint edit [sprint_id] add-issue --repo repo_name --issue issue_name
+    ripi sprint edit [sprint_id] remove-issue --repo repo_name --issue issue_name
     ```
 - [x] impl specific sprint create
     ```sh
