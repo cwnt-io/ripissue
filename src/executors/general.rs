@@ -68,8 +68,6 @@ pub struct CommitArgs {
 
 #[derive(Debug, Args)]
 pub struct ListArgs {
-    #[command(flatten)]
-    pub pid: PIdArgs,
     /// All items (opened and closed).
     #[arg(long, short)]
     pub all: bool,
