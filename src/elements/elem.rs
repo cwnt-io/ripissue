@@ -1,41 +1,18 @@
-use std::{path::PathBuf, io::{Write, BufWriter, Stdout}, fs::{create_dir_all, rename, remove_dir_all}, collections::BTreeMap};
+use std::{
+    fs::{create_dir_all, remove_dir_all, rename},
+    io::Write,
+    path::PathBuf,
+};
 
-use anyhow::{Result, bail};
-use clap::Args;
+use anyhow::{bail, Result};
 
-use crate::{helpers::{sys_base_path, get_closed_dir, git_commit, write_file, slug, wstdout, walkdir_into_iter, traverse_dirs, base_path, base_path_closed, base_path_all}, properties::{statuses::Status, tags::{Tag, Tags}}, args::subcmd_args::{SubCommand, CreateArgs, CommitArgs, CloseArgs, DeleteArgs, ListArgs}};
+use crate::{
+    executors::general::{CommitArgs, Creator, PIdArgs},
+    helpers::{base_path, base_path_closed, git_commit, slug, write_file, wstdout},
+    properties::{statuses::Status, tags::Tags},
+};
 
-use crate::properties::repos::Repos;
-
-#[derive(Debug, Clone)]
-struct SpecialFields {
-    repos: Option<Repos>,
-}
-
-impl SpecialFields {
-    pub fn new() -> Self {
-        Self {
-            repos: None,
-        }
-    }
-    pub fn set_repos(&mut self, repos: Repos) {
-        self.repos = Some(repos)
-    }
-    pub fn stdout_repos(&self, bw: &mut BufWriter<Stdout>) -> Result<()> {
-        println!("{:?}", self);
-        if let Some(repos) = &self.repos {
-            writeln!(bw, "Repos in this project:")?;
-            for r in repos.iter() {
-                writeln!(bw, "{}", r.get().display())?;
-            }
-        } else {
-            writeln!(bw, "There are no Repository associated with this Project")?;
-        }
-
-        Ok(())
-    }
-    // sfields.stdout_repos(&mut bw)?;
-}
+use super::elem_type::ElemType;
 
 #[derive(Debug, Clone)]
 pub struct Elem {
@@ -43,7 +20,6 @@ pub struct Elem {
     stype: String,
     status: Option<Status>,
     tags: Option<Tags>,
-    sfields: Option<SpecialFields>,
 }
 
 impl Elem {
@@ -52,37 +28,14 @@ impl Elem {
         self.update_path()?;
         self.set_tags_from_files();
         self.set_status_from_files()?;
-        self.set_repos();
         Ok(())
     }
-    fn set_sfields(&mut self, sfields: Option<SpecialFields>) {
-        self.sfields = sfields;
-    }
-    fn sfields(&self) -> &Option<SpecialFields> {
-        &self.sfields
-    }
-    fn repos_from_tags(&self) -> Option<Repos> {
-        if let Some(tags) = self.tags() {
-            let tags = tags.filter_by_str("repo");
-            let repos = tags.iter().filter_map(|t| t.nth(2)).collect();
-            return Some(Repos::from_vec_str(repos));
-        }
-        None
-    }
-    fn set_repos(&mut self) {
-        if let Some(repos) = self.repos_from_tags() {
-            let mut sfields = self.sfields.to_owned().unwrap_or(SpecialFields::new());
-            sfields.set_repos(repos);
-            self.set_sfields(Some(sfields));
-        }
-    }
-    pub fn raw(stype: &str) -> Self {
+    pub fn raw(etype: &ElemType) -> Self {
         Self {
             id: String::default(),
-            stype: stype.to_owned(),
+            stype: etype.to_string(),
             status: None,
             tags: None,
-            sfields: None,
         }
     }
     pub fn id(&self) -> &str {
@@ -129,7 +82,7 @@ impl Elem {
         }
         if let Some(status) = self.status() {
             let file = &status.as_ref();
-            write_file(&status_path,file,None)?;
+            write_file(&status_path, file, None)?;
         }
         Ok(())
     }
@@ -160,9 +113,9 @@ impl Elem {
                     }
                 }
                 false
-            },
+            }
             (_, None) => true,
-            _ => false
+            _ => false,
         }
     }
     fn tags_path(&self) -> PathBuf {
@@ -185,7 +138,7 @@ impl Elem {
             let dir = &self.tags_path();
             for tag in tags.iter() {
                 let file = &tag.to_str();
-                write_file(dir,file,None)?;
+                write_file(dir, file, None)?;
             }
         }
         Ok(())
@@ -211,16 +164,13 @@ impl Elem {
         let vec_tags = Tags::vec_tags_from_files(&self.tags_path());
         self.set_tags(vec_tags);
     }
-    fn epath(&self) -> PathBuf {
+    pub fn epath(&self) -> PathBuf {
         let mut epath = base_path(&self.stype);
         epath.push(self.id());
         epath
     }
     fn epaths_all(&self) -> Vec<PathBuf> {
-        vec![
-            self.epath(),
-            self.epath_closed(),
-        ]
+        vec![self.epath(), self.epath_closed()]
     }
     fn epath_closed(&self) -> PathBuf {
         let mut closed = base_path_closed(&self.stype);
@@ -229,11 +179,18 @@ impl Elem {
     }
 
     fn commit_self(&self, msg: &str) -> Result<()> {
-        let files_to_add = self.epaths_all().into_iter().map(|p| {
-            p.to_str().unwrap().to_owned()
-        }).collect::<Vec<String>>();
+        let files_to_add = self
+            .epaths_all()
+            .into_iter()
+            .map(|p| p.to_str().unwrap().to_owned())
+            .collect::<Vec<String>>();
         git_commit(Some(&files_to_add), msg)?;
-        writeln!(wstdout(), "{} #{} commited to git.", self.stype(), self.id())?;
+        writeln!(
+            wstdout(),
+            "{} #{} commited to git.",
+            self.stype(),
+            self.id()
+        )?;
         Ok(())
     }
     fn close_self(&self) -> Result<()> {
@@ -273,8 +230,7 @@ impl Elem {
     }
     fn already_exists(&self) -> Result<()> {
         if self.epath().is_dir() || self.epath_closed().is_dir() {
-            bail!("{} with Id #{} already exists.",
-                  self.stype(), &self.id());
+            bail!("{} with Id #{} already exists.", self.stype(), &self.id());
         }
         Ok(())
     }
@@ -284,16 +240,17 @@ impl Elem {
 
         match (path.is_dir(), epath_closed.is_dir()) {
             (false, false) => {
-                bail!("Id \"{}\" doesn't match with any {}.",
-                      self.id(),
-                      self.stype());
-            },
-            _ => Ok(())
+                bail!(
+                    "Id \"{}\" doesn't match with any {}.",
+                    self.id(),
+                    self.stype()
+                );
+            }
+            _ => Ok(()),
         }
     }
     fn write(&self) -> Result<()> {
-        let (id, epath, stype) =
-            (self.id(), self.epath(), self.stype());
+        let (id, epath, stype) = (self.id(), self.epath(), self.stype());
         let content = format!("# {} ({})", id, stype);
         write_file(&epath, "description.md", Some(&content))?;
         self.write_status()?;
@@ -303,69 +260,53 @@ impl Elem {
     }
 
     // EXECUTORS
-    pub fn create(&mut self, cmd: &CreateArgs) -> Result<()> {
-        self.set_id(&cmd.name);
-        self.already_exists()?;
-        self.set_tags_from_vec_str(&cmd.tags);
-        self.set_status(cmd.status);
-        self.set_repos();
-        self.write()?;
-        if !cmd.dry {
-            let msg = format!(
-                "(created) {} #{}.",
-                self.stype(), self.id());
-            self.commit_self(&msg)?;
+    pub fn create(args: &impl Creator, etype: &ElemType) -> Result<()> {
+        let mut elem = Self::raw(etype);
+        elem.set_id(&args.name());
+        elem.already_exists()?;
+        elem.set_tags_from_vec_str(args.tags());
+        elem.set_status(*args.status());
+        elem.write()?;
+        if !args.dry() {
+            let msg = format!("(created) {} #{}.", elem.stype(), elem.id());
+            elem.commit_self(&msg)?;
         }
         Ok(())
     }
-    pub fn commit(&mut self, cmd: &CommitArgs) -> Result<()> {
-        self.set_all_from_files(&cmd.path_or_id)?;
-        self.write_tags_from_cmd(&cmd.tags)?;
-        self.write_status_from_cmd(cmd.status)?;
-        if !cmd.dry {
-            let msg = format!("(up) {} #{}.",
-                self.stype(), &self.id());
-            self.commit_self(&msg)?;
-        }
+    pub fn commit(args: &CommitArgs, etype: &ElemType) -> Result<()> {
+        let mut elem = Self::raw(etype);
+        elem.set_all_from_files(&args.pid.path_or_id)?;
+        elem.write_tags_from_cmd(&args.props.tags)?;
+        elem.write_status_from_cmd(args.props.status)?;
+        let msg = format!("(up) {} #{}.", elem.stype(), &elem.id());
+        elem.commit_self(&msg)?;
         Ok(())
     }
-    pub fn close(&mut self, cmd: &CloseArgs) -> Result<()> {
-        self.set_id(&cmd.path_or_id);
-        self.update_path()?;
-        self.close_self()?;
-        let msg = format!("(closed) {} #{}.",
-            self.stype(), &self.id());
-        self.commit_self(&msg)?;
+    pub fn close(args: &PIdArgs, etype: &ElemType) -> Result<()> {
+        let mut elem = Self::raw(etype);
+        elem.set_id(&args.path_or_id);
+        elem.update_path()?;
+        elem.close_self()?;
+        let msg = format!("(closed) {} #{}.", elem.stype(), &elem.id());
+        elem.commit_self(&msg)?;
         Ok(())
     }
-    pub fn reopen(&mut self, cmd: &CloseArgs) -> Result<()> {
-        self.set_id(&cmd.path_or_id);
-        self.update_path()?;
-        self.reopen_self()?;
-        let msg = format!("(reopened) {} #{}.",
-            self.stype(), &self.id());
-        self.commit_self(&msg)?;
+    pub fn reopen(args: &PIdArgs, etype: &ElemType) -> Result<()> {
+        let mut elem = Self::raw(etype);
+        elem.set_id(&args.path_or_id);
+        elem.update_path()?;
+        elem.reopen_self()?;
+        let msg = format!("(reopened) {} #{}.", elem.stype(), &elem.id());
+        elem.commit_self(&msg)?;
         Ok(())
     }
-    pub fn delete(&mut self, cmd: &DeleteArgs) -> Result<()> {
-        self.set_id(&cmd.path_or_id);
-        self.update_path()?;
-        self.delete_self()?;
-        if !cmd.dry {
-            let msg = format!("(deleted) {} #{}.",
-                self.stype(), &self.id());
-            self.commit_self(&msg)?;
-        }
-        Ok(())
-    }
-    // TODO
-    pub fn list_proj(&mut self, cmd: &ListArgs) -> Result<()> {
-        self.set_all_from_files(&cmd.path_or_id.clone().unwrap())?;
-        let mut bw = wstdout();
-        writeln!(bw, "# {} #{}\n", self.stype(), self.id())?;
-        if let Some(sfields) = self.sfields() {
-            sfields.stdout_repos(&mut bw)?;
-        }
+    pub fn delete(args: &PIdArgs, etype: &ElemType) -> Result<()> {
+        let mut elem = Self::raw(etype);
+        elem.set_id(&args.path_or_id);
+        elem.update_path()?;
+        elem.delete_self()?;
+        let msg = format!("(deleted) {} #{}.", elem.stype(), &elem.id());
+        elem.commit_self(&msg)?;
         Ok(())
     }
 }

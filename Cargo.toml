@@ -19,6 +19,9 @@ walkdir = "2.4.0"
 git2 = "0.18.0"
 strum = "0.25.0"
 strum_macros = "0.25.2"
+chrono = "0.4.31"
+serde = "1.0.188"
+serde_yaml = "0.9.25"
 
 [[bin]]
 name = "ripi"

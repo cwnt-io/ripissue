@@ -1,17 +1,67 @@
 use std::{
-    path::{PathBuf, Path},
-    str::FromStr,
-    fs::{File, create_dir_all},
-    io::{Write, BufWriter, Stdout, stdout}, iter::Flatten,
+    env::current_dir,
+    fs::{create_dir_all, File},
+    io::{stdout, BufWriter, Stdout, Write},
+    iter::Flatten,
+    iter::IntoIterator,
     iter::Iterator,
-    iter::{IntoIterator, Chain}
+    path::{Path, PathBuf},
+    str::FromStr,
 };
 
-
+use anyhow::{bail, Context, Result};
+use chrono::NaiveDate;
+use git2::{IndexAddOption, Repository};
 use slugify::slugify;
-use anyhow::{Context, Result, bail};
-use git2::{Repository, IndexAddOption};
-use walkdir::{WalkDir, DirEntry};
+use walkdir::WalkDir;
+
+// pub fn get_all_repos_from_parent() -> Vec<PathBuf> {
+//     let mut curr = current_dir()?;
+//     vec![]
+// }
+
+pub fn check_if_dir_is_repo(d: &Path) -> Result<()> {
+    let d = d.join(".git");
+    if !d.is_dir() {
+        bail!("Dir {} is not a git repository", d.display());
+    }
+    Ok(())
+}
+
+pub fn get_group_dir() -> Result<PathBuf> {
+    let mut dir = current_dir()?;
+    dir.pop();
+    Ok(dir)
+}
+
+pub fn get_valid_repo(repo_name: &str) -> Result<PathBuf> {
+    let mut dir = get_group_dir()?;
+    dir.push(repo_name);
+    check_if_dir_is_repo(&dir)?;
+    Ok(dir)
+}
+
+pub fn get_valid_issue(repo: &Path, issue_id: &str) -> Result<PathBuf> {
+    let stype = "Issue";
+    let base_path_closed = base_path_closed(stype);
+    let mut issue_closed = repo.join(base_path_closed);
+    issue_closed.push(issue_id);
+    if issue_closed.is_dir() {
+        bail!(
+            "{} #{} at {} is already closed.",
+            stype,
+            issue_id,
+            issue_closed.display()
+        );
+    }
+    let base_path = base_path(stype);
+    let mut issue = repo.join(base_path);
+    issue.push(issue_id);
+    if !issue.is_dir() {
+        bail!("Dir {} is not a valid issue", issue.display());
+    }
+    Ok(issue)
+}
 
 // pub fn type_to_str<T>(_: &T) -> String {
 //     format!("{}", std::any::type_name::<T>())
@@ -32,41 +82,22 @@ pub fn walkdir_into_iter(path: &PathBuf) -> Flatten<walkdir::IntoIter> {
 
 pub fn traverse_files(path: &PathBuf) -> Vec<PathBuf> {
     let walk_iter = walkdir_into_iter(path);
-    walk_iter
-        .map(|e| e.into_path())
-        .collect()
+    walk_iter.map(|e| e.into_path()).collect()
 }
 
 pub fn traverse_dirs(paths: &[PathBuf]) -> Vec<PathBuf> {
     let mut vec = vec![];
     for path in paths {
         let walk_iter = walkdir_into_iter(path);
-        vec.extend(walk_iter
-                   .filter(|e| e.file_type().is_dir())
-                   .map(|e| e.into_path())
-                   .collect::<Vec<PathBuf>>());
+        vec.extend(
+            walk_iter
+                .filter(|e| e.file_type().is_dir())
+                .map(|e| e.into_path())
+                .collect::<Vec<PathBuf>>(),
+        );
     }
     vec
 }
-
-// pub fn get_all_elems<T>() -> Result<BTreeMap<String, impl Element>>
-//     where T: Element,
-//           <T as Element>::Item: Element,
-// {
-//     let mut all_elems = vec![];
-//     for p in T::base_path_all().iter() {
-//         let vec_elems = traverse_dirs(p);
-//         all_elems.extend(vec_elems);
-//     }
-//     let mut map = BTreeMap::new();
-//     for e in all_elems.iter() {
-//         let e_str = e.to_str().unwrap();
-//         let elem_raw = T::raw(e_str)?;
-//         let elem = get_elem_from_path(elem_raw)?;
-//         map.insert(elem.id(), elem);
-//     }
-//     Ok(map)
-// }
 
 pub fn sys_base_path() -> PathBuf {
     PathBuf::from_str("ripi").unwrap()
@@ -85,10 +116,7 @@ pub fn base_path_closed(stype: &str) -> PathBuf {
 }
 
 pub fn base_path_all(stype: &str) -> Vec<PathBuf> {
-    vec![
-        base_path(stype),
-        base_path_closed(stype),
-    ]
+    vec![base_path(stype), base_path_closed(stype)]
 }
 
 pub fn get_closed_dir() -> PathBuf {
@@ -98,19 +126,14 @@ pub fn get_closed_dir() -> PathBuf {
 }
 
 pub fn write_file(dir: &PathBuf, file: &str, content: Option<&str>) -> Result<()> {
-    create_dir_all(dir)
-        .with_context(|| format!("Could not create {}",
-                                 dir.display()))?;
+    create_dir_all(dir).with_context(|| format!("Could not create {}", dir.display()))?;
     let mut file_path = dir.clone();
     file_path.push(file);
     let mut file = File::create(&file_path)
-        .with_context(|| format!("Could not create file {}",
-                                 &file_path.display()))?;
+        .with_context(|| format!("Could not create file {}", &file_path.display()))?;
     if let Some(c) = content {
         file.write_all(c.as_bytes())
-            .with_context(|| format!(
-                    "Could not write content to file {}",
-                    file_path.display()))?;
+            .with_context(|| format!("Could not write content to file {}", file_path.display()))?;
     }
     Ok(())
 }
@@ -120,6 +143,11 @@ pub fn is_not_empty(arg: &str) -> Result<String> {
         bail!("issue create: name cannot be empty");
     }
     Ok(arg.to_string())
+}
+
+pub fn is_valid_iso_date(arg: &str) -> Result<String> {
+    NaiveDate::parse_from_str(arg, "%Y-%m-%d")?;
+    Ok(arg.to_owned())
 }
 
 pub fn slug(s: &str) -> String {
@@ -134,13 +162,8 @@ pub fn get_file_name(path: &Path) -> String {
     path.file_name().unwrap().to_str().unwrap().to_owned()
 }
 
-// pub fn get_parent_dir(path: &PathBuf) -> String {
-//     path.parent().unwrap().to_str().unwrap().to_owned()
-// }
-
 pub fn git_commit(files_to_add: Option<&[String]>, msg: &str) -> Result<()> {
-    let repo = Repository::open(".")
-        .with_context(|| "failed to open repository")?;
+    let repo = Repository::open(".").with_context(|| "failed to open repository")?;
     let signature = repo.signature()?;
     let mut index = repo.index()?;
     if let Some(files_to_add) = files_to_add {
@@ -158,13 +181,6 @@ pub fn git_commit(files_to_add: Option<&[String]>, msg: &str) -> Result<()> {
         vec![]
     };
 
-    repo.commit(
-        ref_name,
-        &signature,
-        &signature,
-        msg,
-        &tree,
-        &parent_commit,
-    )?;
+    repo.commit(ref_name, &signature, &signature, msg, &tree, &parent_commit)?;
     Ok(())
 }
