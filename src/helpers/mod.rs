@@ -1,4 +1,5 @@
 use std::{
+    env::current_dir,
     fs::{create_dir_all, File},
     io::{stdout, BufWriter, Stdout, Write},
     iter::Flatten,
@@ -13,6 +14,40 @@ use chrono::NaiveDate;
 use git2::{IndexAddOption, Repository};
 use slugify::slugify;
 use walkdir::WalkDir;
+
+// pub fn get_all_repos_from_parent() -> Vec<PathBuf> {
+//     let mut curr = current_dir()?;
+//     vec![]
+// }
+
+pub fn check_if_dir_is_repo(d: &Path) -> Result<()> {
+    d.join(".git");
+    if !d.is_dir() {
+        bail!("Current dir is not a git repository (or the root of the repo)");
+    }
+    Ok(())
+}
+
+pub fn get_group_dir() -> Result<PathBuf> {
+    let mut dir = current_dir()?;
+    dir.pop();
+    Ok(dir)
+}
+
+pub fn get_valid_repo(repo_name: &str) -> Result<PathBuf> {
+    let mut dir = get_group_dir()?;
+    dir.push(repo_name);
+    check_if_dir_is_repo(&dir)?;
+    Ok(dir)
+}
+
+pub fn get_valid_issue(repo: &Path, issue_id: &str) -> Result<PathBuf> {
+    let issue = repo.join(issue_id);
+    if !issue.is_dir() {
+        bail!("Dir {} is not a valid issue", issue.display());
+    }
+    Ok(issue)
+}
 
 // pub fn type_to_str<T>(_: &T) -> String {
 //     format!("{}", std::any::type_name::<T>())
@@ -49,25 +84,6 @@ pub fn traverse_dirs(paths: &[PathBuf]) -> Vec<PathBuf> {
     }
     vec
 }
-
-// pub fn get_all_elems<T>() -> Result<BTreeMap<String, impl Element>>
-//     where T: Element,
-//           <T as Element>::Item: Element,
-// {
-//     let mut all_elems = vec![];
-//     for p in T::base_path_all().iter() {
-//         let vec_elems = traverse_dirs(p);
-//         all_elems.extend(vec_elems);
-//     }
-//     let mut map = BTreeMap::new();
-//     for e in all_elems.iter() {
-//         let e_str = e.to_str().unwrap();
-//         let elem_raw = T::raw(e_str)?;
-//         let elem = get_elem_from_path(elem_raw)?;
-//         map.insert(elem.id(), elem);
-//     }
-//     Ok(map)
-// }
 
 pub fn sys_base_path() -> PathBuf {
     PathBuf::from_str("ripi").unwrap()
@@ -131,10 +147,6 @@ pub fn slug_tag(s: &str) -> String {
 pub fn get_file_name(path: &Path) -> String {
     path.file_name().unwrap().to_str().unwrap().to_owned()
 }
-
-// pub fn get_parent_dir(path: &PathBuf) -> String {
-//     path.parent().unwrap().to_str().unwrap().to_owned()
-// }
 
 pub fn git_commit(files_to_add: Option<&[String]>, msg: &str) -> Result<()> {
     let repo = Repository::open(".").with_context(|| "failed to open repository")?;

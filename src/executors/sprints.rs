@@ -2,7 +2,7 @@ use anyhow::Result;
 use clap::{Args, Parser, Subcommand};
 
 use crate::{
-    elements::{elem::Elem, elem_type::ElemType},
+    elements::{elem::Elem, elem_type::ElemType, sprint::ESprint},
     helpers::is_valid_iso_date,
     properties::statuses::Status,
 };
@@ -14,13 +14,13 @@ pub enum SprintExecutors {
     /// Creates a new Sprint.
     Create(CreateSprintArgs),
     /// Adds or Removes Issues inside sprints
-    Edit(EditSprintArgs),
+    Manage(ManageSprintArgs),
     #[command(flatten)]
     General(GeneralExecutors),
 }
 
 #[derive(Debug, Args)]
-pub struct EditSprintArgs {
+pub struct ManageSprintArgs {
     #[command(flatten)]
     pub pid: PIdArgs,
     #[command(subcommand)]
@@ -37,8 +37,8 @@ pub enum SprintToIssueSubCmd {
 pub struct SprintToIssueArgs {
     /// Repository directory name that has the issue
     #[arg(long, short)]
-    pub repository: bool,
-    /// Issue path or id
+    pub repository: String,
+    /// Issue path or id of an issue
     #[command(flatten)]
     pub pid: PIdArgs,
 }
@@ -48,10 +48,7 @@ impl SprintExecutors {
         use SprintExecutors::*;
         match self {
             Create(args) => Elem::create(args, etype)?,
-            Edit(args) => {
-                let mut elem = Elem::raw(etype);
-                elem.set_all_from_files(&args.pid.path_or_id)?;
-            }
+            Manage(args) => ESprint::manage(args, etype)?,
             General(executor) => executor.run_cmd(etype)?,
         }
         Ok(())

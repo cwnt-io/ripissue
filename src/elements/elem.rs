@@ -1,4 +1,5 @@
 use std::{
+    env::current_dir,
     fs::{create_dir_all, remove_dir_all, rename},
     io::Write,
     path::PathBuf,
@@ -8,7 +9,7 @@ use anyhow::{bail, Result};
 
 use crate::{
     executors::general::{CommitArgs, Creator, PIdArgs},
-    helpers::{base_path, base_path_closed, git_commit, slug, write_file, wstdout},
+    helpers::{base_path, base_path_closed, get_file_name, git_commit, slug, write_file, wstdout},
     properties::{statuses::Status, tags::Tags},
 };
 
