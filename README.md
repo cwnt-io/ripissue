@@ -20,25 +20,6 @@ Inspired by:
 
 # todo:
 
-- [ ] issue assignee atribute as default
-    ```sh
-    ripi issue [create/commit] [name/id] assign-to --role [dev/reviewer/authority] --member [member_nick_name]
-    ```
-- [ ] general ripi check
-    - all repos
-    - elems integrity
-    - inside sprint: integrity
-- [ ] to publish to cargo:
-    - [ ] project elem
-    - [ ] sprint/epics/initiatives
-        - yaml file: https://stackoverflow.com/questions/53243795/how-do-you-read-a-yaml-file-in-rust
-
-- [ ] implement tests (unit + integration)
-- [ ] refactor app with clap builder
-- [ ] increment print layout for cmd list: show issues properties to stdout (status, tags, etc...)
-- [ ] clean cwnt github repo (delete popcorn-web-app)
-- [ ] clap args inheritance
-
 /repo1
     /_...(issues)
 /repo2
