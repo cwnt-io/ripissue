@@ -14,7 +14,7 @@ use crate::{
 
 use super::{elem::Elem, elem_type::ElemType};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 struct FilterBy {
     all: bool,
     status: Option<Status>,
@@ -27,7 +27,7 @@ impl FilterBy {
         self.stdout_all(bw)?;
         self.stdout_status(bw)?;
         self.stdout_tags(bw)?;
-        writeln!(bw, "")?;
+        writeln!(bw)?;
         Ok(())
     }
     pub fn stdout_all(&self, bw: &mut BufWriter<Stdout>) -> Result<()> {
@@ -49,16 +49,6 @@ impl FilterBy {
             writeln!(bw, "Tags: {}", str)?;
         }
         Ok(())
-    }
-}
-
-impl Default for FilterBy {
-    fn default() -> Self {
-        Self {
-            all: false,
-            status: None,
-            tags: None,
-        }
     }
 }
 

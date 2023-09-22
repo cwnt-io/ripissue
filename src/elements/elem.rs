@@ -1,5 +1,4 @@
 use std::{
-    env::current_dir,
     fs::{create_dir_all, remove_dir_all, rename},
     io::Write,
     path::PathBuf,
@@ -9,7 +8,7 @@ use anyhow::{bail, Result};
 
 use crate::{
     executors::general::{CommitArgs, Creator, PIdArgs},
-    helpers::{base_path, base_path_closed, get_file_name, git_commit, slug, write_file, wstdout},
+    helpers::{base_path, base_path_closed, git_commit, slug, write_file, wstdout},
     properties::{statuses::Status, tags::Tags},
 };
 
@@ -165,7 +164,7 @@ impl Elem {
         let vec_tags = Tags::vec_tags_from_files(&self.tags_path());
         self.set_tags(vec_tags);
     }
-    fn epath(&self) -> PathBuf {
+    pub fn epath(&self) -> PathBuf {
         let mut epath = base_path(&self.stype);
         epath.push(self.id());
         epath
@@ -265,8 +264,8 @@ impl Elem {
         let mut elem = Self::raw(etype);
         elem.set_id(&args.name());
         elem.already_exists()?;
-        elem.set_tags_from_vec_str(&args.tags());
-        elem.set_status(args.status().clone());
+        elem.set_tags_from_vec_str(args.tags());
+        elem.set_status(*args.status());
         elem.write()?;
         if !args.dry() {
             let msg = format!("(created) {} #{}.", elem.stype(), elem.id());

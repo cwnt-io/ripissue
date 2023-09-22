@@ -21,9 +21,9 @@ use walkdir::WalkDir;
 // }
 
 pub fn check_if_dir_is_repo(d: &Path) -> Result<()> {
-    d.join(".git");
+    let d = d.join(".git");
     if !d.is_dir() {
-        bail!("Current dir is not a git repository (or the root of the repo)");
+        bail!("Dir {} is not a git repository", d.display());
     }
     Ok(())
 }
@@ -42,7 +42,21 @@ pub fn get_valid_repo(repo_name: &str) -> Result<PathBuf> {
 }
 
 pub fn get_valid_issue(repo: &Path, issue_id: &str) -> Result<PathBuf> {
-    let issue = repo.join(issue_id);
+    let stype = "Issue";
+    let base_path_closed = base_path_closed(stype);
+    let mut issue_closed = repo.join(base_path_closed);
+    issue_closed.push(issue_id);
+    if issue_closed.is_dir() {
+        bail!(
+            "{} #{} at {} is already closed.",
+            stype,
+            issue_id,
+            issue_closed.display()
+        );
+    }
+    let base_path = base_path(stype);
+    let mut issue = repo.join(base_path);
+    issue.push(issue_id);
     if !issue.is_dir() {
         bail!("Dir {} is not a valid issue", issue.display());
     }

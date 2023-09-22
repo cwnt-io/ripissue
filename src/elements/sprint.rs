@@ -1,19 +1,11 @@
-// TODO: implement a new type that is a wrapper around Elem
-// For Elem: create a new field that saves repo_from
-// -- saves it when elem is read/created
-
-use std::{
-    collections::{BTreeMap, HashMap, HashSet},
-    env::current_dir,
-    path::PathBuf,
-};
+use std::{collections::BTreeMap, fs::OpenOptions, io::Write};
 
 use anyhow::Result;
 
 use crate::executors::sprints::SprintToIssueSubCmd;
 use crate::{
     executors::sprints::ManageSprintArgs,
-    helpers::{get_valid_issue, get_valid_repo, walkdir_into_iter},
+    helpers::{get_valid_issue, get_valid_repo},
 };
 
 use super::{elem::Elem, elem_type::ElemType};
@@ -29,18 +21,34 @@ impl ESprint {
             sprint: Elem::raw(etype),
         }
     }
+    fn e_mut(&mut self) -> &mut Elem {
+        &mut self.sprint
+    }
+    fn e(&self) -> &Elem {
+        &self.sprint
+    }
     // EXECUTORS
     pub fn manage(args: &ManageSprintArgs, etype: &ElemType) -> Result<()> {
         let mut sprint = Self::raw(etype);
+        sprint.e_mut().set_all_from_files(&args.path_or_id)?;
         use SprintToIssueSubCmd::*;
         match &args.subcmd_issue {
             AddIssue(issue_args) => {
-                let repo = get_valid_repo(&issue_args.repository)?;
-                let issue = get_valid_issue(&repo, &issue_args.pid.path_or_id)?;
-                // TODO: create yaml file if dont exists
-                // append line - repo: issue to it
+                let repo_name = &issue_args.repository;
+                let issue_name = &issue_args.path_or_id;
+                let repo = get_valid_repo(repo_name)?;
+                let _ = get_valid_issue(&repo, issue_name)?;
+                let v = vec![BTreeMap::from([(repo_name, issue_name)])];
+                let yaml = serde_yaml::to_string(&v)?;
+
+                let mut issue_yaml = sprint.e().epath();
+                issue_yaml.push("issue.yaml");
+                let mut issue_yaml_file = OpenOptions::new()
+                    .append(true)
+                    .create(true)
+                    .open(issue_yaml)?;
+                issue_yaml_file.write_all(yaml.as_bytes())?;
             }
-            RemoveIssue(issue_args) => {}
         }
         Ok(())
     }

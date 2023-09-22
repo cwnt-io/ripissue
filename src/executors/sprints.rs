@@ -1,13 +1,13 @@
 use anyhow::Result;
-use clap::{Args, Parser, Subcommand};
+use clap::{Args, Subcommand};
 
 use crate::{
     elements::{elem::Elem, elem_type::ElemType, sprint::ESprint},
-    helpers::is_valid_iso_date,
+    helpers::{is_not_empty, is_valid_iso_date},
     properties::statuses::Status,
 };
 
-use super::general::{Creator, GeneralExecutors, GitArgs, PIdArgs, PropertiesArgs};
+use super::general::{Creator, GeneralExecutors, GitArgs, PropertiesArgs};
 
 #[derive(Debug, Subcommand)]
 pub enum SprintExecutors {
@@ -21,8 +21,9 @@ pub enum SprintExecutors {
 
 #[derive(Debug, Args)]
 pub struct ManageSprintArgs {
-    #[command(flatten)]
-    pub pid: PIdArgs,
+    /// Path or Id of the existing SPRINT
+    #[arg(value_parser = is_not_empty)]
+    pub path_or_id: String,
     #[command(subcommand)]
     pub subcmd_issue: SprintToIssueSubCmd,
 }
@@ -30,7 +31,6 @@ pub struct ManageSprintArgs {
 #[derive(Debug, Subcommand)]
 pub enum SprintToIssueSubCmd {
     AddIssue(SprintToIssueArgs),
-    RemoveIssue(SprintToIssueArgs),
 }
 
 #[derive(Debug, Args)]
@@ -38,9 +38,9 @@ pub struct SprintToIssueArgs {
     /// Repository directory name that has the issue
     #[arg(long, short)]
     pub repository: String,
-    /// Issue path or id of an issue
-    #[command(flatten)]
-    pub pid: PIdArgs,
+    /// Path or Id of the existing ISSUE
+    #[arg(value_parser = is_not_empty)]
+    pub path_or_id: String,
 }
 
 impl SprintExecutors {

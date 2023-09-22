@@ -24,6 +24,10 @@ Inspired by:
     ```sh
     ripi issue [create/commit] [name/id] assign-to --role [dev/reviewer/authority] --member [member_nick_name]
     ```
+- [ ] general ripi check
+    - all repos
+    - elems integrity
+    - inside sprint: integrity
 - [ ] to publish to cargo:
     - [ ] project elem
     - [ ] sprint/epics/initiatives

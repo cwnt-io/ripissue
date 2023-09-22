@@ -1,9 +1,9 @@
 # sprint_refactor_to_implement_sprint (Issue)
 
-- [ ] impl functions to add/remove issues from sprint
+- [x] cargo clippy/fmt
+- [x] impl functions to add issues from sprint
     ```sh
     ripi sprint manage [sprint_id] add-issue --repo repo_name --issue issue_name
-    ripi sprint manage [sprint_id] remove-issue --repo repo_name --issue issue_name
     ```
 - [x] impl specific sprint create
     ```sh
