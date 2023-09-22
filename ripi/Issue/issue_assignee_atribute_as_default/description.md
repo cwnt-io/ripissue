@@ -1,0 +1,1 @@
+# issue_assignee_atribute_as_default (Issue)
