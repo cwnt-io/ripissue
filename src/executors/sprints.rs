@@ -7,7 +7,7 @@ use crate::{
     properties::statuses::Status,
 };
 
-use super::general::{Creator, GeneralExecutors, GitArgs, PropertiesArgs};
+use super::general::{AssignToEnum, Creator, GeneralExecutors, GitArgs, PropertiesArgs};
 
 #[derive(Debug, Subcommand)]
 pub enum SprintExecutors {
@@ -80,5 +80,8 @@ impl Creator for CreateSprintArgs {
     }
     fn dry(&self) -> bool {
         self.git.dry
+    }
+    fn assign_to(&self) -> &Option<AssignToEnum> {
+        &self.props.assign_to
     }
 }
