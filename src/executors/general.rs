@@ -1,9 +1,9 @@
 use anyhow::Result;
 use clap::{Args, Subcommand, ValueEnum};
 
+use crate::elements::elem_type::ElemType;
 use crate::elements::elems::Elems;
 use crate::{elements::elem::Elem, helpers::is_not_empty, properties::statuses::Status};
-use crate::elements::elem_type::ElemType;
 
 use strum_macros::{AsRefStr, EnumString};
 
@@ -58,7 +58,7 @@ pub enum AssignToEnum {
         /// Role that this member will assume
         #[arg(long, short)]
         role: RoleEnum,
-    }
+    },
 }
 
 #[derive(AsRefStr, EnumString, Debug, Copy, Clone, PartialEq, ValueEnum)]

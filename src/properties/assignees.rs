@@ -2,7 +2,7 @@ use std::collections::hash_set::Iter;
 use std::str::FromStr;
 use std::{collections::HashSet, path::PathBuf};
 
-use anyhow::{bail, Result, Context};
+use anyhow::{bail, Context, Result};
 
 use crate::executors::general::RoleEnum;
 use crate::helpers::slug;
@@ -58,13 +58,17 @@ impl Assignees {
         let mut assignees = Assignees::new();
         for assign_file in walk_iter {
             let fname = assign_file.file_name().to_str().unwrap();
-            let vfname: Vec<&str> = fname.split("-").collect();
+            let vfname: Vec<&str> = fname.split('-').collect();
             if vfname.len() != 2 {
                 bail!("Assignee file name {} is not in a correct format.", fname);
             }
             let (member, role_str) = (vfname[0], vfname[1]);
-            let role = FromStr::from_str(role_str)
-                .with_context(|| format!("Role \"{}\" is invalid (from assignee \"{}\")", role_str, fname))?;
+            let role = FromStr::from_str(role_str).with_context(|| {
+                format!(
+                    "Role \"{}\" is invalid (from assignee \"{}\")",
+                    role_str, fname
+                )
+            })?;
             let assignee = Assignee::new(member, &role);
             assignees.add(assignee)?;
         }

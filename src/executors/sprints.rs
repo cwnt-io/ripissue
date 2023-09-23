@@ -7,7 +7,7 @@ use crate::{
     properties::statuses::Status,
 };
 
-use super::general::{Creator, GeneralExecutors, GitArgs, PropertiesArgs, AssignToEnum};
+use super::general::{AssignToEnum, Creator, GeneralExecutors, GitArgs, PropertiesArgs};
 
 #[derive(Debug, Subcommand)]
 pub enum SprintExecutors {
