@@ -1,0 +1,1 @@
+# assignee_type_refactor_to_be_a_struct_with_member_and_role_field (Issue)
