@@ -9,4 +9,3 @@
 # Todo Backlog Draft
 
 - [ ] implement tests (unit + integration)
-- [ ] clean cwnt github repo (delete popcorn-web-app)
