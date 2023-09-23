@@ -281,7 +281,7 @@ impl Elem {
     }
     fn append_assignees(&mut self, a_to: &Option<AssignToEnum>) -> Result<()> {
         if let Some(AssignToEnum::AssignTo { member, role }) = a_to {
-            let new_assignee = Assignee::new(member, role.clone());
+            let new_assignee = Assignee::new(member, *role);
             let mut assignees = self.assignees().clone().unwrap_or(Assignees::new());
             assignees.add(new_assignee)?;
             self.set_assignees(Some(assignees));
@@ -292,7 +292,7 @@ impl Elem {
         if let Some(assignees) = self.assignees() {
             let dir = &self.assignees_path();
             for assignee in assignees.iter() {
-                let file = assignee.to_string();
+                let file = assignee.filename_string();
                 write_file(dir, &file, None)?;
             }
         }

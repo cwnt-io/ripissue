@@ -5,7 +5,7 @@ use crate::elements::elem_type::ElemType;
 use crate::elements::elems::Elems;
 use crate::{elements::elem::Elem, helpers::is_not_empty, properties::statuses::Status};
 
-use strum_macros::{AsRefStr, EnumString, Display};
+use strum_macros::{AsRefStr, Display, EnumString};
 
 #[derive(Debug, Subcommand)]
 pub enum GeneralExecutors {

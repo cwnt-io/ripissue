@@ -19,8 +19,8 @@ impl Assignee {
         let member = slug(member);
         Self { member, role }
     }
-    pub fn to_string(&self) -> String {
-        format!("{}-{}", self.member, self.role.to_string())
+    pub fn filename_string(&self) -> String {
+        format!("{}-{}", self.member, self.role)
     }
 }
 
@@ -38,7 +38,7 @@ impl Assignees {
         if !self.0.insert(a.clone()) {
             bail!(
                 "Assignee {} already exists. Same member at same role.",
-                a.to_string()
+                a.filename_string()
             );
         }
         Ok(())
@@ -48,7 +48,7 @@ impl Assignees {
     }
     pub fn from_assign_to(a_to: &Option<AssignToEnum>) -> Result<Option<Self>> {
         if let Some(AssignToEnum::AssignTo { member, role }) = a_to {
-            let assignee = Assignee::new(member, role.clone());
+            let assignee = Assignee::new(member, *role);
             let mut assignees = Assignees::new();
             assignees.add(assignee)?;
             return Ok(Some(assignees));
