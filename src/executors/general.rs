@@ -5,7 +5,7 @@ use crate::elements::elem_type::ElemType;
 use crate::elements::elems::Elems;
 use crate::{elements::elem::Elem, helpers::is_not_empty, properties::statuses::Status};
 
-use strum_macros::{AsRefStr, EnumString};
+use strum_macros::{AsRefStr, EnumString, Display};
 
 #[derive(Debug, Subcommand)]
 pub enum GeneralExecutors {
@@ -61,7 +61,7 @@ pub enum AssignToEnum {
     },
 }
 
-#[derive(AsRefStr, EnumString, Debug, Copy, Clone, PartialEq, ValueEnum)]
+#[derive(AsRefStr, EnumString, Debug, Copy, Clone, Eq, PartialEq, ValueEnum, Display, Hash)]
 pub enum RoleEnum {
     /// Executor/implementor/developer of the item
     #[strum(serialize = "executor")]

@@ -9,16 +9,18 @@ use crate::helpers::slug;
 use crate::{executors::general::AssignToEnum, helpers::walkdir_into_iter};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Assignee(String);
+pub struct Assignee {
+    member: String,
+    role: RoleEnum,
+}
 
 impl Assignee {
-    pub fn new(member: &str, role: &RoleEnum) -> Self {
+    pub fn new(member: &str, role: RoleEnum) -> Self {
         let member = slug(member);
-        let role = role.as_ref();
-        Self(format!("{}-{}", member, role))
+        Self { member, role }
     }
-    pub fn to_str(&self) -> &str {
-        &self.0
+    pub fn to_string(&self) -> String {
+        format!("{}-{}", self.member, self.role.to_string())
     }
 }
 
@@ -36,7 +38,7 @@ impl Assignees {
         if !self.0.insert(a.clone()) {
             bail!(
                 "Assignee {} already exists. Same member at same role.",
-                a.to_str()
+                a.to_string()
             );
         }
         Ok(())
@@ -46,7 +48,7 @@ impl Assignees {
     }
     pub fn from_assign_to(a_to: &Option<AssignToEnum>) -> Result<Option<Self>> {
         if let Some(AssignToEnum::AssignTo { member, role }) = a_to {
-            let assignee = Assignee::new(member, role);
+            let assignee = Assignee::new(member, role.clone());
             let mut assignees = Assignees::new();
             assignees.add(assignee)?;
             return Ok(Some(assignees));
@@ -69,7 +71,7 @@ impl Assignees {
                     role_str, fname
                 )
             })?;
-            let assignee = Assignee::new(member, &role);
+            let assignee = Assignee::new(member, role);
             assignees.add(assignee)?;
         }
         match assignees.len() {
