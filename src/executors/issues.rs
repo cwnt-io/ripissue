@@ -7,7 +7,7 @@ use crate::{
     properties::statuses::Status,
 };
 
-use super::general::{Creator, GeneralExecutors, GitArgs, PropertiesArgs};
+use super::general::{AssignToEnum, Creator, GeneralExecutors, GitArgs, PropertiesArgs};
 
 #[derive(Debug, Subcommand)]
 pub enum IssueExecutors {
@@ -48,6 +48,9 @@ impl Creator for CreateIssueArgs {
     }
     fn status(&self) -> &Option<Status> {
         &self.props.status
+    }
+    fn assign_to(&self) -> &Option<AssignToEnum> {
+        &self.props.assign_to
     }
     fn dry(&self) -> bool {
         self.git.dry

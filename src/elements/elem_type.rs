@@ -12,12 +12,12 @@ pub enum ElemType {
     ///Set of issues to be executed in a certain period of time.
     #[command(subcommand)]
     Sprint(SprintExecutors),
-    // ///Major feature. Can be a set of sprints and/or issues.
-    // #[command(subcommand)]
-    // Epic(GeneralExecutors),
-    // ///Major abstract long term goal. E.g.: solve all pending bugs until the end of the year.
-    // #[command(subcommand)]
-    // Initiative(GeneralExecutors),
+    ///Major feature. Can be a set of sprints and/or issues.
+    #[command(subcommand)]
+    Epic(IssueExecutors),
+    ///Major abstract long term goal. E.g.: solve all pending bugs until the end of the year.
+    #[command(subcommand)]
+    Initiative(IssueExecutors),
 }
 
 impl ElemType {
@@ -26,8 +26,8 @@ impl ElemType {
         match self {
             Issue(executor) => executor.run_cmd(self)?,
             Sprint(executor) => executor.run_cmd(self)?,
-            // Epic(executor) => executor.run_cmd(self)?,
-            // Initiative(executor) => executor.run_cmd(self)?,
+            Epic(executor) => executor.run_cmd(self)?,
+            Initiative(executor) => executor.run_cmd(self)?,
         };
         Ok(())
     }

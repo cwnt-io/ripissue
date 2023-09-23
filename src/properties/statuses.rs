@@ -9,12 +9,21 @@ use crate::helpers::{get_file_name, traverse_files};
 
 #[derive(AsRefStr, EnumString, Debug, Copy, Clone, PartialEq, ValueEnum)]
 pub enum Status {
-    /// Issue must be done and is waiting to begin
+    /// Item must be done and is waiting to begin
     #[strum(serialize = "todo")]
     Todo,
-    /// Issue is in execution
+    /// Item is in execution
     #[strum(serialize = "doing")]
     Doing,
+    /// Item is waiting to be reviewed
+    #[strum(serialize = "review-pending")]
+    ReviewPending,
+    /// Item is being reviewed
+    #[strum(serialize = "review-ongoing")]
+    ReviewOngoing,
+    /// Item is being reviewed
+    #[strum(serialize = "review-approved")]
+    ReviewApproved,
 }
 
 impl Status {
