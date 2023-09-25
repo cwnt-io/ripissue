@@ -7,9 +7,13 @@ use std::{
 use anyhow::{bail, Result};
 
 use crate::{
-    executors::general::{CommitArgs, Creator, PIdArgs},
+    executors::general::{AssignToEnum, CommitArgs, Creator, PIdArgs},
     helpers::{base_path, base_path_closed, git_commit, slug, write_file, wstdout},
-    properties::{statuses::Status, tags::Tags},
+    properties::{
+        assignees::{Assignee, Assignees},
+        statuses::Status,
+        tags::Tags,
+    },
 };
 
 use super::elem_type::ElemType;
@@ -20,6 +24,7 @@ pub struct Elem {
     stype: String,
     status: Option<Status>,
     tags: Option<Tags>,
+    assignees: Option<Assignees>,
 }
 
 impl Elem {
@@ -28,6 +33,8 @@ impl Elem {
         self.update_path()?;
         self.set_tags_from_files();
         self.set_status_from_files()?;
+        let assignees = Assignees::from_files(&self.assignees_path())?;
+        self.set_assignees(assignees);
         Ok(())
     }
     pub fn raw(etype: &ElemType) -> Self {
@@ -36,6 +43,7 @@ impl Elem {
             stype: etype.to_string(),
             status: None,
             tags: None,
+            assignees: None,
         }
     }
     pub fn id(&self) -> &str {
@@ -255,7 +263,39 @@ impl Elem {
         write_file(&epath, "description.md", Some(&content))?;
         self.write_status()?;
         self.write_tags()?;
+        self.write_assignees()?;
         writeln!(wstdout(), "{} #{} created.", stype, id)?;
+        Ok(())
+    }
+
+    fn set_assignees(&mut self, assignees: Option<Assignees>) {
+        self.assignees = assignees
+    }
+    fn assignees(&self) -> &Option<Assignees> {
+        &self.assignees
+    }
+    fn assignees_path(&self) -> PathBuf {
+        let mut assignees = self.epath().clone();
+        assignees.push("assignees");
+        assignees
+    }
+    fn append_assignees(&mut self, a_to: &Option<AssignToEnum>) -> Result<()> {
+        if let Some(AssignToEnum::AssignTo { member, role }) = a_to {
+            let new_assignee = Assignee::new(member, *role);
+            let mut assignees = self.assignees().clone().unwrap_or(Assignees::new());
+            assignees.add(new_assignee)?;
+            self.set_assignees(Some(assignees));
+        }
+        Ok(())
+    }
+    fn write_assignees(&self) -> Result<()> {
+        if let Some(assignees) = self.assignees() {
+            let dir = &self.assignees_path();
+            for assignee in assignees.iter() {
+                let file = assignee.filename_string();
+                write_file(dir, &file, None)?;
+            }
+        }
         Ok(())
     }
 
@@ -266,6 +306,8 @@ impl Elem {
         elem.already_exists()?;
         elem.set_tags_from_vec_str(args.tags());
         elem.set_status(*args.status());
+        let assignees = Assignees::from_assign_to(args.assign_to())?;
+        elem.set_assignees(assignees);
         elem.write()?;
         if !args.dry() {
             let msg = format!("(created) {} #{}.", elem.stype(), elem.id());
@@ -278,6 +320,8 @@ impl Elem {
         elem.set_all_from_files(&args.pid.path_or_id)?;
         elem.write_tags_from_cmd(&args.props.tags)?;
         elem.write_status_from_cmd(args.props.status)?;
+        elem.append_assignees(&args.props.assign_to)?;
+        elem.write_assignees()?;
         let msg = format!("(up) {} #{}.", elem.stype(), &elem.id());
         elem.commit_self(&msg)?;
         Ok(())
