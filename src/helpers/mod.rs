@@ -6,12 +6,11 @@ use std::{
     iter::IntoIterator,
     iter::Iterator,
     path::{Path, PathBuf},
-    str::FromStr,
+    str::FromStr, process::Command,
 };
 
 use anyhow::{bail, Context, Result};
 use chrono::NaiveDate;
-use git2::{IndexAddOption, Repository};
 use slugify::slugify;
 use walkdir::WalkDir;
 
@@ -163,24 +162,18 @@ pub fn get_file_name(path: &Path) -> String {
 }
 
 pub fn git_commit(files_to_add: Option<&[String]>, msg: &str) -> Result<()> {
-    let repo = Repository::open(".").with_context(|| "failed to open repository")?;
-    let signature = repo.signature()?;
-    let mut index = repo.index()?;
     if let Some(files_to_add) = files_to_add {
-        index.add_all(files_to_add.iter(), IndexAddOption::DEFAULT, None)?;
+        for f in files_to_add.iter() {
+            Command::new("git")
+                .arg("add")
+                .arg(f)
+                .output()?;
+        }
     }
-    index.write()?;
-    let oid = index.write_tree()?;
-    let tree = repo.find_tree(oid)?;
-    let head = repo.head()?;
-    let ref_name = head.name();
-    let parent_commit_res = head.peel_to_commit();
-    let parent_commit = if parent_commit_res.is_ok() {
-        vec![parent_commit_res.as_ref().unwrap()]
-    } else {
-        vec![]
-    };
-
-    repo.commit(ref_name, &signature, &signature, msg, &tree, &parent_commit)?;
+    Command::new("git")
+        .arg("commit")
+        .arg("-m")
+        .arg(msg)
+        .output()?;
     Ok(())
 }

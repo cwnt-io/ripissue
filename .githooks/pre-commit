@@ -1,0 +1,3 @@
+#!/bin/sh
+echo 'pre commit was run'
+editorconfig-checker
