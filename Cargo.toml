@@ -1,6 +1,6 @@
 [package]
 name = "ripissue"
-version = "0.1.1"
+version = "0.1.2-rc.1"
 edition = "2021"
 about = "CLI tool written in Rust for distributed bug / issue / story tracking with the filesystem and git."
 description = "CLI tool written in Rust for distributed bug / issue / story tracking with the filesystem and git."
@@ -10,6 +10,9 @@ repository = "https://github.com/cwnt-io/ripissue"
 keywords = ["issue", "tracker", "git", "project", "management"]
 categories = ["command-line-utilities", "development-tools", "filesystem"]
 
+[package.metadata.release]
+allow-branch = ["master", "staging"]
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
@@ -17,7 +20,6 @@ clap = { version = "4.4.2", features = ["derive"] }
 anyhow = "1.0.75"
 slugify = "0.1.0"
 walkdir = "2.4.0"
-git2 = "0.18.0"
 strum = "0.25.0"
 strum_macros = "0.25.2"
 chrono = "0.4.31"
