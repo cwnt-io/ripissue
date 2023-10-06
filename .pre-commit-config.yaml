@@ -1,0 +1,33 @@
+repos:
+  # https://docs.franco.net.eu.org/md-toc/pre_commit_hook.html
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: 'v4.4.0'
+    hooks:
+      - id: check-added-large-files
+        args: ['--maxkb=16384']
+      - id: check-case-conflict
+      - id: check-shebang-scripts-are-executable
+      - id: check-merge-conflict
+        args: ['--assume-in-merge']
+      - id: check-symlinks
+      - id: check-yaml
+      - id: destroyed-symlinks
+      - id: detect-private-key
+      - id: no-commit-to-branch
+  - repo: https://github.com/editorconfig-checker/editorconfig-checker.python
+    rev: '2.7.2'
+    hooks:
+    - id: editorconfig-checker
+      alias: ec
+      exclude: '^ripi/(.*)$'
+  - repo: https://github.com/Lucas-C/pre-commit-hooks-nodejs
+    rev: 'v1.1.2'
+    hooks:
+      # https://github.com/jonschlinkert/markdown-toc
+      - id: markdown-toc
+        args: [-i, --maxdepth, '3']
+  - repo: https://github.com/doublify/pre-commit-rust
+    rev: 'v1.0'
+    hooks:
+      - id: fmt
+      - id: clippy
