@@ -163,9 +163,15 @@ pub fn get_file_name(path: &Path) -> String {
 }
 
 pub fn git_commit(files_to_add: Option<&[String]>, msg: &str) -> Result<()> {
+    let mut bw = wstdout();
     if let Some(files_to_add) = files_to_add {
         for f in files_to_add.iter() {
-            Command::new("git").arg("add").arg(f).output()?;
+            let output = Command::new("git").arg("add").arg(f).output()?;
+            writeln!(bw, "{}", String::from_utf8_lossy(&output.stdout))?;
+            if !output.status.success() {
+                writeln!(bw, "{}", String::from_utf8_lossy(&output.stderr))?;
+                bail!("Ripissue Add items failed.");
+            }
         }
     }
     let output = Command::new("git")
@@ -173,7 +179,6 @@ pub fn git_commit(files_to_add: Option<&[String]>, msg: &str) -> Result<()> {
         .arg("-m")
         .arg(msg)
         .output()?;
-    let mut bw = wstdout();
     writeln!(bw, "{}", String::from_utf8_lossy(&output.stdout))?;
     if !output.status.success() {
         writeln!(bw, "{}", String::from_utf8_lossy(&output.stderr))?;
