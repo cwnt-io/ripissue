@@ -7,6 +7,11 @@
 
 <!-- toc -->
 
+- [todo](#todo)
+- [done/old](#doneold)
+
+<!-- tocstop -->
+
 ## todo
 
 - [x] basic print layout

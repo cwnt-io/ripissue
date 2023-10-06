@@ -6,7 +6,8 @@ use std::{
     iter::IntoIterator,
     iter::Iterator,
     path::{Path, PathBuf},
-    str::FromStr, process::Command,
+    process::Command,
+    str::FromStr,
 };
 
 use anyhow::{bail, Context, Result};
@@ -164,16 +165,19 @@ pub fn get_file_name(path: &Path) -> String {
 pub fn git_commit(files_to_add: Option<&[String]>, msg: &str) -> Result<()> {
     if let Some(files_to_add) = files_to_add {
         for f in files_to_add.iter() {
-            Command::new("git")
-                .arg("add")
-                .arg(f)
-                .output()?;
+            Command::new("git").arg("add").arg(f).output()?;
         }
     }
-    Command::new("git")
+    let output = Command::new("git")
         .arg("commit")
         .arg("-m")
         .arg(msg)
         .output()?;
+    let mut bw = wstdout();
+    writeln!(bw, "{}", String::from_utf8_lossy(&output.stdout))?;
+    if !output.status.success() {
+        writeln!(bw, "{}", String::from_utf8_lossy(&output.stderr))?;
+        bail!("Ripissue Commit failed.");
+    }
     Ok(())
 }
