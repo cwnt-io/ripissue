@@ -19,15 +19,19 @@ repos:
     hooks:
     - id: editorconfig-checker
       alias: ec
-      exclude: '^ripi/(.*)$'
-  - repo: https://github.com/Lucas-C/pre-commit-hooks-nodejs
-    rev: 'v1.1.2'
-    hooks:
-      # https://github.com/jonschlinkert/markdown-toc
-      - id: markdown-toc
-        args: [-i, --maxdepth, '3']
+      # exclude: '^ripi/(.*)$'
   - repo: https://github.com/doublify/pre-commit-rust
     rev: 'v1.0'
     hooks:
       - id: fmt
       - id: clippy
+  - repo: https://github.com/Lucas-C/pre-commit-hooks-nodejs
+    rev: 'v1.1.2'
+    hooks:
+      # https://github.com/jonschlinkert/markdown-toc
+      - id: markdown-toc
+        args: [--maxdepth, '3', --bullets, '-', -i]
+  - repo: https://github.com/sirwart/ripsecrets
+    rev: 'v0.1.7' # Use latest tag on GitHub
+    hooks:
+      - id: ripsecrets
