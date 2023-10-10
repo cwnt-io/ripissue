@@ -2,12 +2,13 @@ use std::{
     fs::{create_dir_all, remove_dir_all, rename},
     io::Write,
     path::PathBuf,
+    process::Command,
 };
 
 use anyhow::{bail, Result};
 
 use crate::{
-    executors::general::{AssignToEnum, CommitArgs, Creator, PIdArgs},
+    executors::general::{AssignToEnum, CommitArgs, Creator, DeleteArgs},
     helpers::{base_path, base_path_closed, git_commit, slug, write_file, wstdout},
     properties::{
         assignees::{Assignee, Assignees},
@@ -22,6 +23,7 @@ use super::elem_type::ElemType;
 pub struct Elem {
     id: String,
     stype: String,
+    stype_id: char,
     status: Option<Status>,
     tags: Option<Tags>,
     assignees: Option<Assignees>,
@@ -41,6 +43,7 @@ impl Elem {
         Self {
             id: String::default(),
             stype: etype.to_string(),
+            stype_id: etype.to_string().chars().nth(0).unwrap(),
             status: None,
             tags: None,
             assignees: None,
@@ -48,6 +51,9 @@ impl Elem {
     }
     pub fn id(&self) -> &str {
         &self.id
+    }
+    pub fn stype_id(&self) -> &char {
+        &self.stype_id
     }
     pub fn opened_closed_status(&self) -> Result<&str> {
         match (self.epath().is_dir(), self.epath_closed().is_dir()) {
@@ -185,7 +191,6 @@ impl Elem {
         closed.push(self.id());
         closed
     }
-
     fn commit_self(&self, msg: &str) -> Result<()> {
         let files_to_add = self
             .epaths_all()
@@ -312,45 +317,98 @@ impl Elem {
         if !args.dry() {
             let msg = format!("(created) {} #{}.", elem.stype(), elem.id());
             elem.commit_self(&msg)?;
+            if args.branch() {
+                elem.switch_to_branch()?;
+            }
         }
         Ok(())
     }
-    pub fn commit(args: &CommitArgs, etype: &ElemType) -> Result<()> {
+    pub fn delete_branch(&self) -> Result<()> {
+        let mut bw = wstdout();
+        let branch_name = format!("{}-{}", self.stype_id(), self.id());
+        let output = Command::new("git")
+            .arg("branch")
+            .arg(&branch_name)
+            .arg("-d")
+            .output()?;
+        writeln!(bw, "{}", String::from_utf8_lossy(&output.stdout))?;
+        if !output.status.success() {
+            writeln!(bw, "{}", String::from_utf8_lossy(&output.stderr))?;
+            bail!("Ripissue: failed to delete branch {}.", &branch_name);
+        }
+        writeln!(bw, "Ripissue: branch {} is deleted.", branch_name)?;
+        Ok(())
+    }
+    pub fn switch_to_branch(&self) -> Result<()> {
+        let mut bw = wstdout();
+        let branch_name = format!("{}-{}", self.stype_id(), self.id());
+        let output = Command::new("git")
+            .arg("switch")
+            .arg("-c")
+            .arg(&branch_name)
+            .output()?;
+        writeln!(bw, "{}", String::from_utf8_lossy(&output.stdout))?;
+        if !output.status.success() {
+            writeln!(bw, "{}", String::from_utf8_lossy(&output.stderr))?;
+            bail!("Ripissue: failed to switch to branch {}.", &branch_name);
+        }
+        writeln!(bw, "Ripissue: now in branch {}.", branch_name)?;
+        Ok(())
+    }
+    pub fn commit(args: &CommitArgs, etype: &ElemType) -> Result<Elem> {
         let mut elem = Self::raw(etype);
         elem.set_all_from_files(&args.pid.path_or_id)?;
         elem.write_tags_from_cmd(&args.props.tags)?;
         elem.write_status_from_cmd(args.props.status)?;
         elem.append_assignees(&args.props.assign_to)?;
         elem.write_assignees()?;
-        let msg = format!("(up) {} #{}.", elem.stype(), &elem.id());
-        elem.commit_self(&msg)?;
-        Ok(())
+        if !args.git.dry {
+            if args.git.branch {
+                elem.switch_to_branch()?;
+            }
+            let msg = format!("(up) {} #{}.", elem.stype(), &elem.id());
+            elem.commit_self(&msg)?;
+        }
+        Ok(elem)
     }
-    pub fn close(args: &PIdArgs, etype: &ElemType) -> Result<()> {
-        let mut elem = Self::raw(etype);
-        elem.set_id(&args.path_or_id);
-        elem.update_path()?;
+    pub fn close(args: &CommitArgs, etype: &ElemType) -> Result<()> {
+        let elem = Elem::commit(args, etype)?;
         elem.close_self()?;
-        let msg = format!("(closed) {} #{}.", elem.stype(), &elem.id());
-        elem.commit_self(&msg)?;
+        if !args.git.dry {
+            let msg = format!("(closed) {} #{}.", elem.stype(), &elem.id());
+            elem.commit_self(&msg)?;
+            if args.git.branch {
+                elem.delete_branch()?;
+            }
+        }
         Ok(())
     }
-    pub fn reopen(args: &PIdArgs, etype: &ElemType) -> Result<()> {
+    pub fn reopen(args: &CommitArgs, etype: &ElemType) -> Result<()> {
         let mut elem = Self::raw(etype);
-        elem.set_id(&args.path_or_id);
+        elem.set_id(&args.pid.path_or_id);
         elem.update_path()?;
         elem.reopen_self()?;
-        let msg = format!("(reopened) {} #{}.", elem.stype(), &elem.id());
-        elem.commit_self(&msg)?;
+        if !args.git.dry {
+            let msg = format!("(reopened) {} #{}.", elem.stype(), &elem.id());
+            elem.commit_self(&msg)?;
+            if args.git.branch {
+                elem.switch_to_branch()?;
+            }
+        }
         Ok(())
     }
-    pub fn delete(args: &PIdArgs, etype: &ElemType) -> Result<()> {
+    pub fn delete(args: &DeleteArgs, etype: &ElemType) -> Result<()> {
         let mut elem = Self::raw(etype);
-        elem.set_id(&args.path_or_id);
+        elem.set_id(&args.pid.path_or_id);
         elem.update_path()?;
         elem.delete_self()?;
-        let msg = format!("(deleted) {} #{}.", elem.stype(), &elem.id());
-        elem.commit_self(&msg)?;
+        if !args.git.dry {
+            let msg = format!("(deleted) {} #{}.", elem.stype(), &elem.id());
+            elem.commit_self(&msg)?;
+            if args.git.branch {
+                elem.delete_branch()?;
+            }
+        }
         Ok(())
     }
 }

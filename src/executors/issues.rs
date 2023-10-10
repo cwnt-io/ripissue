@@ -35,6 +35,7 @@ pub struct CreateIssueArgs {
     pub name: String,
     #[command(flatten)]
     pub props: PropertiesArgs,
+    // TODO
     #[command(flatten)]
     pub git: GitArgs,
 }
@@ -54,5 +55,8 @@ impl Creator for CreateIssueArgs {
     }
     fn dry(&self) -> bool {
         self.git.dry
+    }
+    fn branch(&self) -> bool {
+        self.git.branch
     }
 }

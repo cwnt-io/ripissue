@@ -12,11 +12,11 @@ pub enum GeneralExecutors {
     /// Commits item to git
     Commit(CommitArgs),
     /// Closes, adds and commits an item
-    Close(PIdArgs),
+    Close(CommitArgs),
     /// Reopens an item and adds and commits to git
-    Reopen(PIdArgs),
+    Reopen(CommitArgs),
     /// Deletes an item
-    Delete(PIdArgs),
+    Delete(DeleteArgs),
     /// Lists all items
     List(ListArgs),
 }
@@ -25,8 +25,7 @@ impl GeneralExecutors {
     pub fn run_cmd(&self, etype: &ElemType) -> Result<()> {
         use GeneralExecutors::*;
         match self {
-            // TODO: assign-to commit
-            Commit(args) => Elem::commit(args, etype)?,
+            Commit(args) => Elem::commit(args, etype).and(Ok(()))?,
             Close(args) => Elem::close(args, etype)?,
             Reopen(args) => Elem::reopen(args, etype)?,
             Delete(args) => Elem::delete(args, etype)?,
@@ -79,6 +78,9 @@ pub struct GitArgs {
     /// Do not add/commit it to git.
     #[arg(long, short)]
     pub dry: bool,
+    /// Creates or Switches to a branch related with this item
+    #[arg(long, short)]
+    pub branch: bool,
 }
 
 #[derive(Debug, Args)]
@@ -92,8 +94,20 @@ pub struct PIdArgs {
 pub struct CommitArgs {
     #[command(flatten)]
     pub pid: PIdArgs,
+    // TODO: use props and git when closing
     #[command(flatten)]
     pub props: PropertiesArgs,
+    #[command(flatten)]
+    pub git: GitArgs,
+}
+
+#[derive(Debug, Args)]
+pub struct DeleteArgs {
+    #[command(flatten)]
+    pub pid: PIdArgs,
+    // TODO: use props and git when closing
+    #[command(flatten)]
+    pub git: GitArgs,
 }
 
 #[derive(Debug, Args)]
@@ -112,5 +126,6 @@ pub trait Creator {
     fn tags(&self) -> &Option<Vec<String>>;
     fn status(&self) -> &Option<Status>;
     fn dry(&self) -> bool;
+    fn branch(&self) -> bool;
     fn assign_to(&self) -> &Option<AssignToEnum>;
 }
