@@ -81,6 +81,9 @@ pub struct GitArgs {
     /// Creates or Switches to a branch related with this item
     #[arg(long, short)]
     pub branch: bool,
+    /// Add all changes to git (git add -A)
+    #[arg(long, short)]
+    pub add: bool,
 }
 
 #[derive(Debug, Args)]
@@ -124,5 +127,6 @@ pub trait Creator {
     fn status(&self) -> &Option<Status>;
     fn dry(&self) -> bool;
     fn branch(&self) -> bool;
+    fn add(&self) -> bool;
     fn assign_to(&self) -> &Option<AssignToEnum>;
 }

@@ -291,16 +291,6 @@ impl Elem {
         }
         Ok(())
     }
-    fn git_gen_elem(&mut self, dry: bool, branch: bool, operation: &str) -> Result<()> {
-        if !dry {
-            let msg = format!("({}) {} #{}.", operation, self.stype(), self.id());
-            self.commit_self(&msg)?;
-            if branch {
-                self.go_to_or_create_elem_branch()?;
-            }
-        }
-        Ok(())
-    }
     fn branch_name(&self) -> String {
         format!("{}-{}", self.stype_id(), self.id())
     }
@@ -330,26 +320,60 @@ impl Elem {
         elem.write_assignees()?;
         Ok(elem)
     }
-    pub fn git_up_elem(&mut self, dry: bool, branch: bool) -> Result<()> {
-        if !dry {
-            if branch {
-                self.go_to_or_create_elem_branch()?;
-            }
-            let msg = format!("(up) {} #{}.", self.stype(), &self.id());
-            self.commit_self(&msg)?;
+    fn git_elem(&mut self, dry: bool, branch: bool, add: bool, operation: &str) -> Result<()> {
+        if dry {
+            return Ok(());
+        }
+        let msg = format!("({}) {} #{}.", operation, self.stype(), self.id());
+        let gen = ["created", "reopened"];
+        let end = ["closed", "deleted"];
+        if branch && operation == "up" {
+            self.go_to_or_create_elem_branch()?;
+        } else if branch && end.contains(&operation) {
+            self.delete_branch()?;
+        }
+        if add {
+            run_cmd!(git add -A)?;
+        }
+        self.commit_self(&msg)?;
+        if branch && gen.contains(&operation) {
+            self.go_to_or_create_elem_branch()?;
         }
         Ok(())
     }
-    pub fn git_end_elem(&mut self, dry: bool, branch: bool, operation: &str) -> Result<()> {
-        if !dry {
-            let msg = format!("({}) {} #{}.", operation, self.stype(), &self.id());
-            self.commit_self(&msg)?;
-            if branch {
-                self.delete_branch()?;
-            }
-        }
-        Ok(())
-    }
+    // fn git_gen_elem(&mut self, dry: bool, branch: bool, operation: &str) -> Result<()> {
+    //     // created / reopened
+    //     if !dry {
+    //         let msg = format!("({}) {} #{}.", operation, self.stype(), self.id());
+    //         self.commit_self(&msg)?;
+    //         if branch {
+    //             self.go_to_or_create_elem_branch()?;
+    //         }
+    //     }
+    //     Ok(())
+    // }
+    // fn git_end_elem(&mut self, dry: bool, branch: bool, operation: &str) -> Result<()> {
+    //     // closed / deleted
+    //     if !dry {
+    //         if branch {
+    //             self.delete_branch()?;
+    //         }
+    //         let msg = format!("({}) {} #{}.", operation, self.stype(), &self.id());
+    //         self.commit_self(&msg)?;
+    //     }
+    //     Ok(())
+    // }
+    // fn git_up_elem(&mut self, dry: bool, branch: bool) -> Result<()> {
+    //     // commit / inside close
+    //     if !dry {
+    //         if branch {
+    //             self.go_to_or_create_elem_branch()?;
+    //         }
+    //         let msg = format!("(up) {} #{}.", self.stype(), &self.id());
+    //         self.commit_self(&msg)?;
+    //     }
+    //     Ok(())
+    // }
     // EXECUTOR: ex-create
     pub fn create(args: &impl Creator, etype: &ElemType) -> Result<()> {
         init_builtin_logger();
@@ -361,14 +385,14 @@ impl Elem {
         let assignees = Assignees::from_assign_to(args.assign_to())?;
         elem.set_assignees(assignees);
         elem.write()?;
-        elem.git_gen_elem(args.dry(), args.branch(), "created")?;
+        elem.git_elem(args.dry(), args.branch(), args.add(), "created")?;
         Ok(())
     }
     // EXECUTOR: ex-commit
     pub fn commit(args: &CommitArgs, etype: &ElemType) -> Result<()> {
         init_builtin_logger();
         let mut elem = Self::from_files(args, etype)?;
-        elem.git_up_elem(args.git.dry, args.git.branch)?;
+        elem.git_elem(args.git.dry, args.git.branch, args.git.add, "up")?;
         Ok(())
     }
     // EXECUTOR: ex-close
@@ -391,10 +415,10 @@ impl Elem {
             bail!("{} #{} was already closed.", stype, id);
         }
         // final commit update to check pre-commits
-        elem.git_up_elem(args.git.dry, false)?;
+        elem.git_elem(args.git.dry, false, args.git.add, "up")?;
         create_dir_all(elem.epath_closed())?;
         rename(elem.epath(), elem.epath_closed())?;
-        elem.git_end_elem(args.git.dry, args.git.branch, "closed")?;
+        elem.git_elem(args.git.dry, args.git.branch, args.git.add, "closed")?;
         writeln!(wstdout(), "{} #{} closed.", stype, &id)?;
         Ok(())
     }
@@ -404,7 +428,7 @@ impl Elem {
         elem.set_id(&args.pid.path_or_id);
         elem.update_path()?;
         elem.reopen_self()?;
-        elem.git_gen_elem(args.git.dry, args.git.branch, "reopened")?;
+        elem.git_elem(args.git.dry, args.git.branch, args.git.add, "reopened")?;
         Ok(())
     }
     // EXECUTOR: ex-delete
@@ -414,7 +438,7 @@ impl Elem {
         elem.set_id(&args.pid.path_or_id);
         elem.update_path()?;
         elem.delete_self()?;
-        elem.git_end_elem(args.git.dry, args.git.branch, "deleted")?;
+        elem.git_elem(args.git.dry, args.git.branch, args.git.add, "deleted")?;
         Ok(())
     }
 }

@@ -85,6 +85,9 @@ impl Creator for CreateSprintArgs {
     fn branch(&self) -> bool {
         self.git.branch
     }
+    fn add(&self) -> bool {
+        self.git.add
+    }
     fn assign_to(&self) -> &Option<AssignToEnum> {
         &self.props.assign_to
     }
