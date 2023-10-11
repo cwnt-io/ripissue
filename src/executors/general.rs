@@ -94,7 +94,6 @@ pub struct PIdArgs {
 pub struct CommitArgs {
     #[command(flatten)]
     pub pid: PIdArgs,
-    // TODO: use props and git when closing
     #[command(flatten)]
     pub props: PropertiesArgs,
     #[command(flatten)]
@@ -105,7 +104,6 @@ pub struct CommitArgs {
 pub struct DeleteArgs {
     #[command(flatten)]
     pub pid: PIdArgs,
-    // TODO: use props and git when closing
     #[command(flatten)]
     pub git: GitArgs,
 }
@@ -121,7 +119,6 @@ pub struct ListArgs {
 }
 
 pub trait Creator {
-    // TODO: assign-to Creator
     fn name(&self) -> String;
     fn tags(&self) -> &Option<Vec<String>>;
     fn status(&self) -> &Option<Status>;

@@ -35,7 +35,6 @@ pub struct CreateIssueArgs {
     pub name: String,
     #[command(flatten)]
     pub props: PropertiesArgs,
-    // TODO
     #[command(flatten)]
     pub git: GitArgs,
 }
