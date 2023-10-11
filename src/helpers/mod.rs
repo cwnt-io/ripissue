@@ -171,6 +171,7 @@ pub fn git_commit(files_to_add: Option<&[String]>, msg: &str) -> Result<()> {
     }
     let output = Command::new("git")
         .arg("commit")
+        .arg("--allow-empty")
         .arg("-m")
         .arg(msg)
         .output()?;

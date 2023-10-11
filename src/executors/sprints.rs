@@ -62,6 +62,7 @@ pub struct CreateSprintArgs {
     pub due_date: String,
     #[command(flatten)]
     pub props: PropertiesArgs,
+    // TODO
     #[command(flatten)]
     pub git: GitArgs,
 }
@@ -80,6 +81,9 @@ impl Creator for CreateSprintArgs {
     }
     fn dry(&self) -> bool {
         self.git.dry
+    }
+    fn branch(&self) -> bool {
+        self.git.branch
     }
     fn assign_to(&self) -> &Option<AssignToEnum> {
         &self.props.assign_to

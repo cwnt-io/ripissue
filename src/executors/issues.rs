@@ -55,4 +55,7 @@ impl Creator for CreateIssueArgs {
     fn dry(&self) -> bool {
         self.git.dry
     }
+    fn branch(&self) -> bool {
+        self.git.branch
+    }
 }
