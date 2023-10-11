@@ -11,7 +11,7 @@ keywords = ["issue", "tracker", "git", "project", "management"]
 categories = ["command-line-utilities", "development-tools", "filesystem"]
 
 [package.metadata.release]
-allow-branch = ["master","staging"]
+allow-branch = ["master","staging", "develop"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
