@@ -8,10 +8,12 @@
 
 # Todo Backlog Draft
 
-- ripissue:
-  - automatic create branch
-  - phase close: 1) commit, then add again and close (to pass pre-commit)
-  - automatic delete branch when closing issue
+- improve close issue flow `fn close`
+  - `Elem::commit`:
+    - the important part of this code is the initial one when setting up the elem, before commit
+    - extract this piece to another method
+    - do not call Elem::commit inside `fn close`
+    - do not replicate the `branch` workflow from `fn commit` inside `fn close`
 
 -   [ ] implement tests (unit + integration)
 -   [ ] `ripi create` automatically creates a branch too?
