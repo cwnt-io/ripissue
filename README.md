@@ -10,7 +10,7 @@
   - [Close an issue](#close-an-issue)
   - [Reopen an issue](#reopen-an-issue)
   - [List all issues](#list-all-issues)
-- [Changelog Workflow[^1][^2]](#changelog-workflow12)
+- [Changelog](#changelog)
 - [References](#references)
 
 <!-- tocstop -->
@@ -64,8 +64,9 @@ ripi issue reopen my_issue
 ripi issue list -a
 ```
 
-## Changelog Workflow[^1][^2]
+## Changelog
 
+See [CHANGELOG]('./CHANGELOG.md')[^1][^2].
 
 ## References
 
