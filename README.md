@@ -5,12 +5,13 @@
 - [Development Workflow](#development-workflow)
 - [Install](#install)
 - [Basic usage](#basic-usage)
-  * [Create an issue](#create-an-issue)
-  * [Commit/update an issue](#commitupdate-an-issue)
-  * [Close an issue](#close-an-issue)
-  * [Reopen an issue](#reopen-an-issue)
-  * [List all issues](#list-all-issues)
-- [todo:](#todo)
+  - [Create an issue](#create-an-issue)
+  - [Commit/update an issue](#commitupdate-an-issue)
+  - [Close an issue](#close-an-issue)
+  - [Reopen an issue](#reopen-an-issue)
+  - [List all issues](#list-all-issues)
+- [Changelog Workflow[^1][^2]](#changelog-workflow12)
+- [References](#references)
 
 <!-- tocstop -->
 
@@ -63,46 +64,12 @@ ripi issue reopen my_issue
 ripi issue list -a
 ```
 
-## todo:
+## Changelog Workflow[^1][^2]
 
--   [ ] to publish to cargo:
 
-    -   [ ] project elem
-    -   [ ] sprint/epics/initiatives
-        -   yaml file: https://stackoverflow.com/questions/53243795/how-do-you-read-a-yaml-file-in-rust
+## References
 
--   [ ] refactor app with clap builder
--   [ ] increment print layout for cmd list: show issues properties to stdout (status, tags, etc...)
--   [ ] clean cwnt github repo (delete popcorn-web-app)
--   [ ] clap args inheritance
+[^1]: https://github.com/nextest-rs/nextest/blob/main/internal-docs/releasing.md "How to perform nextest releases"
+[^2]: https://keepachangelog.com/en/1.1.0/ "keep a changelog"
 
-```
-/repo1
-    /_...(issues)
-/repo2
-/repo3
-```
 
-```
-/mgmt
-    /sprints
-        /sprint_1
-            <repo>-<issue_name>
-            <repo>-<issue_name>
-        /sprint_2
-    /epics
-        /epic_1
-            sprint_1
-            sprint_2
-        /epic_2
-    /initiatives
-        /initiative_1
-            /epic_1
-            /epic_2
-    /projects
-        /proj_1
-            /repo1
-            /repo2
-        /proj_2
-            /repo3
-```
