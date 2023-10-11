@@ -10,6 +10,9 @@
   - [Close an issue](#close-an-issue)
   - [Reopen an issue](#reopen-an-issue)
   - [List all issues](#list-all-issues)
+- [Release Workflow](#release-workflow)
+  - [Prepare releases](#prepare-releases)
+  - [Create and push tags](#create-and-push-tags)
 - [Changelog](#changelog)
 - [References](#references)
 
@@ -63,6 +66,29 @@ ripi issue reopen my_issue
 ```bash
 ripi issue list -a
 ```
+
+## Release Workflow
+
+Inspired by [this release workflow](https://github.com/nextest-rs/nextest/blob/main/internal-docs/releasing.md)[^1].
+
+Releases depend on:
+
+- [cargo-release](https://github.com/crate-ci/cargo-release)
+- sign tag?
+
+### Prepare releases
+
+- At `develop` branch: fetch/rebase `origin/develop`
+- Prepare [[changelog]]
+- Switch to `staging` and merge `develop`
+- Solve conflicts
+- Run git hooks
+
+### Create and push tags
+
+- at `staging` branch
+- `cargo release rc` to bump minor version and add `rc` to it
+
 
 ## Changelog
 
