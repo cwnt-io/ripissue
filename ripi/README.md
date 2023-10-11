@@ -8,8 +8,6 @@
 
 # Todo Backlog Draft
 
-- README: release workflow
-- release new version
 - crates.io and github/ripissue: add owners
 - [ ] make a professional README
   - basic usage (simple, just as `bug`)
