@@ -27,28 +27,14 @@ pub struct Elem {
     status: Option<Status>,
     tags: Option<Tags>,
     assignees: Option<Assignees>,
-    last_branch: String,
-    curr_branch: String,
 }
 
 impl Elem {
-    pub fn set_curr_branch(&mut self) -> Result<()> {
-        self.last_branch = self.curr_branch.clone();
-        self.curr_branch = run_fun!(git rev-parse --abbrev-ref HEAD)?;
-        Ok(())
-    }
-    fn last_branch(&self) -> String {
-        self.last_branch.clone()
-    }
-    // fn curr_branch(&self) -> String {
-    //     self.curr_branch.clone()
-    // }
     pub fn set_all_from_files(&mut self, input_id: &str) -> Result<()> {
         self.set_id(input_id);
         self.update_path()?;
         self.set_tags_from_files();
         self.set_status_from_files()?;
-        self.set_curr_branch()?;
         let assignees = Assignees::from_files(&self.assignees_path())?;
         self.set_assignees(assignees);
         Ok(())
@@ -61,12 +47,10 @@ impl Elem {
             status: None,
             tags: None,
             assignees: None,
-            last_branch: String::default(),
-            curr_branch: String::default(),
         }
     }
-    pub fn id(&self) -> &str {
-        &self.id
+    pub fn id(&self) -> String {
+        self.id.clone()
     }
     pub fn stype_id(&self) -> &char {
         &self.stype_id
@@ -85,8 +69,8 @@ impl Elem {
             slug(input)
         };
     }
-    fn stype(&self) -> &str {
-        &self.stype
+    fn stype(&self) -> String {
+        self.stype.clone()
     }
     pub fn status(&self) -> &Option<Status> {
         &self.status
@@ -307,9 +291,68 @@ impl Elem {
         }
         Ok(())
     }
-
-    // EXECUTORS
+    fn git_gen_elem(&mut self, dry: bool, branch: bool, operation: &str) -> Result<()> {
+        if !dry {
+            let msg = format!("({}) {} #{}.", operation, self.stype(), self.id());
+            self.commit_self(&msg)?;
+            if branch {
+                self.go_to_or_create_elem_branch()?;
+            }
+        }
+        Ok(())
+    }
+    fn branch_name(&self) -> String {
+        format!("{}-{}", self.stype_id(), self.id())
+    }
+    pub fn delete_branch(&self) -> Result<()> {
+        let branch_name = self.branch_name();
+        run_cmd!(git branch -d $branch_name)?;
+        Ok(())
+    }
+    pub fn go_to_or_create_elem_branch(&mut self) -> Result<()> {
+        let mut bw = wstdout();
+        let branch = self.branch_name();
+        let check_branch = run_fun!(git rev-parse --verify $branch);
+        if check_branch.is_ok() {
+            run_cmd!(git switch $branch)?;
+        } else {
+            run_cmd!(git switch -c $branch)?;
+        };
+        writeln!(bw, "Ripissue: now in branch {}.", branch)?;
+        Ok(())
+    }
+    pub fn from_files(args: &CommitArgs, etype: &ElemType) -> Result<Elem> {
+        let mut elem = Self::raw(etype);
+        elem.set_all_from_files(&args.pid.path_or_id)?;
+        elem.write_tags_from_cmd(&args.props.tags)?;
+        elem.write_status_from_cmd(args.props.status)?;
+        elem.append_assignees(&args.props.assign_to)?;
+        elem.write_assignees()?;
+        Ok(elem)
+    }
+    pub fn git_up_elem(&mut self, dry: bool, branch: bool) -> Result<()> {
+        if !dry {
+            if branch {
+                self.go_to_or_create_elem_branch()?;
+            }
+            let msg = format!("(up) {} #{}.", self.stype(), &self.id());
+            self.commit_self(&msg)?;
+        }
+        Ok(())
+    }
+    pub fn git_end_elem(&mut self, dry: bool, branch: bool, operation: &str) -> Result<()> {
+        if !dry {
+            let msg = format!("({}) {} #{}.", operation, self.stype(), &self.id());
+            self.commit_self(&msg)?;
+            if branch {
+                self.delete_branch()?;
+            }
+        }
+        Ok(())
+    }
+    // EXECUTOR: ex-create
     pub fn create(args: &impl Creator, etype: &ElemType) -> Result<()> {
+        init_builtin_logger();
         let mut elem = Self::raw(etype);
         elem.set_id(&args.name());
         elem.already_exists()?;
@@ -318,119 +361,60 @@ impl Elem {
         let assignees = Assignees::from_assign_to(args.assign_to())?;
         elem.set_assignees(assignees);
         elem.write()?;
-        if !args.dry() {
-            let msg = format!("(created) {} #{}.", elem.stype(), elem.id());
-            elem.commit_self(&msg)?;
-            if args.branch() {
-                elem.go_to_or_create_elem_branch()?;
-            }
-        }
+        elem.git_gen_elem(args.dry(), args.branch(), "created")?;
         Ok(())
     }
-    pub fn delete_branch(&self) -> Result<()> {
-        let branch_name = format!("{}-{}", self.stype_id(), self.id());
-        run_cmd!(git branch -d $branch_name)?;
+    // EXECUTOR: ex-commit
+    pub fn commit(args: &CommitArgs, etype: &ElemType) -> Result<()> {
+        init_builtin_logger();
+        let mut elem = Self::from_files(args, etype)?;
+        elem.git_up_elem(args.git.dry, args.git.branch)?;
         Ok(())
     }
-    pub fn switch_to_or_create_branch(&mut self, branch: &str) -> Result<()> {
-        let mut bw = wstdout();
-        if branch.is_empty() {
-            writeln!(bw, "Ripissue: branch string is empty.")?;
-            return Ok(());
-        }
-        let check_branch = run_fun!(git rev-parse --verify $branch);
-        if check_branch.is_ok() {
-            run_cmd!(git switch $branch)?;
-        } else {
-            run_cmd!(git switch -c $branch)?;
-        };
-        self.set_curr_branch()?;
-        writeln!(bw, "Ripissue: now in branch {}.", branch)?;
-        Ok(())
-    }
-    pub fn go_to_last_branch(&mut self) -> Result<()> {
-        if self.last_branch().is_empty() {
-            bail!("Ripissue: there is no previous (last) branch.");
-        }
-        self.switch_to_or_create_branch(&self.last_branch())?;
-        Ok(())
-    }
-    pub fn go_to_or_create_elem_branch(&mut self) -> Result<()> {
-        let branch_name = format!("{}-{}", self.stype_id(), self.id());
-        self.switch_to_or_create_branch(&branch_name)?;
-        Ok(())
-    }
-    pub fn commit(args: &CommitArgs, etype: &ElemType) -> Result<Elem> {
-        let mut elem = Self::raw(etype);
-        elem.set_all_from_files(&args.pid.path_or_id)?;
-        elem.write_tags_from_cmd(&args.props.tags)?;
-        elem.write_status_from_cmd(args.props.status)?;
-        elem.append_assignees(&args.props.assign_to)?;
-        elem.write_assignees()?;
-        if !args.git.dry {
-            if args.git.branch {
-                elem.go_to_or_create_elem_branch()?;
-            }
-            let msg = format!("(up) {} #{}.", elem.stype(), &elem.id());
-            elem.commit_self(&msg)?;
-        }
-        Ok(elem)
-    }
+    // EXECUTOR: ex-close
+    // close workflow:
+    //  - switch from elem branch to develop branch
+    //  - git merge and solve conflicts
+    //  - run: ripi <elem> close <elem_id> [-b]
+    //      - get elem from files
+    //      - if is closed, finish
+    //      - will do a final commit to run pre-commit hooks
+    //      - will move to .closed dir
+    //      - will commit to close <elem>
+    //      - if [-b] will delete already merged branch
     pub fn close(args: &CommitArgs, etype: &ElemType) -> Result<()> {
         init_builtin_logger();
-        // previous check commit
-        let mut elem = Elem::commit(args, etype)?;
+        let mut elem = Elem::from_files(args, etype)?;
         let stype = elem.stype();
         let id = elem.id();
-        if !elem.epath_closed().is_dir() {
-            create_dir_all(elem.epath_closed())?;
-            rename(elem.epath(), elem.epath_closed())?;
-            writeln!(wstdout(), "{} #{} closed.", stype, &id)?;
-        } else {
-            writeln!(wstdout(), "{} #{} was already closed.", stype, &id)?;
+        if elem.epath_closed().is_dir() {
+            bail!("{} #{} was already closed.", stype, id);
         }
-        if !args.git.dry {
-            let msg = format!("(closed) {} #{}.", elem.stype(), &elem.id());
-            elem.commit_self(&msg)?;
-            if args.git.branch {
-                // change branch to last, so can be deleted
-                elem.go_to_last_branch()?;
-                // now prev branch is curr.
-                let last_branch = elem.last_branch();
-                // merge curr with last
-                run_cmd!(git merge --no-edit $last_branch)?;
-                elem.delete_branch()?;
-            }
-        }
+        // final commit update to check pre-commits
+        elem.git_up_elem(args.git.dry, false)?;
+        create_dir_all(elem.epath_closed())?;
+        rename(elem.epath(), elem.epath_closed())?;
+        elem.git_end_elem(args.git.dry, args.git.branch, "closed")?;
+        writeln!(wstdout(), "{} #{} closed.", stype, &id)?;
         Ok(())
     }
+    // EXECUTOR: ex-reopen
     pub fn reopen(args: &CommitArgs, etype: &ElemType) -> Result<()> {
         let mut elem = Self::raw(etype);
         elem.set_id(&args.pid.path_or_id);
         elem.update_path()?;
         elem.reopen_self()?;
-        if !args.git.dry {
-            let msg = format!("(reopened) {} #{}.", elem.stype(), &elem.id());
-            elem.commit_self(&msg)?;
-            if args.git.branch {
-                elem.go_to_or_create_elem_branch()?;
-            }
-        }
+        elem.git_gen_elem(args.git.dry, args.git.branch, "reopened")?;
         Ok(())
     }
+    // EXECUTOR: ex-delete
     pub fn delete(args: &DeleteArgs, etype: &ElemType) -> Result<()> {
         init_builtin_logger();
         let mut elem = Self::raw(etype);
         elem.set_id(&args.pid.path_or_id);
         elem.update_path()?;
         elem.delete_self()?;
-        if !args.git.dry {
-            let msg = format!("(deleted) {} #{}.", elem.stype(), &elem.id());
-            elem.commit_self(&msg)?;
-            if args.git.branch {
-                elem.delete_branch()?;
-            }
-        }
+        elem.git_end_elem(args.git.dry, args.git.branch, "deleted")?;
         Ok(())
     }
 }

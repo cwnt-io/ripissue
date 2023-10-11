@@ -8,12 +8,10 @@
 
 # Todo Backlog Draft
 
-- improve close issue flow `fn close`
-  - `Elem::commit`:
-    - the important part of this code is the initial one when setting up the elem, before commit
-    - extract this piece to another method
-    - do not call Elem::commit inside `fn close`
-    - do not replicate the `branch` workflow from `fn commit` inside `fn close`
+- [ ] git add -A command with flag
+- [ ] change git commands to prefix with g
+  - long: --git-branch, --git-dry, --git-add
+  - short: -b, -d, -a
 
 -   [ ] implement tests (unit + integration)
 -   [ ] `ripi create` automatically creates a branch too?

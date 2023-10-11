@@ -25,7 +25,7 @@ impl GeneralExecutors {
     pub fn run_cmd(&self, etype: &ElemType) -> Result<()> {
         use GeneralExecutors::*;
         match self {
-            Commit(args) => Elem::commit(args, etype).and(Ok(()))?,
+            Commit(args) => Elem::commit(args, etype)?,
             Close(args) => Elem::close(args, etype)?,
             Reopen(args) => Elem::reopen(args, etype)?,
             Delete(args) => Elem::delete(args, etype)?,
