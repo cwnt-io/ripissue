@@ -10,6 +10,7 @@
 
 - crates.io and github/ripissue: add owners
 - [ ] make a professional README
+  - link to crates.io
   - basic usage (simple, just as `bug`)
   - increment usage with minimal single workflow (with branches)
   - more: mgmt repo and sprints

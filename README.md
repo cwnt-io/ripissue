@@ -109,5 +109,7 @@ At `master` branch:
 
 See [CHANGELOG](CHANGELOG.md) [^1] [^2]
 
+<!-- references -->
+
 [^1]: https://github.com/nextest-rs/nextest/blob/main/internal-docs/releasing.md "How to perform nextest releases"
 [^2]: https://keepachangelog.com/en/1.1.0/ "keep a changelog"
