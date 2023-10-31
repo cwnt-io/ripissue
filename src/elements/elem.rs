@@ -376,7 +376,6 @@ impl Elem {
     // }
     // EXECUTOR: ex-create
     pub fn create(args: &impl Creator, etype: &ElemType) -> Result<()> {
-        init_builtin_logger();
         let mut elem = Self::raw(etype);
         elem.set_id(&args.name());
         elem.already_exists()?;
@@ -390,7 +389,6 @@ impl Elem {
     }
     // EXECUTOR: ex-commit
     pub fn commit(args: &CommitArgs, etype: &ElemType) -> Result<()> {
-        init_builtin_logger();
         let mut elem = Self::from_files(args, etype)?;
         elem.git_elem(args.git.dry, args.git.branch, args.git.add, "up")?;
         Ok(())
@@ -407,7 +405,6 @@ impl Elem {
     //      - will commit to close <elem>
     //      - if [-b] will delete already merged branch
     pub fn close(args: &CommitArgs, etype: &ElemType) -> Result<()> {
-        init_builtin_logger();
         let mut elem = Elem::from_files(args, etype)?;
         let stype = elem.stype();
         let id = elem.id();
@@ -433,7 +430,6 @@ impl Elem {
     }
     // EXECUTOR: ex-delete
     pub fn delete(args: &DeleteArgs, etype: &ElemType) -> Result<()> {
-        init_builtin_logger();
         let mut elem = Self::raw(etype);
         elem.set_id(&args.pid.path_or_id);
         elem.update_path()?;
