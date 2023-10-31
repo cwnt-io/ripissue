@@ -1,6 +1,6 @@
 [package]
 name = "ripissue"
-version = "0.1.4"
+version = "0.1.5"
 edition = "2021"
 about = "CLI tool written in Rust for distributed bug / issue / story tracking with the filesystem and git."
 description = "CLI tool written in Rust for distributed bug / issue / story tracking with the filesystem and git."
