@@ -13,8 +13,8 @@
 - [Release Workflow](#release-workflow)
   - [Prepare releases](#prepare-releases)
   - [Create and push tags](#create-and-push-tags)
+  - [Publish at crate.io](#publish-at-crateio)
 - [Changelog](#changelog)
-- [References](#references)
 
 <!-- tocstop -->
 
@@ -75,28 +75,41 @@ Releases depend on:
 
 - [cargo-release](https://github.com/crate-ci/cargo-release)
 - sign tag?
+- be a ripissue mantainer at cwnt-io
 
 ### Prepare releases
 
-- At `develop` branch: fetch/rebase `origin/develop`
+At `develop` branch:
+
+- pull `fork-executor/develop`
 - Prepare [[changelog]]
-- Switch to `staging` and merge `develop`
-- Solve conflicts
-- Run git hooks
+- `cargo release rc --no-publish -x` (will not publish)
+  - to bump minor version and add `rc` to it
 
 ### Create and push tags
 
-- at `staging` branch
-- `cargo release rc` to bump minor version and add `rc` to it
+At `staging` branch:
 
+- pull/fetch/rebase `origin/staging`
+- merge with **TAG** created at `develop`
+- Tests / minor adjustments / Solve conflicts / Run git hooks
+- `cargo release patch --no-publish -x`
+
+At `master` branch:
+
+- pull/fetch/rebase `origin/master`
+- merge with **TAG** created at `staging`
+- `git push origin --mirror` (branches, tags, all)
+
+### Publish at crate.io
+
+`cargo publish` or `cargo release publish`
 
 ## Changelog
 
-See [CHANGELOG]('./CHANGELOG.md')[^1][^2].
+See [CHANGELOG](CHANGELOG.md) [^1] [^2]
 
-## References
+<!-- references -->
 
 [^1]: https://github.com/nextest-rs/nextest/blob/main/internal-docs/releasing.md "How to perform nextest releases"
 [^2]: https://keepachangelog.com/en/1.1.0/ "keep a changelog"
-
-
