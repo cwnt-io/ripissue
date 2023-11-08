@@ -1,5 +1,7 @@
 # ripissue
 
+May your issues rest in peace 🪦 ✝️
+
 <!-- toc -->
 
 - [Development Workflow](#development-workflow)
