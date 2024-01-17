@@ -3,8 +3,6 @@
 <!-- toc -->
 
 - [Install](#install)
-  - [Pre-requisites](#pre-requisites)
-  - [Installation Steps](#installation-steps)
 - [Basic usage](#basic-usage)
   - [Help](#help)
   - [Create an issue](#create-an-issue)
@@ -12,7 +10,7 @@
   - [Close an issue](#close-an-issue)
   - [Reopen an issue](#reopen-an-issue)
   - [List all issues](#list-all-issues)
-  - [Close and issue and automatically close the issue branch](#close-and-issue-and-automatically-close-the-issue-branch)
+  - [Close an issue and automatically close the issue branch](#close-an-issue-and-automatically-close-the-issue-branch)
 - [Ripissue development](#ripissue-development)
   - [Development Workflow](#development-workflow)
   - [Release Workflow](#release-workflow)
@@ -33,13 +31,8 @@ Inspired by:
 
 ## Install
 
-### Pre-requisites
-
-- Have Rust and Cargo installed
-
-### Installation Steps
-
-To install globally in your machine, run:
+- Pre-requisite: Ensure Rust and Cargo are installed on your system.
+- To install globally in your machine, just run the command:
 
 ```sh
 cargo add ripi
@@ -304,7 +297,7 @@ commit 28ba5b7bf4b5ade1e170c9fe4bfd111637fd10b1
 ripi issue list -a
 ```
 
-### Close and issue and automatically close the issue branch
+### Close an issue and automatically close the issue branch
 
 There are some steps necessarily to work correctly with an workflow where you dedicate a git branch to work exclusivelly on a particular issue.
 
