@@ -8,6 +8,8 @@
 
 # Todo Backlog Draft
 
+- handle special chars like "/" when slugifying names
+  - if issue create has "something / something else" it will create a issue name " something else"
 - crates.io and github/ripissue: add owners
 - [ ] make a professional README
   - link to crates.io
