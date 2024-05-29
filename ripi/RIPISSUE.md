@@ -1,4 +1,4 @@
-# ripi
+# RIPISSUE
 
 <!-- toc -->
 
@@ -7,6 +7,12 @@
 <!-- tocstop -->
 
 # Todo Backlog Draft
+
+- [ ] ripissue packaging
+  - [ ] [[packagingdebianubuntu-issue]]
+  - [ ] [[packagingsnap-issue]]
+  - [ ] [[packagingflatpak-issue]]
+- [ ] tests: ci/cd -> packages
 
 - handle special chars like "/" when slugifying names
   - if issue create has "something / something else" it will create a issue name " something else"
