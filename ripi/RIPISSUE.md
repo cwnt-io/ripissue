@@ -8,11 +8,19 @@
 
 # Todo Backlog Draft
 
+- [ ] integrate ripissue with:
+  - https://github.com/MarcoIeni/release-plz
+    - !! https://www.conventionalcommits.org/en/v1.0.0/
+    - https://git-cliff.org/
+  - [poc-changelog-generator] ?
+
 - [ ] ripissue packaging
   - [ ] [[packagingdebianubuntu-issue]]
   - [ ] [[packagingsnap-issue]]
   - [ ] [[packagingflatpak-issue]]
 - [ ] tests: ci/cd -> packages
+
+- [ ] build ripissue homepage
 
 - handle special chars like "/" when slugifying names
   - if issue create has "something / something else" it will create a issue name " something else"

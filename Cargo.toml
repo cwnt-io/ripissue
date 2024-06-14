@@ -2,13 +2,13 @@
 name = "ripissue"
 version = "0.1.4"
 edition = "2021"
-about = "CLI tool written in Rust for distributed bug / issue / story tracking with the filesystem and git."
 description = "CLI tool written in Rust for distributed bug / issue / story tracking with the filesystem and git."
 license-file = "LICENSE"
-homepage = "https://github.com/cwnt-io/ripissue"
+# homepage = "https://github.com/cwnt-io/ripissue"
 repository = "https://github.com/cwnt-io/ripissue"
 keywords = ["issue", "tracker", "git", "project", "management"]
 categories = ["command-line-utilities", "development-tools", "filesystem"]
+authors = ["cwnt.io", "Gustavo Basso <gubasso@cwnt.io>", "Ismael Pamplona <isma@cwnt.io>"]
 
 [package.metadata.release]
 allow-branch = ["master","staging", "develop"]

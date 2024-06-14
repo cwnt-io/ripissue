@@ -1,5 +1,15 @@
 # packaging_debian_ubuntu (Issue)
 
+- https://wiki.debian.org/Rust
+- https://wiki.debian.org/Gnome/Rust_Packaging
+- https://wiki.debian.org/Teams/RustPackaging
+- https://github.com/kornelski/cargo-deb
+- https://github.com/burtonageo/cargo-bundle
+- https://salsa.debian.org/rust-team/debcargo/
+- https://wiki.debian.org/Teams/RustPackaging/Policy
+
+- https://www.aptly.info/
+
 apt package (debian + ubuntu)
 - references:
   - ripigrep
@@ -14,9 +24,9 @@ Resource: [A beginner's guide to debian packaging - DebConf Videos](https://www.
 - [ ] debian packaging all the way...
   - lintian, man pages, etc...
 
-- [ ] https://github.com/kornelski/cargo-deb
 
 - https://www.debian.org/doc/manuals/packaging-tutorial/packaging-tutorial.pdf
+
 
 ## done
 
