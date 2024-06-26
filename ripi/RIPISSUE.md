@@ -8,11 +8,20 @@
 
 # Todo Backlog Draft
 
+- general refactor + tests
+- auto create ripissue.md
+- auto update ripissue.md
+  - `<!--ripissue:open-->`: list all opened issues
+    - `:close`
+    - `:all`
+  - when: open/close issues
+
 - [ ] integrate ripissue with:
   - https://github.com/MarcoIeni/release-plz
     - !! https://www.conventionalcommits.org/en/v1.0.0/
     - https://git-cliff.org/
   - [poc-changelog-generator] ?
+  - general commit: with a general message (minor updates not necessarily related with a issue)
 
 - [ ] ripissue packaging
   - [ ] [[packagingdebianubuntu-issue]]
