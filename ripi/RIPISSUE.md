@@ -10,6 +10,10 @@
 
 - general refactor + tests
 - auto create ripissue.md
+- all generated .md: add a "\n"
+- make it work along site pre-commit hooks
+  - should add, but it never should commit if pre-commit fails
+    - always check for pre-commits before each operation
 - auto update ripissue.md
   - `<!--ripissue:open-->`: list all opened issues
     - `:close`
