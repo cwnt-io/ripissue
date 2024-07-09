@@ -3,7 +3,7 @@
 - `develop` branch: will hold `v0.1.X` (temporarily)
 - `master` branch: where the magic happens (mainline for `v0.2.X` refactor).
 
-For more details see [[ripissue#`v0.2.X` ROADMAP]].
+For more details see [[ripissue#`v0.2.X` ROADMAP]](./ripi/RIPISSUE.md).
 
 ---
 
