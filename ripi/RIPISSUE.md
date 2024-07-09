@@ -13,7 +13,7 @@
   - [Auto update RIPISSUE.md](#auto-update-ripissuemd)
   - [`chat` command](#chat-command)
   - [`changelog` generator](#changelog-generator)
-  - [Final adjustments for the launch.](#final-adjustments-for-the-launch)
+  - [Launch: Final adjustments](#launch-final-adjustments)
 - [Todo Backlog Draft](#todo-backlog-draft)
 
 <!-- tocstop -->
@@ -205,10 +205,14 @@ ripi commit <issue_id> --ai-changelog
 - changelog generator: https://git-cliff.org/
   - crud (manual): add + update + remove
 
-### Final adjustments for the launch.
+### Launch: Final adjustments
 
 - refactor readme (new logo)
 - video launch
+  - short demo video (< 3 mins)
+  - show what you build
+  - a way for people to actually try out what you built
+  - what problem you try to solve
 
 ---
 
