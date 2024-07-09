@@ -296,17 +296,17 @@ impl Elem {
     }
     pub fn delete_branch(&self) -> Result<()> {
         let branch_name = self.branch_name();
-        run_cmd!(git branch -d $branch_name)?;
+        run_cmd!(git branch -d "$branch_name")?;
         Ok(())
     }
     pub fn go_to_or_create_elem_branch(&mut self) -> Result<()> {
         let mut bw = wstdout();
         let branch = self.branch_name();
-        let check_branch = run_fun!(git rev-parse --verify $branch);
+        let check_branch = run_fun!(git rev-parse --verify "$branch");
         if check_branch.is_ok() {
-            run_cmd!(git switch $branch)?;
+            run_cmd!(git switch "$branch")?;
         } else {
-            run_cmd!(git switch -c $branch)?;
+            run_cmd!(git switch -c "$branch")?;
         };
         writeln!(bw, "Ripissue: now in branch {}.", branch)?;
         Ok(())
