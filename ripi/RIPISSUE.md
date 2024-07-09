@@ -109,9 +109,12 @@ branch naming convention
   -   Branch Name: `feat/lang-polish`
 ```
 
+- general refactor + tests
+- after all:
+  - refactor readme (new logo)
+
 ## Todo Backlog Draft
 
-- general refactor + tests
 
 - auto create ripissue.md
 - all generated .md: add a "\n"
