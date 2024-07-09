@@ -4,6 +4,7 @@ May your issues rest in peace 🪦 ✝️
 
 <!-- toc -->
 
+- [Refactor -> `v0.2.0`](#refactor---v020)
 - [Install](#install)
 - [Basic usage](#basic-usage)
   - [Help](#help)
@@ -22,6 +23,15 @@ May your issues rest in peace 🪦 ✝️
 - [Changelog](#changelog)
 
 <!-- tocstop -->
+
+## Refactor -> `v0.2.0`
+
+- `develop` branch: will hold `v0.1.X` (temporarily)
+- `master` branch: where the magic happens (mainline for `v0.2.X` refactor).
+
+For more details see [[ripissue#`v0.2.X` ROADMAP]].
+
+---
 
 Ripissue is a command-line interface (CLI) tool specifically designed to streamline issue tracking within Git repositories. It introduces a simple file structure convention and workflow, enabling efficient management of issues, tasks, sprints, epics, and initiatives. Utilizing just the git system and filesystem, Ripissue facilitates distributed issue management, making it a versatile tool for developers leveraging Git's distributed nature.
 

@@ -13,7 +13,7 @@ repos:
       - id: check-yaml
       - id: destroyed-symlinks
       - id: detect-private-key
-      - id: no-commit-to-branch
+      # - id: no-commit-to-branch
   - repo: https://github.com/editorconfig-checker/editorconfig-checker.python
     rev: '2.7.2'
     hooks:
