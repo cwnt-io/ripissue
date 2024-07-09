@@ -13,7 +13,12 @@ use helpers::check_if_dir_is_repo;
 
 /// Ripissue: Manage your project and issues with `ripi` CLI app!
 #[derive(Debug, Parser)]
-#[command(author, version, about)]
+#[command(
+    name = env!("CARGO_PKG_NAME"),
+    about = env!("CARGO_PKG_DESCRIPTION"),
+    version = env!("CARGO_PKG_VERSION"),
+    author = env!("CARGO_PKG_AUTHORS")
+)]
 pub struct Cli {
     // Choose which element type to operate over.
     #[command(subcommand)]

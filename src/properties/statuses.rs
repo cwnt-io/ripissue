@@ -32,7 +32,7 @@ impl Status {
         let status = match statuses.len() {
             0 => None,
             1 => {
-                let status_full_path = statuses.get(0).unwrap();
+                let status_full_path = statuses.first().unwrap();
                 let status_str = get_file_name(status_full_path);
                 let status = FromStr::from_str(&status_str)?;
                 Some(status)
