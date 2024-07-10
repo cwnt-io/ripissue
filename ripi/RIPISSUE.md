@@ -10,9 +10,9 @@
     - [ai helper with a commit without an issue](#ai-helper-with-a-commit-without-an-issue)
     - [ai helpers with an issue in place](#ai-helpers-with-an-issue-in-place)
   - [`list` command](#list-command)
-  - [Auto update RIPISSUE.md](#auto-update-ripissuemd)
   - [`chat` command](#chat-command)
   - [`changelog` generator](#changelog-generator)
+  - [Auto update RIPISSUE.md](#auto-update-ripissuemd)
   - [Launch: Final adjustments](#launch-final-adjustments)
 - [Todo Backlog Draft](#todo-backlog-draft)
 
@@ -76,6 +76,7 @@ Deliverables:
   - https://backdropbuild.com/v5/partners
     - https://backdropbuild.com/v5/partners/modal
     - https://backdropbuild.com/v5/partners/langchain
+- prompt engineering
 
 #### auth flow
 
@@ -86,11 +87,12 @@ ripi issue ... --openai-token "<token>"
 ripi issue ... --openai-token-file my_token_file
 ```
 
+- env variable: RIPISSUE_API_AI_TOKEN
+
 - config_file.toml
 
 ```toml
 [openai]
-token = "<token>"
 token_file = "path/to/token_file/or/script"
 ```
 - token file
@@ -111,7 +113,7 @@ gopass my_path/token
 #### ai helper with a commit without an issue
 
 ```sh
-ripi --openai-token "<token>"
+ripi commit --openai-token "<token>"
 ```
 
 - no commit message or issue id specified
@@ -119,7 +121,6 @@ ripi --openai-token "<token>"
   - one line commit message
   - detailed topics of commit changes
     - detailed topics at the commit message itself
-    - detailed topics at a separate changelog file
 
 #### ai helpers with an issue in place
 
@@ -172,11 +173,11 @@ ripi commit <issue_id> --ai-changelog
 - `log-header`
   - template
     ```
-    <short-commit-hash> - <author-email> - <iso-date>
+    <ai-description-very-short> - <author-email> - <now-iso-date>
     ```
   - example
     ```md
-    ## 8fca8e - root@cwnt.io - 2024-07-09T08:54:15-03:00
+    ## <ai-description-very-short> - root@cwnt.io - 2024-07-09T08:54:15-03:00
     ```
 
 ### `list` command
@@ -186,14 +187,6 @@ ripi commit <issue_id> --ai-changelog
   - ascii art, visual
   - kanban view (by tags/status)
 
-### Auto update RIPISSUE.md
-
-- auto update ripissue.md
-  - `<!--ripissue:open-->`: list all opened issues
-    - `:close`
-    - `:all`
-  - when: list/open/close issues
-
 ### `chat` command
 
 - chat:
@@ -202,8 +195,18 @@ ripi commit <issue_id> --ai-changelog
 
 ### `changelog` generator
 
+- ai changelog?
+- https://keepachangelog.com/en/1.1.0/
 - changelog generator: https://git-cliff.org/
   - crud (manual): add + update + remove
+
+### Auto update RIPISSUE.md
+
+- auto update ripissue.md
+  - `<!--ripissue:open-->`: list all opened issues
+    - `:close`
+    - `:all`
+  - when: list/open/close issues
 
 ### Launch: Final adjustments
 
