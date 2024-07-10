@@ -81,6 +81,8 @@ Deliverables:
 #### research
 
 - https://github.com/m1guelpf/auto-commit
+- https://github.com/njfio/fluent_cli
+  - https://fluentcli.com/
 - research solutions/apis (use openai? is there another? if we can find a backdropbuild partner, it would be better)
   - See a partner that might be a good fit for your project? Hit "Connect"
   - https://backdropbuild.com/v5/partners
