@@ -3,12 +3,12 @@
 <!-- toc -->
 
 - [`v0.2.X` ROADMAP](#v02x-roadmap)
+  - [Cwntflow refactor](#cwntflow-refactor)
   - [Code refactor](#code-refactor)
   - [AI integration](#ai-integration)
     - [research](#research)
     - [auth flow](#auth-flow)
-    - [ai helper with a commit without an issue](#ai-helper-with-a-commit-without-an-issue)
-    - [ai helpers with an issue in place](#ai-helpers-with-an-issue-in-place)
+    - [AI auto-complete](#ai-auto-complete)
   - [`list` command](#list-command)
   - [`chat` command](#chat-command)
   - [`changelog` generator](#changelog-generator)
@@ -39,13 +39,23 @@ Definitions
 
 Deliverables:
 
-- [ ] [Code refactor](#code-refactor)
-- [ ] [AI integration](#ai-integration)
-- [ ] [`list` command](#list-command)
-- [ ] [Auto update RIPISSUE.md](#auto-update-ripissuemd)
-- [ ] [`chat` command](#chat-command)
-- [ ] [`changelog` generator](#changelog-generator)
-- [ ] [Final adjustments for the launch.](#final-adjustments-for-the-launch)
+- ✅ [Cwntflow refactor](#cwntflow-refactor)
+- ⏳ [Code refactor](#code-refactor)
+- ⏳ [AI integration](#ai-integration)
+  - ⏳ [research](#research)
+  - ⏳ [auth flow](#auth-flow)
+  - ⏳ [AI auto-complete](#ai-auto-complete)
+- ⏳ [`list` command](#list-command)
+- ⏳ [`chat` command](#chat-command)
+- ⏳ [`changelog` generator](#changelog-generator)
+- ⏳ [Auto update RIPISSUE.md](#auto-update-ripissuemd)
+- ⏳ [Launch: Final adjustments](#launch-final-adjustments)
+
+### Cwntflow refactor
+
+- Refactor Cwnt's workflow based on a trunk based development model.
+- Document the workflow.
+- Make it powered by Ripissue.
 
 ### Code refactor
 
@@ -110,7 +120,11 @@ token_file = "path/to/token_file/or/script"
 gopass my_path/token
 ```
 
-#### ai helper with a commit without an issue
+#### AI auto-complete
+
+##### Commit NO issue
+
+Helper with a commit WITHOUT an issue
 
 ```sh
 ripi commit --openai-token "<token>"
@@ -122,7 +136,9 @@ ripi commit --openai-token "<token>"
   - detailed topics of commit changes
     - detailed topics at the commit message itself
 
-#### ai helpers with an issue in place
+##### Commit WITH issue assigned
+
+Helpers with an issue in place.
 
 Commit message with an issue in place. Issue is set.
 
@@ -130,10 +146,10 @@ The commit message itself will always be "one-liner".
 
 Both options can work together (in combination):
 
-- [[#complement commit message (one-liner)]]
-- [[#append full log message to a file]]
+- [[#One-liner: complement commit message]]
+- [[#Full-log: append full log message to a file]]
 
-##### complement commit message (one-liner)
+###### One-liner: complement commit message
 
 - ai will complement the commit messagge with a brief description
 
@@ -149,7 +165,7 @@ Commit message format:
 
 - `ai-description-very-short`: few words, just to have a visual cue from the git log to see what that commit is about.
 
-##### append full log message to a file
+###### Full-log: append full log message to a file
 
 ```sh
 ripi commit <issue_id> --ai-changelog
