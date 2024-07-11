@@ -6,13 +6,13 @@
   - [Cwntflow refactor](#cwntflow-refactor)
   - [Code refactor](#code-refactor)
   - [AI integration](#ai-integration)
-    - [research](#research)
-    - [auth flow](#auth-flow)
+    - [Research](#research)
+    - [Auth Flow](#auth-flow)
     - [AI auto-complete](#ai-auto-complete)
   - [`list` command](#list-command)
   - [`chat` command](#chat-command)
   - [`changelog` generator](#changelog-generator)
-  - [Auto update RIPISSUE.md](#auto-update-ripissuemd)
+  - [Auto-Update RIPISSUE.md](#auto-update-ripissuemd)
   - [Launch: Final adjustments](#launch-final-adjustments)
 - [Todo Backlog Draft](#todo-backlog-draft)
 
@@ -78,7 +78,7 @@ Deliverables:
 - [ai helper with a commit without an issue](#ai-helper-with-a-commit-without-an-issue)
 - [ai helpers with an issue in place](#ai-helpers-with-an-issue-in-place)
 
-#### research
+#### Research
 
 - https://github.com/m1guelpf/auto-commit
 - https://github.com/njfio/fluent_cli
@@ -90,7 +90,7 @@ Deliverables:
     - https://backdropbuild.com/v5/partners/langchain
 - prompt engineering
 
-#### auth flow
+#### Auth Flow
 
 - like ansible-vault
 
@@ -218,9 +218,9 @@ ripi commit <issue_id> --ai-changelog
 - changelog generator: https://git-cliff.org/
   - crud (manual): add + update + remove
 
-### Auto update RIPISSUE.md
+### Auto-Update RIPISSUE.md
 
-- auto update ripissue.md
+- Auto update ripissue.md.
   - `<!--ripissue:open-->`: list all opened issues
     - `:close`
     - `:all`
