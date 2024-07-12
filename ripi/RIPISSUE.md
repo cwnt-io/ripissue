@@ -3,17 +3,16 @@
 <!-- toc -->
 
 - [`v0.2.X` ROADMAP](#v02x-roadmap)
-  - [Cwntflow refactor](#cwntflow-refactor)
-  - [Code refactor](#code-refactor)
-  - [AI integration](#ai-integration)
-    - [Research](#research)
-    - [Auth Flow](#auth-flow)
-    - [AI auto-complete](#ai-auto-complete)
-  - [`list` command](#list-command)
-  - [`chat` command](#chat-command)
-  - [`changelog` generator](#changelog-generator)
-  - [Auto-Update RIPISSUE.md](#auto-update-ripissuemd)
-  - [Launch: Final adjustments](#launch-final-adjustments)
+  - [Pending](#pending)
+    - [Code refactor](#code-refactor)
+    - [AI integration](#ai-integration)
+    - [`list` command](#list-command)
+    - [`chat` command](#chat-command)
+    - [`changelog` generator](#changelog-generator)
+    - [Auto-Update RIPISSUE.md](#auto-update-ripissuemd)
+    - [Launch: Final adjustments](#launch-final-adjustments)
+  - [Done](#done)
+    - [Cwntflow refactor](#cwntflow-refactor)
 - [Todo Backlog Draft](#todo-backlog-draft)
 
 <!-- tocstop -->
@@ -51,13 +50,9 @@ Deliverables:
 - ⏳ [Auto update RIPISSUE.md](#auto-update-ripissuemd)
 - ⏳ [Launch: Final adjustments](#launch-final-adjustments)
 
-### Cwntflow refactor
+### Pending
 
-- Refactor Cwnt's workflow based on a trunk based development model.
-- Document the workflow.
-- Make it powered by Ripissue.
-
-### Code refactor
+#### Code refactor
 
 - Refactor code and architecture.
 - TDD.
@@ -66,7 +61,7 @@ Deliverables:
   - should add, but it never should commit if pre-commit fails
     - always check for pre-commits before each operation
 
-### AI integration
+#### AI integration
 
 1) code
 2) ai generate commit messages from your **staged** changes 
@@ -78,7 +73,7 @@ Deliverables:
 - [ai helper with a commit without an issue](#ai-helper-with-a-commit-without-an-issue)
 - [ai helpers with an issue in place](#ai-helpers-with-an-issue-in-place)
 
-#### Research
+##### Research
 
 - https://github.com/danielmiessler/fabric/blob/main/patterns/write_pull-request/system.md
 - https://youtube.com/watch?v=OkaplCDf7Ac&si=N4ZbdKJoXqn5ZH8z
@@ -92,7 +87,7 @@ Deliverables:
     - https://backdropbuild.com/v5/partners/langchain
 - prompt engineering
 
-#### Auth Flow
+##### Auth Flow
 
 - like ansible-vault
 
@@ -124,9 +119,9 @@ token_file = "path/to/token_file/or/script"
 gopass my_path/token
 ```
 
-#### AI auto-complete
+##### AI auto-complete
 
-##### Commit NO issue
+###### Commit NO issue
 
 Helper with a commit WITHOUT an issue
 
@@ -140,7 +135,7 @@ ripi commit --openai-token "<token>"
   - detailed topics of commit changes
     - detailed topics at the commit message itself
 
-##### Commit WITH issue assigned
+###### Commit WITH issue assigned
 
 Helpers with an issue in place.
 
@@ -150,10 +145,10 @@ The commit message itself will always be "one-liner".
 
 Both options can work together (in combination):
 
-- [[#One-liner: complement commit message]]
-- [[#Full-log: append full log message to a file]]
+- `One-liner: complement commit message`
+- `Full-log: append full log message to a file`
 
-###### One-liner: complement commit message
+####### One-liner: complement commit message
 
 - ai will complement the commit messagge with a brief description
 
@@ -169,7 +164,7 @@ Commit message format:
 
 - `ai-description-very-short`: few words, just to have a visual cue from the git log to see what that commit is about.
 
-###### Full-log: append full log message to a file
+####### Full-log: append full log message to a file
 
 ```sh
 ripi commit <issue_id> --ai-changelog
@@ -200,27 +195,27 @@ ripi commit <issue_id> --ai-changelog
     ## <ai-description-very-short> - root@cwnt.io - 2024-07-09T08:54:15-03:00
     ```
 
-### `list` command
+#### `list` command
 
 - ripi issue list, make it better
   - pure (to be machine used)
   - ascii art, visual
   - kanban view (by tags/status)
 
-### `chat` command
+#### `chat` command
 
 - chat:
   - `-m "my chat message"`
   - open in $EDITOR
 
-### `changelog` generator
+#### `changelog` generator
 
 - ai changelog?
 - https://keepachangelog.com/en/1.1.0/
 - changelog generator: https://git-cliff.org/
   - crud (manual): add + update + remove
 
-### Auto-Update RIPISSUE.md
+#### Auto-Update RIPISSUE.md
 
 - Auto update ripissue.md.
   - `<!--ripissue:open-->`: list all opened issues
@@ -228,7 +223,7 @@ ripi commit <issue_id> --ai-changelog
     - `:all`
   - when: list/open/close issues
 
-### Launch: Final adjustments
+#### Launch: Final adjustments
 
 - refactor readme (new logo)
 - video launch
@@ -236,6 +231,14 @@ ripi commit <issue_id> --ai-changelog
   - show what you build
   - a way for people to actually try out what you built
   - what problem you try to solve
+
+### Done
+
+#### Cwntflow refactor
+
+- Refactor Cwnt's workflow based on a trunk based development model.
+- Document the workflow.
+- Make it powered by Ripissue.
 
 ---
 
