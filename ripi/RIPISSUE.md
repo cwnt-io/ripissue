@@ -80,6 +80,8 @@ Deliverables:
 
 #### research
 
+- https://github.com/danielmiessler/fabric/blob/main/patterns/write_pull-request/system.md
+- https://youtube.com/watch?v=OkaplCDf7Ac&si=N4ZbdKJoXqn5ZH8z
 - https://github.com/m1guelpf/auto-commit
 - https://github.com/njfio/fluent_cli
   - https://fluentcli.com/
