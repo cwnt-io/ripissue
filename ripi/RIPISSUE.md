@@ -4,7 +4,7 @@
 
 - [`v0.2.X` ROADMAP](#v02x-roadmap)
   - [Pending](#pending)
-    - [Code refactor](#code-refactor)
+    - [[[coderefactor-issue]]](#coderefactor-issue)
     - [AI integration](#ai-integration)
     - [`list` command](#list-command)
     - [`chat` command](#chat-command)
@@ -52,14 +52,7 @@ Deliverables:
 
 ### Pending
 
-#### Code refactor
-
-- Refactor code and architecture.
-- TDD.
-- auto create ripissue.md
-- make it work along side pre-commit hooks
-  - should add, but it never should commit if pre-commit fails
-    - always check for pre-commits before each operation
+#### [[coderefactor-issue]]
 
 #### AI integration
 

@@ -4,6 +4,20 @@ use strum_macros::Display;
 
 use crate::executors::{issues::IssueExecutors, sprints::SprintExecutors};
 
+// /// Ripissue: Manage your project and issues with `ripi` CLI app!
+// #[derive(Debug, Parser)]
+// #[command(
+//     name = env!("CARGO_PKG_NAME"),
+//     about = env!("CARGO_PKG_DESCRIPTION"),
+//     version = env!("CARGO_PKG_VERSION"),
+//     author = env!("CARGO_PKG_AUTHORS")
+// )]
+// pub struct Cli {
+//     // Choose which element type to operate over.
+//     #[command(subcommand)]
+//     pub element_type: ElemType,
+// }
+
 #[derive(Debug, Subcommand, Display)]
 pub enum ElemType {
     ///Tasks, bugs, features, stories, Pull Requests (PR's), etc. A unit of work.

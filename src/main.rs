@@ -1,34 +1,22 @@
-mod elements;
-mod executors;
+mod cli;
 mod helpers;
-mod properties;
 
-use std::env::current_dir;
+// mod elements;
+// mod executors;
+// mod properties;
 
 use anyhow::Result;
 use clap::Parser;
 
-use elements::elem_type::ElemType;
-use helpers::check_if_dir_is_repo;
-
-/// Ripissue: Manage your project and issues with `ripi` CLI app!
-#[derive(Debug, Parser)]
-#[command(
-    name = env!("CARGO_PKG_NAME"),
-    about = env!("CARGO_PKG_DESCRIPTION"),
-    version = env!("CARGO_PKG_VERSION"),
-    author = env!("CARGO_PKG_AUTHORS")
-)]
-pub struct Cli {
-    // Choose which element type to operate over.
-    #[command(subcommand)]
-    pub element_type: ElemType,
-}
+use cli::Cli;
+// use elements::elem_type::ElemType;
+// use helpers::check_if_dir_is_repo;
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
-    let curr = current_dir()?;
-    check_if_dir_is_repo(&curr)?;
-    cli.element_type.run_cmd()?;
+    println!("{:#?}", cli);
+    // let curr = current_dir()?;
+    // check_if_dir_is_repo(&curr)?;
+    // cli.element_type.run_cmd()?;
     Ok(())
 }
