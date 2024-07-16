@@ -19,6 +19,8 @@ pub struct Cli {
 
 #[derive(Debug, Subcommand)]
 pub enum Commands {
+    /// Creates a Ripissue config file
+    Init,
     /// Creates a new issue
     Create(CreateIssueArgs),
     // /// Commits an issue
@@ -35,7 +37,7 @@ pub enum Commands {
 
 #[derive(Debug, Args)]
 pub struct CreateIssueArgs {
-    /// Gives a name to the issue. An ID will be generated from this name.
+    /// Gives a name to the issue. An ID will be generated from this name. The issue ID is the slugifyed issue name.
     #[arg(value_parser = is_not_empty)]
     pub name: String,
     #[command(flatten)]

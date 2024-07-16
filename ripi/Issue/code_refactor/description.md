@@ -11,6 +11,26 @@
 
 ## doing
 
+- remove [ignore] from tests
+- continue at: test_cli_init
+- ripissue.toml config file
+
+implement this builder pattern
+
+```rs
+let settings = config::Config::builder()
+    .add_source(config::File::with_name("ripissue"))
+    .add_source(config::Environment::with_prefix("RIPISSUE"))
+    .build()?;
+
+let cfg: Config = settings.try_deserialize()?;
+```
+
+
+- ripi init command
+- create a config file
+- create Context struct
+  - hold project pwd
 - create issue integration test
 
 ## todo
@@ -36,4 +56,6 @@
 
 ## done
 
+- Context::new with tests
 - add anyhow to integration tests
+- [x] slugify function

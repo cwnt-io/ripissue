@@ -12,7 +12,6 @@
 //
 // use anyhow::{bail, Context, Result};
 // use chrono::NaiveDate;
-// use slugify::slugify;
 // use walkdir::WalkDir;
 
 // pub fn get_all_repos_from_parent() -> Vec<PathBuf> {
@@ -148,9 +147,6 @@ pub fn is_not_empty(arg: &str) -> Result<String> {
 //     Ok(arg.to_owned())
 // }
 //
-// pub fn slug(s: &str) -> String {
-//     slugify!(&s.to_lowercase(), separator = "_")
-// }
 //
 // pub fn slug_tag(s: &str) -> String {
 //     slugify!(&s.to_lowercase(), separator = "-")
