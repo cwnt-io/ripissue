@@ -1,6 +1,6 @@
 use crate::ai_module::ai_model::{AiModel, Message};
 use dotenv::dotenv;
-use reqwest::Client;
+use reqwest::{Client, Error};
 use serde::{Deserialize, Serialize};
 use std::env;
 use std::future::Future;
@@ -64,20 +64,21 @@ struct ChatRequest {
     messages: Vec<InnerMessage>,
 }
 
-pub struct OpenAIClient {
+pub struct OpenAIClient<'a> {
     pub client: Client,
     api_key: String,
     base_url: String,
+    model: &'a str,
 }
 
-impl Default for OpenAIClient {
+impl<'a> Default for OpenAIClient<'a> {
     fn default() -> Self {
-        Self::new()
+        Self::new("default-model")
     }
 }
 
-impl OpenAIClient {
-    pub fn new() -> Self {
+impl<'a> OpenAIClient<'a> {
+    pub fn new(model: &'a str) -> Self {
         dotenv().ok();
         let api_key = env::var("OPENAI_API_KEY").expect("OPENAI_API_KEY must be set");
 
@@ -85,15 +86,18 @@ impl OpenAIClient {
             client: Client::new(),
             api_key,
             base_url: String::from("https://api.openai.com"),
+            model,
         }
     }
 
     pub async fn fetch_chat_completion(
         &self,
         messages: Vec<InnerMessage>,
-        model: String,
     ) -> Result<ChatCompletion, reqwest::Error> {
-        let request_body = ChatRequest { model, messages };
+        let request_body = ChatRequest {
+            model: self.model.to_string(), // Convert to String
+            messages,
+        };
 
         let response = self
             .client
@@ -109,14 +113,14 @@ impl OpenAIClient {
     }
 }
 
-impl AiModel for OpenAIClient {
-    fn comment(
+impl<'a> AiModel for OpenAIClient<'a> {
+    fn comment_with_issue(
         &self,
-        diff: String,
-        model: String,
-    ) -> Pin<Box<dyn Future<Output = Result<Vec<Message>, reqwest::Error>> + '_>> {
+    ) -> Pin<Box<dyn Future<Output = Result<Vec<Message>, Error>> + '_>> {
         Box::pin(async move {
-            let instructions = include_str!("./instructions.md");
+            let instructions = include_str!("./prompt_comment_with_issue.md");
+
+            let diff = self.get_git_diff();
 
             let messages = vec![
                 InnerMessage {
@@ -129,7 +133,49 @@ impl AiModel for OpenAIClient {
                 },
             ];
 
-            let chat_completion = self.fetch_chat_completion(messages, model).await?;
+            let chat_completion = self.fetch_chat_completion(messages).await?;
+
+            let result_messages = chat_completion
+                .choices
+                .into_iter()
+                .map(|choice| Message(choice.message.content))
+                .collect();
+
+            Ok(result_messages)
+        })
+    }
+
+    fn comment_without_issue(
+        &self,
+        with_body: bool,
+    ) -> Pin<Box<dyn Future<Output = Result<Vec<Message>, Error>> + '_>> {
+        Box::pin(async move {
+            let instructions = include_str!("./prompt_comment_without_an_issue.md");
+            let conventions = include_str!("./prompt_conventional_commits.md");
+
+            let diff = self.get_git_diff();
+
+            let body_instruction = if with_body {
+                "commit the message with multi-paragraph body and multiple footers"
+            } else {
+                "commit the message with no body"
+            };
+
+            let messages = vec![
+                InnerMessage {
+                    role: "system".to_string(),
+                    content: format!(
+                        "{} 4. You MUST {} \n, {} \n ",
+                        instructions, body_instruction, conventions
+                    ),
+                },
+                InnerMessage {
+                    role: "user".to_string(),
+                    content: format!("# Git diff: \n {}", diff),
+                },
+            ];
+
+            let chat_completion = self.fetch_chat_completion(messages).await?;
 
             let result_messages = chat_completion
                 .choices
