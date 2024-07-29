@@ -1,4 +1,4 @@
-use reqwest::Error;
+use std::error::Error as StdError;
 use std::future::Future;
 use std::pin::Pin;
 use std::process::Command;
@@ -6,14 +6,18 @@ use std::process::Command;
 #[derive(Debug)]
 pub struct Message(pub String);
 
-pub trait AiModel {
-    fn comment_with_issue(&self)
-        -> Pin<Box<dyn Future<Output = Result<Vec<Message>, Error>> + '_>>;
+pub trait AiModel<'a> {
+    fn comment_with_issue(
+        &self,
+        issue: &'a str,
+    ) -> Pin<Box<dyn Future<Output = Result<Vec<Message>, Box<dyn StdError>>> + '_>>;
 
     fn comment_without_issue(
-        &self,
+        &'a self,
         with_body: bool,
-    ) -> Pin<Box<dyn Future<Output = Result<Vec<Message>, Error>> + '_>>;
+        reviewer: Option<&'a str>,
+        refs: Option<Vec<&'a str>>,
+    ) -> Pin<Box<dyn Future<Output = Result<Vec<Message>, Box<dyn StdError>>> + '_>>;
 
     fn get_git_diff(&self) -> String {
         let output = Command::new("git")

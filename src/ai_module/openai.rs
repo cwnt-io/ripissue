@@ -1,11 +1,11 @@
 use crate::ai_module::ai_model::{AiModel, Message};
-use dotenv::dotenv;
-use reqwest::{Client, Error};
+use reqwest::Client;
 use serde::{Deserialize, Serialize};
-use std::env;
+use std::error::Error as StdError;
 use std::future::Future;
 use std::pin::Pin;
 
+/// Struct representing the completion of a chat interaction.
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ChatCompletion {
     id: String,
@@ -17,34 +17,15 @@ pub struct ChatCompletion {
     system_fingerprint: Option<String>,
 }
 
+/// Struct representing a choice in the chat completion.
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Choice {
     index: usize,
     pub message: InnerMessage,
-    logprobs: Option<Logprobs>,
     finish_reason: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-struct Logprobs {
-    content: Vec<TokenLogprob>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct TokenLogprob {
-    token: String,
-    logprob: f64,
-    bytes: Option<Vec<u8>>,
-    top_logprobs: Vec<TopLogprob>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct TopLogprob {
-    token: String,
-    logprob: f64,
-    bytes: Option<Vec<u8>>,
-}
-
+/// Struct representing the usage statistics of the chat completion.
 #[derive(Serialize, Deserialize, Debug)]
 struct Usage {
     prompt_tokens: usize,
@@ -52,36 +33,37 @@ struct Usage {
     total_tokens: usize,
 }
 
+/// Struct representing a message in the chat interaction.
 #[derive(Serialize, Deserialize, Debug)]
 pub struct InnerMessage {
     pub role: String,
     pub content: String,
 }
 
+/// Struct representing the request to be sent to the chat API.
 #[derive(Serialize, Deserialize, Debug)]
 struct ChatRequest {
     model: String,
     messages: Vec<InnerMessage>,
 }
 
+/// Client for interacting with the OpenAI API.
 pub struct OpenAIClient<'a> {
     pub client: Client,
-    api_key: String,
+    api_key: &'a str,
     base_url: String,
     model: &'a str,
 }
 
 impl<'a> Default for OpenAIClient<'a> {
     fn default() -> Self {
-        Self::new("default-model")
+        Self::new("gpt-3.5-turbo", "")
     }
 }
 
 impl<'a> OpenAIClient<'a> {
-    pub fn new(model: &'a str) -> Self {
-        dotenv().ok();
-        let api_key = env::var("OPENAI_API_KEY").expect("OPENAI_API_KEY must be set");
-
+    /// Creates a new instance of `OpenAIClient`.
+    pub fn new(model: &'a str, api_key: &'a str) -> Self {
         Self {
             client: Client::new(),
             api_key,
@@ -90,12 +72,13 @@ impl<'a> OpenAIClient<'a> {
         }
     }
 
+    /// Fetches chat completion from the OpenAI API.
     pub async fn fetch_chat_completion(
         &self,
         messages: Vec<InnerMessage>,
     ) -> Result<ChatCompletion, reqwest::Error> {
         let request_body = ChatRequest {
-            model: self.model.to_string(), // Convert to String
+            model: self.model.to_string(),
             messages,
         };
 
@@ -113,19 +96,19 @@ impl<'a> OpenAIClient<'a> {
     }
 }
 
-impl<'a> AiModel for OpenAIClient<'a> {
+impl<'a> AiModel<'a> for OpenAIClient<'a> {
     fn comment_with_issue(
         &self,
-    ) -> Pin<Box<dyn Future<Output = Result<Vec<Message>, Error>> + '_>> {
+        issue: &'a str,
+    ) -> Pin<Box<dyn Future<Output = Result<Vec<Message>, Box<dyn StdError>>> + '_>> {
         Box::pin(async move {
             let instructions = include_str!("./prompt_comment_with_issue.md");
-
             let diff = self.get_git_diff();
 
             let messages = vec![
                 InnerMessage {
                     role: "system".to_string(),
-                    content: instructions.to_string(),
+                    content: format!("# Issue \n {} {}", issue, instructions),
                 },
                 InnerMessage {
                     role: "user".to_string(),
@@ -146,27 +129,40 @@ impl<'a> AiModel for OpenAIClient<'a> {
     }
 
     fn comment_without_issue(
-        &self,
+        &'a self,
         with_body: bool,
-    ) -> Pin<Box<dyn Future<Output = Result<Vec<Message>, Error>> + '_>> {
+        reviewer: Option<&'a str>,
+        refs: Option<Vec<&'a str>>,
+    ) -> Pin<Box<dyn Future<Output = Result<Vec<Message>, Box<dyn StdError>>> + '_>> {
         Box::pin(async move {
-            let instructions = include_str!("./prompt_comment_without_an_issue.md");
-            let conventions = include_str!("./prompt_conventional_commits.md");
-
-            let diff = self.get_git_diff();
-
             let body_instruction = if with_body {
-                "commit the message with multi-paragraph body and multiple footers"
+                "commit the message with multi-paragraph body and/or multiple footers"
             } else {
                 "commit the message with no body"
             };
+
+            let reviewer_instructions = reviewer
+                .map(|rev| rev.to_string())
+                .unwrap_or_else(|| "Do not add Reviewed-by information".to_string());
+
+            let refs_string = refs
+                .map(|r| r.join(", "))
+                .unwrap_or_else(|| "Do not add Refs information".to_string());
+
+            let instructions = include_str!("./prompt_comment_without_an_issue.md");
+            let conventions = include_str!("./prompt_conventional_commits.md");
+            let diff = self.get_git_diff();
 
             let messages = vec![
                 InnerMessage {
                     role: "system".to_string(),
                     content: format!(
-                        "{} 4. You MUST {} \n, {} \n ",
-                        instructions, body_instruction, conventions
+                        "{} # Message body \n You MUST {} , # Reviewed-by \n {}, # Refs \n {} \n {} \n",
+                        instructions,
+                        body_instruction,
+                        reviewer_instructions,
+                        refs_string,
+                        conventions
                     ),
                 },
                 InnerMessage {
